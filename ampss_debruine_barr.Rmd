@@ -230,12 +230,11 @@ my_sim_func <- function(nsubj  = 100, # number of subjects pre between-subject c
                         sri_sd = 100, # by-subject random intercept sd
                         srs_sd = 40,  # by-subject random slope sd
                         rcor   = .2,  # correlation between intercept and slope
-                        err_sd = 200,  # residual (standard deviation)
-                        effc   = c(-.5, .5) # deviation codes
+                        err_sd = 200  # residual (standard deviation)
                         ) {
   # simulate items
   items <- faux::sim_design(
-    between = list(condition = c("A", "B")),
+    between = list(condition = c("ingroup", "outgroup")),
     n = nitem,
     sd = iri_sd,
     dv = "iri",
@@ -244,7 +243,7 @@ my_sim_func <- function(nsubj  = 100, # number of subjects pre between-subject c
   )
 
   # effect code condition
-  items$cond <- recode(items$condition, "A" = effc[1], "B" = effc[2])
+  items$cond <- recode(items$condition, "ingroup" = -0.5, "outgroup" = 0.5)
   
   # simulate subjects
   subjects <- faux::sim_design(
