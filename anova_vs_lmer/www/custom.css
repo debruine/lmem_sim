@@ -1,0 +1,9 @@
+.sidebar .box {
+  background-color: inherit;
+}
+
+.sidebar .box-title {
+  color: white;
+}
+
+p { font-size: 120%; }
