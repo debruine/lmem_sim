@@ -1,0 +1,315 @@
+---
+title: "Understanding mixed effects models through simulating data"
+author: 'Lisa DeBruine and Dale Barr'
+output: html_document
+bibliography: bibliography.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo       = TRUE,
+                      fig.path   = "images/",
+                      fig.width  = 8,
+                      fig.height = 5,
+                      fig.align  = "center",
+                      out.width  = "100%",
+                      warning    = FALSE,
+                      message    = FALSE,
+                      fig.retina = 2)
+```
+
+## Abstract
+
+Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package). The focus will be on interpreting the LMER output in light of the simulated parameters and comparing the results to by-items and by-subjects ANOVA.
+
+### Prerequisite knowledge or skills
+
+* Basic familiarity with experimental designs where subjects respond to stimuli
+* Basic familiarity with R
+
+### Who will benefit from this tutorial?
+
+Researchers who use experimental designs that need to account for crossed random effects (e.g., designs that sample subjects and stimuli). For example, a large amount of experimental research in face perception or social cognition uses designs that would be better analysed using mixed effects models.
+
+## Introduction to LMEM
+
+** GENERAL LMEM EXPLAINER STUFF **
+
+## Tutorial
+
+### Packages
+
+You will need lme4 [@lme4] and lmerTest [@lmerTest] for mixed effects models (it adds p-values to lme4), tidyverse [@tidyverse] for data wrangling and visualisation, faux [@faux] for simulating data with specified parameters, and broom.mixed [@broom.mixed] for extracting data from mixed effects models. Set a seed at the top of your script so that your script returns the same (random) numbers in this simulation (never set seed inside a function).
+
+```{r pkgs}
+library(lmerTest)    # for mixed effects models
+library(tidyverse)   # for data wrangling and visualisation
+library(faux)        # devtools::install_github("debruine/faux")
+library(broom.mixed) # for extracting data from mixed effects models
+
+set.seed(8675309)
+```
+
+### Set Study Parameters
+
+Set up your study parameters. In this example, 100 subjects will respond to 50 items; 25 items in each of 2 conditions. For crossed mixed effect models, you can't think of factors as being "within" or "between", but as within- or between-*subjects* **and** within- or between-*items*. In this example, `condition` is a within-subject and between-item factor.
+
+```{r params}
+nsubj  <- 100 # number of subjects pre between-subject cell
+nitem  <- 25  # number of items per between-item cell
+```
+
+Then we specify the fixed effects. The overall mean (`mu`) is 800 ms and the difference between conditions A and B (`eff`) is 80 ms. 
+
+**EXPLAIN EFFECT CODING**
+
+```{r param-mu-eff}
+mu     <- 800 # grand mean
+eff    <- 80  # effect of condition
+effc   <- c(-.5, .5) # deviation codes
+```
+
+Now we specify the variance for the random effects by items, subjects, and error.
+
+** EXPLAIN MORE **
+
+```{r param-var}
+# items
+iri_sd <- 80 # by-item random intercept sd (omega_00)
+
+# subjects
+sri_sd <- 100 # by-subject random intercept sd
+srs_sd <- 40 # by-subject random slope sd
+rcor <- .2 # correlation between intercept and slope
+
+# error
+err_sd <- 200 # residual (standard deviation)
+```
+
+### Simulate Items
+
+We need to create a table listsing each item, its between-item factors, and simulated values for its random effects.
+
+Simulate items using the function `sim_design()` from faux. This function will create a dataset with `n` items per between-cell with the specified means (`mu`), standard deviations (`sd`) and correlations (<code>r</code>). See the [vignette](https://debruine.github.io/faux/articles/sim_design.html) for more details.
+
+Condition is a between-items factor, so we need to include it in the `between` argument. Set `n = nitem` to specify `r nitem` items per condition. There are no within-items factors, so we only need to simulate one random effect: the  intercept. Set `sd = iri_sd` to set the standard deviation for this random effect (the mean deafults to 0). Set `dv = "iri"` to give the DV column that name. Set `id = "item_id"`; we'll use this later to join this information to the table of trials.
+
+** EFFECT CODE CONDITION **
+
+```{r sim-items, out.width = "75%", fig.cap="The distribution of random effects for items in conditions A and B"}
+items <- faux::sim_design(
+  between = list(condition = c("A", "B")),
+  n = nitem,
+  sd = iri_sd,
+  dv = "iri",
+  id = "item_id",
+  plot = FALSE
+)
+
+# effect code condition
+items$cond <- recode(items$condition, "A" = effc[1], "B" = effc[2])
+
+plot_design(items)
+```
+
+
+### Simulate Subjects
+
+We also need to create a table listsing each subject, their between-subject factors, and simulated values for their random effects. 
+
+There are no between-subject factors. Condition is within-subjects, so we need to simulate two random effects: the intercept and the slope for the effect of condition. Set the `within` argument in `sim_design()` to a list with one factor (`effect`) that has two levels: `sri` and `srs`. If you set a factor's levels as a named vector, the names (`sri` and `srs`) become the column names in the data table and the values are used in plots created by faux.
+
+Set `n = nsubj` to specify the number of subjects. There are two random effects to specify standard deviation for, so set `sd` using a named vector and set their correlation with <code>r = rcor</code>. Set `dv = "value"`; this will only be used in faux plots. Set `id = "subj_id"`; we'll use this later to join this information to the table of trials.
+
+```{r sim-subjects, out.width = "75%", fig.cap="The distribution of random effects for subjects"}
+subjects <- faux::sim_design(
+  within = list(effect = c(sri = "By-subject random intercepts", 
+                           srs = "By-subject random slopes")), 
+  n = nsubj,
+  sd = c(sri = sri_sd, srs = srs_sd), 
+  r = rcor,
+  dv = "value",
+  id = "subj_id",
+  plot = FALSE
+)
+
+plot_design(subjects)
+```
+
+
+### Simulate Trials
+
+Since all subjects respond to all items, we can set up a table of trials by crossing the subject IDs with the item IDs. Each trial has random error associated; we simulate this from a normal distribution with a mean of 0 and SD of `err_sd`.
+
+```{r}
+trials <- crossing(subj_id = subjects$subj_id,
+                   item_id = items$item_id) %>%
+  mutate(err = rnorm(nrow(.), mean = 0, sd = err_sd))
+```
+
+Now that we have a table of all trials, we can join the information from our `subjects` and `items` tables using the `subj_id` and `item_id`. Calculate the reponse (`Y`) as the sum of the grand intercept (`mu`), the subject-specific random intercept (`sri`), the item-specific random intercept (`iri`), the effect of condition (`eff`) plus the subject-specific random slope of condition (`srs`) multiplied by the effect-coded condition (`cond`) plus the random error (`err`).
+
+```{r}
+dat_sim <- trials %>%
+  inner_join(subjects, "subj_id") %>%
+  inner_join(items, "item_id") %>%
+  mutate(Y = mu + sri + iri + (eff + srs) * cond + err)
+```
+
+### Analyse Data
+
+Now we're ready to analyse our simulated data. Set up the formula for `lmer()` as the response, predicted by the factors, plus random effects for items and subjects. Items only have a random intercept, which is represented by the `1` in `(1 | item_id)`. Subjects have a random intercept and a random slope for condition, so the random effects are specified as `(1 + cond | subj_id)`.
+
+```{r}
+mod_sim <- lmer(Y ~ cond + (1 | item_id) + (1 + cond | subj_id),
+                dat_sim, REML = FALSE)
+```
+
+```{r echo = FALSE}
+srfx <- attr(VarCorr(mod_sim)$subj_id, "stddev") %>% round(2)
+irfx <- attr(VarCorr(mod_sim)$item_id, "stddev") %>% round(2)
+rc   <- attr(VarCorr(mod_sim)$subj_id, "correlation")[1, 2] %>% round(2)
+res  <- attr(VarCorr(mod_sim), "sc") %>% round(2)
+ffx  <- fixef(mod_sim) %>% round(2)
+```
+
+Use the `summary()` function to view the results. Notice where the parameters you set at the beginning show up in the results.
+
+| variable | explanation                     | simulated value | estimated by model |
+|:---------|:--------------------------------|----------------:|-------------------:|
+| `mu`     | grand mean                      | `r mu`          | `r ffx[[1]]`       |
+| `eff`    | effect of condition             | `r eff`         | `r ffx[[2]]`       |
+| `iri_sd` | by-item random intercept SD     | `r iri_sd`      | `r irfx[[1]]`      |
+| `sri_sd` | by-subject random intercept SD  | `r sri_sd`      | `r srfx[[1]]`      |
+| `srs_sd` | by-subject random slope SD      | `r srs_sd`      | `r srfx[[2]]`      |
+| `rcor`   | cor between intercept and slope | `r rcor`        | `r rc`             |
+| `err_sd` | residual SD                     | `r err_sd`      | `r res`            |
+
+
+```{r}
+summary(mod_sim, corr = FALSE)
+```
+
+### Calculate Power
+
+You can set up a function that takes all of the parameters we set above as arguments. We'll set the to default to the values we used, but you can choose your own defaults. The code below is just all of the code above, condensed a bit.
+
+```{r}
+my_sim_func <- function(nsubj  = 100, # number of subjects pre between-subject cell
+                        nitem  = 25,  # number of items per between-item cell
+                        mu     = 800, # grand mean
+                        eff    = 80,  # effect of condition
+                        iri_sd = 80,  # by-item random intercept sd (omega_00)
+                        sri_sd = 100, # by-subject random intercept sd
+                        srs_sd = 40,  # by-subject random slope sd
+                        rcor   = .2,  # correlation between intercept and slope
+                        err_sd = 200,  # residual (standard deviation)
+                        effc   = c(-.5, .5) # deviation codes
+                        ) {
+  # simulate items
+  items <- faux::sim_design(
+    between = list(condition = c("A", "B")),
+    n = nitem,
+    sd = iri_sd,
+    dv = "iri",
+    id = "item_id",
+    plot = FALSE
+  )
+
+  # effect code condition
+  items$cond <- recode(items$condition, "A" = effc[1], "B" = effc[2])
+  
+  # simulate subjects
+  subjects <- faux::sim_design(
+    within = list(effect = c(sri = "By-subject random intercepts", 
+                             srs = "By-subject random slopes")), 
+    n = nsubj,
+    sd = c(sri = sri_sd, srs = srs_sd), 
+    r = rcor,
+    dv = "value",
+    id = "subj_id",
+    plot = FALSE
+  )
+  
+  # simulate trials
+  dat_sim <- crossing(subj_id = subjects$subj_id,
+                     item_id = items$item_id) %>%
+    mutate(err = rnorm(nrow(.), mean = 0, sd = err_sd)) %>%
+    inner_join(subjects, "subj_id") %>%
+    inner_join(items, "item_id") %>%
+    mutate(Y = mu + sri + iri + (eff + srs) * cond + err)
+  
+  mod_sim <- lmer(Y ~ cond + (1 | item_id) + (1 + cond | subj_id),
+                dat_sim, REML = FALSE)
+  
+  broom.mixed::tidy(mod_sim)
+}
+```
+
+Run the function once with default parameters. 
+
+```{r, results = 'asis'}
+my_sim_func() %>% knitr::kable(digits = 3)
+```
+
+You can use the `purrr::map_df` function to run the simulation repeatedly and save the results to a data table. This will take a while, so test using just a few reps first, then make sure you save the full results to a CSV file so you can set this code chunk to  not run (`eval = FALSE` in the chunk header) and load from the saved data for the rest of your script in the future.
+
+```{r sim, eval = FALSE}
+reps <- 1000
+sims <- purrr::map_df(1:reps, ~my_sim_func())
+write_csv(sims, "sims.csv")
+```
+
+```{r read-sim}
+sims <- read_csv("sims.csv")
+```
+
+You can use these data to calculate power for each fixed effect or plot the distribution of your fixed or random effects.
+
+```{r sim-fixef-plot, echo = FALSE, fig.cap = "Distribution of fixed effects across 1000 simulations"}
+alpha <- 0.05
+
+sumdat <- sims %>% 
+  filter(effect == "fixed") %>%
+  group_by(term) %>%
+  summarise(
+    power = paste("power =", mean(p.value < alpha) %>% round(3)),
+    xval = mean(estimate) - 2.5*sd(estimate),
+    value = mean(estimate)
+  )
+
+sims %>%
+  filter(effect == "fixed") %>%
+  mutate(significant = (p.value < alpha) %>% factor(levels = c(TRUE, FALSE))) %>%
+  ggplot() +
+  geom_density(aes(estimate, y = ..count.., fill = significant, color = significant), alpha = 0.5) +
+  geom_vline(data = sumdat, aes(xintercept = value), color = "grey40", show.legend = FALSE) +
+  geom_text(data = sumdat, aes(x = xval, y = 20, label = power), color = "black", show.legend = FALSE) +
+  facet_wrap(~term, ncol = 1, scales = "free_x") +
+  scale_fill_brewer(palette = "Spectral") + theme_bw()
+```
+
+
+
+```{r sim-ranef-plot, echo = FALSE, fig.cap = "Distribution of random effects across 1000 simulations"}
+
+sim_stats <- sims %>%
+  filter(effect == "ran_pars") %>%
+  group_by(group, term) %>%
+  summarise(value = mean(estimate))
+
+sims %>%
+  filter(effect == "ran_pars") %>%
+  ggplot(aes(estimate, color = paste(group, term), fill = paste(group, term))) +
+  geom_density(alpha = 0.5, show.legend = FALSE) +
+  geom_vline(data = sim_stats, aes(xintercept = value, color = paste(group, term)), show.legend = FALSE) +
+  facet_wrap(~group*term, ncol = 3, scales = "free") +
+  scale_fill_brewer(palette = "Spectral") + theme_bw()
+```
+
+
+
+
+
+
+
+
