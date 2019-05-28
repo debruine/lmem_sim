@@ -36,6 +36,8 @@ Researchers who use experimental designs that need to account for crossed random
 
 ## Tutorial
 
+For this tutorial, we will simulate a crossed design where raters (subjects) classify the emotional expression of faces (items) as fast as possible. Faces are either from an ingroup or an outgroup; our hypothesis is that people will classify the emotions of ingroup faces more quickly than outgroup faces. We will simulate data from 100 raters responding to 50 faces: 25 from the ingroup and 25 from the outgroup. 
+
 ### Packages
 
 You will need lme4 [@lme4] and lmerTest [@lmerTest] for mixed effects models (it adds p-values to lme4), tidyverse [@tidyverse] for data wrangling and visualisation, faux [@faux] for simulating data with specified parameters, and broom.mixed [@broom.mixed] for extracting data from mixed effects models. Set a seed at the top of your script so that your script returns the same (random) numbers in this simulation (never set seed inside a function).
@@ -54,35 +56,32 @@ set.seed(8675309)
 Set up your study parameters. In this example, 100 subjects will respond to 50 items; 25 items in each of 2 conditions. For crossed mixed effect models, you can't think of factors as being "within" or "between", but as within- or between-*subjects* **and** within- or between-*items*. In this example, `condition` is a within-subject and between-item factor.
 
 ```{r params}
-nsubj  <- 100 # number of subjects pre between-subject cell
+nsubj  <- 100 # number of subjects per between-subject cell
 nitem  <- 25  # number of items per between-item cell
 ```
 
-Then we specify the fixed effects. The overall mean (`mu`) is 800 ms and the difference between conditions A and B (`eff`) is 80 ms. 
-
-**EXPLAIN EFFECT CODING**
+Then specify the fixed effects. We'll set the overall mean response time (`mu`) to 800 ms and the difference between ingroup and outgroup conditions (`eff`) to 80 ms. 
 
 ```{r param-mu-eff}
 mu     <- 800 # grand mean
 eff    <- 80  # effect of condition
-effc   <- c(-.5, .5) # deviation codes
 ```
 
-Now we specify the variance for the random effects by items, subjects, and error.
+Now we specify the variance for the random effects by items and subjects, the correlations among random effects by items and subjects, and the error variance.
 
 ** EXPLAIN MORE **
 
 ```{r param-var}
 # items
-iri_sd <- 80 # by-item random intercept sd (omega_00)
+iri_sd <- 80  # by-item random intercept sd
 
 # subjects
 sri_sd <- 100 # by-subject random intercept sd
-srs_sd <- 40 # by-subject random slope sd
-rcor <- .2 # correlation between intercept and slope
+srs_sd <- 40  # by-subject random slope sd
+rcor <- .2    # correlation between intercept and slope
 
 # error
-err_sd <- 200 # residual (standard deviation)
+err_sd <- 200 # residual sd
 ```
 
 ### Simulate Items
@@ -91,13 +90,11 @@ We need to create a table listsing each item, its between-item factors, and simu
 
 Simulate items using the function `sim_design()` from faux. This function will create a dataset with `n` items per between-cell with the specified means (`mu`), standard deviations (`sd`) and correlations (<code>r</code>). See the [vignette](https://debruine.github.io/faux/articles/sim_design.html) for more details.
 
-Condition is a between-items factor, so we need to include it in the `between` argument. Set `n = nitem` to specify `r nitem` items per condition. There are no within-items factors, so we only need to simulate one random effect: the  intercept. Set `sd = iri_sd` to set the standard deviation for this random effect (the mean deafults to 0). Set `dv = "iri"` to give the DV column that name. Set `id = "item_id"`; we'll use this later to join this information to the table of trials.
+Condition is a between-items factor, so we need to include it in the `between` argument. Set `n = nitem` to specify `r nitem` items per condition. There are no within-items factors, so we only need to simulate one random effect: the  intercept. Set `sd = iri_sd` to set the standard deviation for this random effect (the mean defaults to 0). Set `dv = "iri"` to give the DV column that name. Set `id = "item_id"`; we'll use this later to join this information to the table of trials.
 
-** EFFECT CODE CONDITION **
-
-```{r sim-items, out.width = "75%", fig.cap="The distribution of random effects for items in conditions A and B"}
+```{r sim-items, out.width = "75%", fig.cap="The distribution of random effects for ingroup and outgroup faces."}
 items <- faux::sim_design(
-  between = list(condition = c("A", "B")),
+  between = list(condition = c("ingroup", "outgroup")),
   n = nitem,
   sd = iri_sd,
   dv = "iri",
@@ -105,10 +102,14 @@ items <- faux::sim_design(
   plot = FALSE
 )
 
-# effect code condition
-items$cond <- recode(items$condition, "A" = effc[1], "B" = effc[2])
-
 plot_design(items)
+```
+
+We will also set an **effect code** for condition. Since we predict that repsonses to ingroup faces will be faster than outgroup faces, we set ingroup to -0.5 and outgroup to +0.5.
+
+```{r effect-code}
+# effect code condition
+items$cond <- recode(items$condition, "ingroup" = -0.5, "outgroup" = +0.5)
 ```
 
 
@@ -146,22 +147,43 @@ trials <- crossing(subj_id = subjects$subj_id,
   mutate(err = rnorm(nrow(.), mean = 0, sd = err_sd))
 ```
 
-Now that we have a table of all trials, we can join the information from our `subjects` and `items` tables using the `subj_id` and `item_id`. Calculate the reponse (`Y`) as the sum of the grand intercept (`mu`), the subject-specific random intercept (`sri`), the item-specific random intercept (`iri`), the effect of condition (`eff`) plus the subject-specific random slope of condition (`srs`) multiplied by the effect-coded condition (`cond`) plus the random error (`err`).
+Now that we have a table of all trials, we can join the information from our `subjects` and `items` tables using the `subj_id` and `item_id`. Calculate the reponse (`Y`) as the sum of:
+
+* the grand intercept (`mu`), 
+* the effect of condition (`eff`) multiplied by the effect-coded condition (`cond`)
+* the item-specific random intercept (`iri`), 
+* the subject-specific random intercept (`sri`), 
+* the subject-specific random slope of condition (`srs`) multiplied by the effect-coded condition (`cond`)
+* the random error (`err`)
 
 ```{r}
 dat_sim <- trials %>%
   inner_join(subjects, "subj_id") %>%
   inner_join(items, "item_id") %>%
-  mutate(Y = mu + sri + iri + (eff + srs) * cond + err)
+  # mutate(Y = mu + iri + sri + (eff+srs)*cond + err) # DALE is below better?
+  mutate(Y = mu + (eff*cond) + iri + sri + (srs*cond) + err)
 ```
 
 ### Analyse Data
 
-Now we're ready to analyse our simulated data. Set up the formula for `lmer()` as the response, predicted by the factors, plus random effects for items and subjects. Items only have a random intercept, which is represented by the `1` in `(1 | item_id)`. Subjects have a random intercept and a random slope for condition, so the random effects are specified as `(1 + cond | subj_id)`.
+Now we're ready to analyse our simulated data. The formula for `lmer()` maps onto how we calculated the response above.
+
+```
+Y ~ 1 + cond + (1 | item_id) + (1 + cond | subj_id)
+```
+
+* `Y` is the response
+* `1` is the grand intercept (`mu`), 
+* `cond` is the effect of condition (`eff*cond`),
+* `1` in `(1 | item_id)` is the item-specific random intercept (`iri`), 
+* `1` in `(1 + cond | subj_id)` is the subject-specific random intercept (`sri`), 
+* `cond` in `(1 + cond | subj_id)` is the subject-specific random slope of condition (`srs*cond`)
+
+The `lmer()` function takes this formula as its first argument, then the data table. Set `REML = FALSE` to choose the method for estimating variance components. `REML = TRUE` is better when you have fairly unequal cell sizes. **EXPLAIN THIS BETTER**
 
 ```{r}
-mod_sim <- lmer(Y ~ cond + (1 | item_id) + (1 + cond | subj_id),
-                dat_sim, REML = FALSE)
+mod_sim <- lmer(Y ~ 1 + cond + (1 | item_id) + (1 + cond | subj_id),
+                data = dat_sim, REML = TRUE)
 ```
 
 ```{r echo = FALSE}
@@ -187,6 +209,12 @@ Use the `summary()` function to view the results. Notice where the parameters yo
 
 ```{r}
 summary(mod_sim, corr = FALSE)
+```
+
+You can also use `broom.mixed::tidy()` to output fixed and/or random effects in a tidy table. This is especially useful when you need to combine the output from hundreds of simulations to calculate power.
+
+```{r, results = 'asis'}
+broom.mixed::tidy(mod_sim) %>% knitr::kable(digits = 3)
 ```
 
 ### Calculate Power
@@ -236,7 +264,7 @@ my_sim_func <- function(nsubj  = 100, # number of subjects pre between-subject c
     mutate(err = rnorm(nrow(.), mean = 0, sd = err_sd)) %>%
     inner_join(subjects, "subj_id") %>%
     inner_join(items, "item_id") %>%
-    mutate(Y = mu + sri + iri + (eff + srs) * cond + err)
+    mutate(Y = mu + (eff*cond) + iri + sri + (srs*cond) + err)
   
   mod_sim <- lmer(Y ~ cond + (1 | item_id) + (1 + cond | subj_id),
                 dat_sim, REML = FALSE)
