@@ -8,7 +8,7 @@ library(purrr)
 library(ggplot2)
 library(lme4)
 library(afex)
-library(faux)
+#library(faux)
 library(broom.mixed)
 options("scipen"=10, "digits"=4)
 
