@@ -6,4 +6,32 @@
   color: white;
 }
 
+pre.shiny-text-output {
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
 p { font-size: 120%; }
+
+#broom_output table tbody tr td:nth-child(4) { color: white; }
+ul.sidebar-menu label { width: 100%; padding: 1px 5px; }
+
+label[for="nsubj"] { background-color: inherit; }
+label[for="nitem"] { background-color: inherit; }
+#broom_output table tbody tr:nth-child(1) td:nth-child(4), label[for="mu"] { 
+  background-color: #E50F45; }
+#broom_output table tbody tr:nth-child(2) td:nth-child(4), label[for="eff"] { 
+  background-color: #E76839; }
+#broom_output table tbody tr:nth-child(3) td:nth-child(4), label[for="sri_sd"] { 
+  background-color: #B29700; }
+#broom_output table tbody tr:nth-child(4) td:nth-child(4), label[for="srs_sd"] { 
+  background-color: #086F50; }
+#broom_output table tbody tr:nth-child(5) td:nth-child(4), label[for="rcor"] { 
+  background-color: #022B76; }
+#broom_output table tbody tr:nth-child(6) td:nth-child(4), label[for="iri_sd"] { 
+  background-color: #6D045D; }
+#broom_output table tbody tr:nth-child(7) td:nth-child(4), label[for="err_sd"] { 
+  background-color: #C20FA7; }

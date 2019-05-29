@@ -2,7 +2,6 @@
 comp_tab <- tabItem(
   tabName = "comp_tab",
   h3("Compare ANOVAs and LMER for an individual simulation"),
-  actionButton("resim", "Re-Simulate"),
   fluidRow(
     box(
       title = "Descriptives",

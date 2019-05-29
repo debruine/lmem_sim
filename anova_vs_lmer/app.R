@@ -9,6 +9,7 @@ library(ggplot2)
 library(lme4)
 library(afex)
 library(faux)
+library(broom.mixed)
 options("scipen"=10, "digits"=4)
 
 ## Functions ----
@@ -24,39 +25,23 @@ source("main_tab.R")
 source("comp_tab.R")
 source("power_tab.R")
 
-about_tab <- tabItem(
-  tabName = "about_tab",
-  h3("About this App"),
-  p("Stuff about this")
-)
-
 ## UI ----
 ui <- dashboardPage(
   dashboardHeader(title = "ANOVA vs LMER"),
   dashboardSidebar(
+    width = 350,
     sidebarMenu(
-      # menuItem("Main", tabName = "main_tab"),
+      menuItem("Simulating LMER", tabName = "main_tab"),
       menuItem("Compare ANOVA & LMER", tabName = "comp_tab"),
       menuItem("Power & False Positives ", tabName = "power_tab"),
-      # menuItem("About", tabName = "about_tab"),
-      actionButton("reset", "Reset"),
-      # sample size input ----
-      box(
-        title = "Sample Size",
-        solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-        width = NULL,
-        sliderInput("nsubj", "Subjects:", 
-                    min = 10, max = 200, value = 100, step = 10),
-        sliderInput("nitem", "Items per Group:", 
-                    min = 5, max = 50, value = 25, step = 5)
-      ),
+      actionButton("resim", "Re-Simulate"),
       # fixed effects input ----
       box(
         title = "Fixed Effects",
-        solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
+        solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
         sliderInput("mu", "Overall Mean", min = 0, max = 1600, value = 800, step = 100),
-        sliderInput("eff", "Effect of Condition: mean(outgroup) - mean(ingroup)", 
+        sliderInput("eff", "Effect of Condition", 
                     min = -400, max = 400, value = 80, step = 10)
         
       ),
@@ -65,14 +50,25 @@ ui <- dashboardPage(
         title = "Random Effects",
         solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("iri_sd", "Item intercept SD:", min = 0, max = 200, value = 80, step = 10),
         sliderInput("sri_sd", "Subject intercept SD:", min = 0, max = 200, value = 100, step = 10),
-        sliderInput("srs_sd", "Subject slope (condition):", min = 0, max = 200, value = 40, step = 10),
-        sliderInput("rcor", "Correlation between subject intercept and slope:", 
-                    min = -1, max = 1, value = 0.2, step = 0.1),
+        sliderInput("srs_sd", "Subject slope SD:", min = 0, max = 200, value = 40, step = 10),
+        sliderInput("rcor", "Subject intercept*slope correlation:", 
+                    min = -0.9, max = 0.9, value = 0.2, step = 0.1),
+        sliderInput("iri_sd", "Item intercept SD:", min = 0, max = 200, value = 80, step = 10),
         sliderInput("err_sd", "Residual (error) SD:", min = 0, max = 400, value = 200, step = 10)
       ),
+      actionButton("reset", "Reset Parameters"),
      tags$a(href="https://github.com/debruine/lmem_sim/tree/master/anova_vs_lmer", "Code for this app")
+    ),
+    # sample size input ----
+    box(
+      title = "Sample Size",
+      solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
+      width = NULL,
+      sliderInput("nsubj", "Subjects:", 
+                  min = 10, max = 200, value = 100, step = 10),
+      sliderInput("nitem", "Items per Group:", 
+                  min = 5, max = 50, value = 25, step = 5)
     )
   ),
   dashboardBody(
@@ -81,7 +77,7 @@ ui <- dashboardPage(
       tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
     ),
     tabItems(
-      #main_tab,
+      main_tab,
       comp_tab,
       power_tab
     )
@@ -109,7 +105,7 @@ server <- function(input, output, session) {
   
   # simulate data ----
   trials <- reactive({
-    print("trials()")
+    message("trials()")
     resim <- input$resim
     
     # simulate each trial
@@ -123,7 +119,7 @@ server <- function(input, output, session) {
   })
   
   dat <- reactive({
-    print("dat()")
+    message("dat()")
     
     output$power_table <- renderTable({ tibble() })
 
@@ -133,7 +129,7 @@ server <- function(input, output, session) {
   
   # run LMER ----
   lmer_mod <- reactive({
-    print("lmer_mod()")
+    message("lmer_mod()")
     
     # Create a Progress object
     progress <- shiny::Progress$new()
@@ -147,7 +143,7 @@ server <- function(input, output, session) {
   
   # get LMER summary ----
   lmer_text <- reactive({
-    print("lmer_text()")
+    message("lmer_text()")
     summary(lmer_mod())
   })
   
@@ -181,7 +177,7 @@ server <- function(input, output, session) {
   
   ## subj_coef ----
   output$subj_coef <- renderTable({
-    print("sim_sub_anova()")
+    message("sim_sub_anova()")
     sim_subj_anova(dat()) %>% 
       as_tibble(rownames = "Effect") %>%
       rename(`p-value` = `Pr(>F)`)
@@ -189,7 +185,7 @@ server <- function(input, output, session) {
   
   ## item_coef ----
   output$item_coef <- renderTable({
-    print("sim_item_anova()")
+    message("sim_item_anova()")
     sim_item_anova(dat()) %>% 
       as_tibble(rownames = "Effect") %>%
       rename(`p-value` = `Pr(>F)`)
@@ -200,7 +196,19 @@ server <- function(input, output, session) {
     lmer_text()$coefficients %>% 
       as_tibble(rownames = "Effect") %>%
       filter(Effect != "(Intercept)") %>%
-      rename(`p-value` = `Pr(>|t|)`)
+      rename(`p.value` = `Pr(>|t|)`)
+  }, digits = 3, width = "100%")
+  
+  ## lmer_output ----
+  output$lmer_output <- renderText({
+    lmer_text() %>%
+    capture.output() %>% 
+      paste(collapse = "\n")
+  })
+  
+  ## broom_output ----
+  output$broom_output <- renderTable({
+    lmer_mod() %>% tidy()
   }, digits = 3, width = "100%")
   
   ## power_calc ----
@@ -227,19 +235,16 @@ server <- function(input, output, session) {
     })
     
     output$power_table <- renderTable({
-      print("power_table()")
+      message("power_table()")
       
       dp %>% 
         filter(effect == "cond") %>%
         mutate(
-          nsubj = input$nsubj,
-          nitem = input$nitem,
-          `condition effect` = input$eff,
           analysis = recode(analysis, 
                             "lmer" = "LMER",
                             "anova_subj" = "By-Subjects ANOVA",  
                             "anova_item" = "By-Items ANOVA")) %>%
-        group_by(analysis, type, nsubj, nitem, `condition effect`) %>%
+        group_by(analysis, type) %>%
         summarise(sig = mean(p < input$alpha)) %>%
         spread(type, sig)
     }, digits = 2, width = "100%")
