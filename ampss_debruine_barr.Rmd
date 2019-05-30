@@ -36,78 +36,138 @@ Many research questions in psychology and neuroscience are questions about certa
 
 Most analyses using conventional statistical techniques, such as analysis of variance and t-test, commit the fallacy of treating stimuli as fixed rather than random. The problem, and the solutions to the problem, have been known in psycholinguistics for over 50 years [@coleman_1964,@clark_1973], and most psycholinguistic journals require authors to demonstrate generality of findings over stimuli as well as over subjects.  Even so, the quasi-$F$ statistics for ANOVA ($F'$ and min-$F'$) that Clark proposed as a solution were widely recognized as unreasonably conservative [@forster_dickinson_1976], and until fairly recently, most psycholinguists performed separate by-subjects ($F_1$) and by-items analyses ($F_2$), declaring an effect "significant" only if it was significant for both analyses. The $F_1 \times F_2$ approach was widely used, despite the fact that Clark had already shown it to be invalid, since both $F$ statistics have higher than nominal false positives in the presence of a null effect, $F_1$ due to unmodeled stimulus variance, and $F_2$ due to unmodeled subject variance.
 
-Recently, psycholinguists have adopted linear mixed-effects modeling as the standard for the statistical analysis, given numerous advantages over ANOVA, including the ability to simultaneously model subject and stimulus variation, to gracefully deal with missing data or unbalanced designs, and to accommodate arbitrary types of continuous and categorical predictors or response variables [@baayen_davidson_bates_2008,@locker_hoffman_bovaird_2007]. With an appropriately specified model, mixed-effects models yield major improvements in power over quasi-$F$ approaches and avoid the increased false positive rate associated with separate $F_1$ and $F_2$ [@barr_et_al_2013].
+Recently, psycholinguists have adopted linear mixed-effects modeling as the standard for the statistical analysis, given numerous advantages over ANOVA, including the ability to simultaneously model subject and stimulus variation, to gracefully deal with missing data or unbalanced designs, and to accommodate arbitrary types of continuous and categorical predictors or response variables [@baayen_davidson_bates_2008,@locker_hoffman_bovaird_2007]. This development has been facilitated by the `lme4` package for R [@lme4], which provides powerful functionality for model specification and estimation. With an appropriately specified model, mixed-effects models yield major improvements in power over quasi-$F$ approaches and avoid the increased false positive rate associated with separate $F_1$ and $F_2$ [@barr_et_al_2013].
 
 Despite mixed-effects modeling becoming the *de facto* standard for analysis in psycholinguistics, the approach has yet to take hold in other areas where stimuli are routinely sampled, even in spite of repeated calls for improved analyses in social psychology [@judd_westfall_kenny_2012] and neuroimaging [@bedny_aguirre_thompson-schill_2007,@westfall_yarkoni_2016]. One of the likely reasons for the limited uptake outside of psycholinguistics is because mixed-effects models expose the analyst to a level of statistical and technical complexity far beyond most researchers' training. While some of this complexity is specific to mixed-effects modeling, some of it is simply hidden away from users of traditional techniques by GUIs and function defaults. The novice mixed modeler is suddenly confronted with the need to make decisions about how to specify categorical predictors, which random effects to include or exclude, which of the statistics in the voluminous output to attend to, and whether and how to re-configure the optimizer function when a convergence error or singularity warning appears.
 
-We see great promise in the mixed-effects approach for improving the generality and thus reproducibility in psychology and related fields, but empathize with the frustration and often, exasperation expressed by many novices when they attempt to grapple with these models in their research. Much of the uncertainty and unease around mixed-effects models comes from using them in situations where the ground truth is unknown. A profitable way to improve understanding and user confidence is through data simulation. Knowing the ground truth allows the user to experiment with various modeling choices and observe their impact on a model's performance.
+We are optimisic that the increasing adoption of the mixed-effects approach will improve the generality and thus reproducibility of studies in psychology and related fields, but empathize with the frustration --- and sometimes, exasperation --- expressed by many novices when they attempt to grapple with these models in their research. Much of the uncertainty and unease around mixed-effects models comes from using them in situations where the ground truth is unknown. A profitable way to improve understanding and user confidence is through data simulation. Knowing the ground truth allows the user to experiment with various modeling choices and observe their impact on a model's performance.
 
 ## Simulating data with crossed random factors
 
-For this tutorial, we will simulate data from a design with crossed random factors of subjects and stimuli. In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use their response time as the primary dependent variable. The faces are of two types: either from the subject's in-group or from an out-group; the reader is invited to fill in their favorite social or biological dimension as the distinguishing feature. Our question is whether there is any difference in classification speed across the type of face. 
+To give an overview of the simulation task, we will simulate data from a design with crossed random factors of subjects and stimuli, fit a model to the simulated data, and then try to recover the parameter values we put in from the output. In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use their response time as the primary dependent variable. Let's imagine that the faces are of two intrinsic types: either from the subject's in-group or from an out-group. For simplicity, we further assume that each face appears only once in the stimulus set and expresses only one of two possible emotions (e.g., happiness or anger). The key question is whether there is any difference in classification speed across the type of face.
 
-We will simulate data from 100 raters responding to 50 faces: 25 from the ingroup and 25 from the outgroup. 
+### Required software
 
-### Packages
+The simulation will be presenting in the R programming language [@R]. To run the code, you will need to have some add-on packages available. Any packages you are missing can be installed using R's `install.packages()` function, except for the development package `faux` [@faux] which, at the time of writing, must be installed from the development repository on github.
 
-You will need lme4 [@lme4] and lmerTest [@lmerTest] for mixed effects models (it adds p-values to lme4), tidyverse [@tidyverse] for data wrangling and visualisation, faux [@faux] for simulating data with specified parameters, and broom.mixed [@broom.mixed] for extracting data from mixed effects models. Set a seed at the top of your script so that your script returns the same (random) numbers in this simulation (never set seed inside a function).
+```{r}
+library("lme4")        # model specification / estimation
+library("lmerTest")    # deriving p-values
+library("broom.mixed") # extracting data from model fits 
+library("faux")        # data simulation
+# NOTE: to install the 'faux' package, use:
+# devtools::install_github("debruine/faux")
+library("tidyverse")   # data wrangling and visualisation
+```
+
+Because the code uses random number generation, if you want to reproduce the exact results below you will need to set the random number seed at the top of your script and ensure you are using R version 3.6.0 or higher. If you change the seed or are using a lower version of R, your results will differ.
 
 ```{r pkgs}
-library(lmerTest)    # for mixed effects models
-library(tidyverse)   # for data wrangling and visualisation
-library(faux)        # devtools::install_github("debruine/faux")
-library(broom.mixed) # for extracting data from mixed effects models
-
 set.seed(8675309)
 ```
 
-### Set Study Parameters
+### Establishing the data-generating parameters
 
-Set up your study parameters. In this example, 100 subjects will respond to 50 items; 25 items in each of 2 conditions. For crossed mixed effect models, you can't think of factors as being "within" or "between", but as within- or between-*subjects* **and** within- or between-*items*. In this example, `condition` is a within-subject and between-item factor.
+The first thing to do is to set up the parameters that govern the process we assume to give rise to the data, the *data-generating process* or DGP. In this hypothetical study, each of 100 subjects will respond to all 50 stimulus items (25 in-group and 25 out-group), for a total of 5000 observations.
+
+We want the resulting data to be in long format, with the structure shown below, where each row is a single observation for each trial.  The variables `subj_id` run from `S001` to `S100` and index the subject number; `item_id` runs from `I01` to `I50` and indexes the item number; `condition` says whether the face is in-group or out-group, with items 1-25 always ingroup and items 26-50 always outgroup; and `RT` is the participant's response time for that trial. Note that a trial is uniquely identified by the combination of the `subj_id` and `item_id` labels.
+
+```{r data-example, echo=FALSE}
+.txt <- capture.output(
+  tibble(subj_id = rep(sprintf("S%03d", 1:100), each = 50), 
+         item_id = rep(sprintf("I%02d", 1:50), times = 100),
+         condition = rep(rep(c("ingroup", "outgroup"), each = 25),
+                         times = 100),
+         RT = rnorm(5000, 800, 50)) %>%
+    ungroup() %>%
+    print(n = 5000L))
+
+set.seed(8675309) # reset
+
+.etc <- "     ....    ...     .......    ..."
+
+cat(.txt[1:6], .etc, .txt[28:31], .etc,
+    .txt[53:56], .etc, .txt[5003],
+    sep = "\n")
+```
+
+Note that for independent variables in designs where subjects and stimuli are crossed, you can't think of factors as being solely "within" or "between" because we have two sampling units; you must ask not only whether independent variables are within- or between- subjects, but also whether they are within- or between- stimulus items.  Recall that a within-subjects factor is one where each and every subject receives all of the levels, and a between-subjects factors is one where each subject receives only one of the levels. Likewise, a within-subjects factor is one where each stimulus appears across all of the levels of the independent factors. For our current example, this is clearly not the case, given that each stimulus item is either in-group or out-group.
+
+Let's first define parameters related to the number of observations.
 
 ```{r params}
-nsubj  <- 100 # number of subjects per between-subject cell
-nitem  <- 25  # number of items per between-item cell
+nsubj  <- 100 # number of subjects
+nitem_per_cond  <- 25  # number of items in each condition
 ```
 
-Then specify the fixed effects. We'll set the overall mean response time (`mu`) to 800 ms and the difference between ingroup and outgroup conditions (`eff`) to 80 ms. 
+Getting an appropriately structured dataset is the easy part. The difficult part is randomly generating the RT values. For this, we need to establish an underlying statistical model. Let us start with a basic model and build up from there. We want a model of RT for subject $s$ and item $i$ that looks something like:
+
+$$RT_{si} = \beta_0 + \beta_1 X_{i} + e_{si}$$
+
+In other words, it is the sum of an intercept term $\beta_0$, which we will assume to be the grand mean reaction time for the population of stimuli, plus $\beta_1$, the mean RT difference between in-group and out-group stimuli, plus random noise $e_{si}$. To make $\beta_0$ equal the grand mean and $\beta_1$ the mean out-group minus the mean in-group RT, we will code the `condition` variable as -.5 for the in-group condition and +.5 for the out-group condition.
+
+Although this model is incomplete, we can go ahead and choose parameters for $\beta_0$ and $\beta_1$.  For this example, we assume a grand mean of 800 ms and a mean difference of 80 ms.
 
 ```{r param-mu-eff}
-mu     <- 800 # grand mean
-eff    <- 80  # effect of condition
+b0 <- 800 # intercept; i.e., the grand mean
+b1 <- 80  # slope; i.e, effect of condition
 ```
 
-Now we specify the variance for the random effects by items and subjects, the correlations among random effects by items and subjects, and the error variance.
+The parameters $\beta_0$ and $\beta_1$ are fixed effects: they are assumed to characterize properties of the population of encounters between subjects and stimuli. Thus, we assume that the mean RT for a "typical" subject encountering a "typical" stimulus is 800 ms, and that responses are typically 80 ms slower for outgroup than ingroup faces.
 
-** EXPLAIN MORE **
+This model is completely unrealistic, however, because it doesn't allow for any individual differences among subjects or stimuli. Not all subjects are typical: some will be faster than average, and some slower. We can characterize the difference from the grand mean for each subject $s$ in terms of a *random effect* $S_{0s}$, where the first subscript, 0, indicates that the deflection goes with the intercept term, $\beta_0$. In other words, we assume each subject to have a unique *random intercept*. Likewise, it is unrealistic to assume that it is equally easy to categorize emotional expressions across all faces in the dataset; some will be easier than others. We incorporate this assumption by including by-item random intercepts $I_{0i}$, with the subscript 0 reminding us that it is a deflection from the $\beta_0$ term, and the $i$ indicating a unique deflection for each of the 50 faces.  Adding these terms to our model yields:
+
+$$RT_{si} = \beta_0 + S_{0s} + I_{0i} + \beta_1 X_i + e_{si}.$$
+
+Now, the actual values for $S_{0s}$ and $I_{0i}$ in our sampled dataset will depend on the luck of the draw, i.e., on which subject and which stimuli we happened to have sampled from their respective populations. So to capture that these are *random* rather than *fixed* factors, we will set parameters that capture the standard deviation among the random effects and then use these to "sample" from the populations.  Below we assume that the by-subject offsets have a standard deviation of 100 ms (`sri_sd`), and the by-item offsets have a standard deviation of 80 ms (`iri_sd`).
+
+```{r random-intercepts}
+sri_sd <- 100 # by-subject random intercept sd
+iri_sd <- 80  # by-item random intercept sd
+```
+
+There is still a deficiency in our data-generating model related to $\beta_1$, the fixed effect of condition. Currently our model assumes that each and every subject is exactly 80 ms faster to categorize emotions on ingroup faces than on outgroup faces. Clearly, this assumption is totally unrealistic; some participants will be more sensitive to ingroup/outgroup differences than others. We can capture this in an analogous way to which we captured variation in the intercept, namely by including by-subject random slopes $S_{1s}$.
+
+$$RT_{si} = \beta_0 + S_{0s} + I_{0i} + \left(\beta_1 + S_{1s}\right) X_i + e_{si}.$$
+
+A participant who is, on average, 90 ms faster for ingroup faces would have a random slope $S_{1s} = 10$ (90 = 80 + 10); a participant who goes against the grain and is, for whatever reason, 15 ms faster for *outgroup* faces would have a random slope of $S_{1s} = -95$ (-15 = 80 - 95). As we did for the random intercepts, we characterize the random slopes in terms of their standard deviation `srs_sd`, which we assume to be 40 ms.
+
+But note that we are sampling *two* random effects for each subject $s$, a random intercept $S_{0s}$ and a random slope $S_{1s}$.  It is possible for these values to be correlated, in which case we should not sample them independently. For instance, perhaps people who are faster than average overall (negative random intercept) also show a smaller then average of the ingroup/outgroup manipulation (negative random slope) due to allocating less attention to the task.  We can capture this by allowing for a small correlation between the two factors, `rcor`, which we assume to be .2.
+
+Finally, we need to characterize the trial-level noise in the study (the $e_{si}$s) in terms of their standard deviations. Here we simply assume this parameter value `err_sd` to be twice the size of the by-subject random intercept SD.
 
 ```{r param-var}
-# items
-iri_sd <- 80  # by-item random intercept sd
-
-# subjects
-sri_sd <- 100 # by-subject random intercept sd
 srs_sd <- 40  # by-subject random slope sd
 rcor <- .2    # correlation between intercept and slope
 
-# error
+# random noise (error)
 err_sd <- 200 # residual sd
 ```
 
-### Simulate Items
+To summarize, we established a reasonable statistical model underlying the data having the form:
 
-We need to create a table listsing each item, its between-item factors, and simulated values for its random effects.
+$$RT_{si} = \beta_0 + S_{0s} + I_{0i} + \left(\beta_1 + S_{1s}\right) X_i + e_{si}$$
 
-Simulate items using the function `sim_design()` from faux. This function will create a dataset with `n` items per between-cell with the specified means (`mu`), standard deviations (`sd`) and correlations (<code>r</code>). See the [vignette](https://debruine.github.io/faux/articles/sim_design.html) for more details.
+where the response time for subject $s$ on item $i$, $RT_{si}$, is decomposed into a population grand mean $\beta_0$, a by-subject random intercept $S_{0s}$, a by-item random intercept $I_{0i}$, a fixed slope $\beta_1$, by-subject random slopes $S_{1s}$, and a trial-level residual $e_{si}$. Our data-generating process is fully determined by seven parameters: two fixed effects (intercept and slope), four variance parameters governing the random effects (defined in the code as `sri_sd`, `srs_sd`, `rcor`, and `iri_sd`), and one parameter governing the trial level variance (`err_sd`).
 
-Condition is a between-items factor, so we need to include it in the `between` argument. Set `n = nitem` to specify `r nitem` items per condition. There are no within-items factors, so we only need to simulate one random effect: the  intercept. Set `sd = iri_sd` to set the standard deviation for this random effect (the mean defaults to 0). Set `dv = "iri"` to give the DV column that name. Set `id = "item_id"`; we'll use this later to join this information to the table of trials.
+In the next section we will apply this data-generating process to simulate the sampling of subjects, items, and trials (encounters).
+
+### Simulating the sampling process
+
+#### Simulate the sampling of stimulus items
+
+We need to create a table listing each item, which condition it is in, and simulated values for its random effects.
+
+We will simulate items using the function `sim_design()` from faux. This function will create a dataset with `n` items per between-cell with the specified means (`mu`), standard deviations (`sd`) and correlations (<code>r</code>). See the [vignette](https://debruine.github.io/faux/articles/sim_design.html) for more details.
+
+Condition is a between-items factor, so we need to include it in the `between` argument. Set `n = nitem_per_cond` to specify `r nitem_per_cond` items per condition. Set `sd = iri_sd` to set the standard deviation for the by-item random effects. Set `dv = "I0i"` to give the random effect column that name. Set `id = "item_id"`; we'll use this later to join this information to the table of trials.
 
 ```{r sim-items, out.width = "75%", fig.cap="The distribution of random effects for ingroup and outgroup faces."}
 items <- faux::sim_design(
   between = list(condition = c("ingroup", "outgroup")),
-  n = nitem,
+  n = nitem_per_cond,
   sd = iri_sd,
-  dv = "iri",
+  dv = "I0i",
   id = "item_id",
   plot = FALSE
 )
@@ -115,28 +175,34 @@ items <- faux::sim_design(
 plot_design(items)
 ```
 
-We will also set an **effect code** for condition. Since we predict that repsonses to ingroup faces will be faster than outgroup faces, we set ingroup to -0.5 and outgroup to +0.5.
+We will also introduce a numerical predictor to represent what condition each stimulus item $i$ appears in (i.e., for the $X_i$ in our model). Since we predict that responses to ingroup faces will be faster than outgroup faces, we set ingroup to -0.5 and outgroup to +0.5.
 
 ```{r effect-code}
 # effect code condition
 items$cond <- recode(items$condition, "ingroup" = -0.5, "outgroup" = +0.5)
 ```
 
+Let's have a look at the resulting table.
 
-### Simulate Subjects
+```{r items-table}
+head(items)
+```
 
-We also need to create a table listsing each subject, their between-subject factors, and simulated values for their random effects. 
 
-There are no between-subject factors. Condition is within-subjects, so we need to simulate two random effects: the intercept and the slope for the effect of condition. Set the `within` argument in `sim_design()` to a list with one factor (`effect`) that has two levels: `sri` and `srs`. If you set a factor's levels as a named vector, the names (`sri` and `srs`) become the column names in the data table and the values are used in plots created by faux.
+#### Simulate the sampling of subjects
+
+Now we will simulate the sampling of individual subjects, resulting in a table listing each subject and their two random effects. We will again use `faux::sim_design()` for this task.
+
+Set the `within` argument in `sim_design()` to a list with one factor (`effect`) that has two levels: `S0s` and `S1s`. If you set a factor's levels as a named vector, the names (`S0s` and `S1s`) become the column names in the data table and the values are used in plots created by faux.
 
 Set `n = nsubj` to specify the number of subjects. There are two random effects to specify standard deviation for, so set `sd` using a named vector and set their correlation with <code>r = rcor</code>. Set `dv = "value"`; this will only be used in faux plots. Set `id = "subj_id"`; we'll use this later to join this information to the table of trials.
 
 ```{r sim-subjects, out.width = "75%", fig.cap="The distribution of random effects for subjects"}
 subjects <- faux::sim_design(
-  within = list(effect = c(sri = "By-subject random intercepts", 
-                           srs = "By-subject random slopes")), 
+  within = list(effect = c(S0s = "By-subject random intercepts", 
+                           S1s = "By-subject random slopes")), 
   n = nsubj,
-  sd = c(sri = sri_sd, srs = srs_sd), 
+  sd = c(sri_sd = sri_sd, srs_sd = srs_sd), 
   r = rcor,
   dv = "value",
   id = "subj_id",
@@ -146,32 +212,63 @@ subjects <- faux::sim_design(
 plot_design(subjects)
 ```
 
+Let's have a look at the resulting table.
 
-### Simulate Trials
+```{r subjects-table}
+head(subjects)
+```
+
+
+#### Simulate trials (encounters)
 
 Since all subjects respond to all items, we can set up a table of trials by crossing the subject IDs with the item IDs. Each trial has random error associated; we simulate this from a normal distribution with a mean of 0 and SD of `err_sd`.
 
 ```{r}
+# crossing() is from the tidyr package; 
+# see ?tidyr::crossing for details
 trials <- crossing(subj_id = subjects$subj_id,
                    item_id = items$item_id) %>%
   mutate(err = rnorm(nrow(.), mean = 0, sd = err_sd))
 ```
 
-Now that we have a table of all trials, we can join the information from our `subjects` and `items` tables using the `subj_id` and `item_id`. Calculate the reponse (`Y`) as the sum of:
+Have a look:
 
-* the grand intercept (`mu`), 
-* the effect of condition (`eff`) multiplied by the effect-coded condition (`cond`)
-* the item-specific random intercept (`iri`), 
-* the subject-specific random intercept (`sri`), 
-* the subject-specific random slope of condition (`srs`) multiplied by the effect-coded condition (`cond`)
-* the random error (`err`)
+```{r trials-table}
+head(trials)
+```
+
+### Calculate the response values
+
+Now that we have a table of all trials, we can join the information in this table to the information in our `subjects` and `items` tables. We join them together using `dplyr::inner_join()`.
 
 ```{r}
-dat_sim <- trials %>%
+joined <- trials %>%
   inner_join(subjects, "subj_id") %>%
-  inner_join(items, "item_id") %>%
-  # mutate(Y = mu + iri + sri + (eff+srs)*cond + err) # DALE is below better?
-  mutate(Y = mu + (eff*cond) + iri + sri + (srs*cond) + err)
+  inner_join(items, "item_id")
+
+joined
+```
+
+Note how this resulting table contains the full decomposition of effects that we need to compute the response according to the linear model we defined above:
+
+$$RT_{si} = \beta_0 + S_{0s} + I_{0i} + \left(\beta_1 + S_{1s}\right) X_i + e_{si}.$$
+
+Thus, we will calculate the response variable `RT` by adding together:
+
+* the grand intercept (`b0`), 
+* each subject-specific random intercept (`S0s`), 
+* each item-specific random intercept (`I0i`), 
+* each sum of the condition effect (`b1`) and the random slope (`S1s`), multiplied by the numerical predictor (`cond`), and
+* each residual error (`err`).
+
+After this we will use `dplyr::select()` to keep the columns we need. Note that the resulting table has the structure that we set as our goal at the start of this exercise, with the additional column `cond` which we will keep around to use in the estimation process, described in the next section.
+
+```{r}
+dat_sim <- joined %>%
+  mutate(RT = b0 + S0s + I0i + (b1 + S1s) * cond + err) %>%
+  select(subj_id, item_id, condition, cond, RT)
+
+dat_sim
 ```
 
 ### Analyse Data
@@ -179,10 +276,10 @@ dat_sim <- trials %>%
 Now we're ready to analyse our simulated data. The formula for `lmer()` maps onto how we calculated the response above.
 
 ```
-Y ~ 1 + cond + (1 | item_id) + (1 + cond | subj_id)
+RT ~ 1 + cond + (1 | item_id) + (1 + cond | subj_id)
 ```
 
-* `Y` is the response
+* `RT` is the response
 * `1` is the grand intercept (`mu`), 
 * `cond` is the effect of condition (`eff*cond`),
 * `1` in `(1 | item_id)` is the item-specific random intercept (`iri`), 
@@ -192,7 +289,7 @@ Y ~ 1 + cond + (1 | item_id) + (1 + cond | subj_id)
 The `lmer()` function takes this formula as its first argument, then the data table. Set `REML = FALSE` to choose the method for estimating variance components. `REML = TRUE` is better when you have fairly unequal cell sizes. **EXPLAIN THIS BETTER**
 
 ```{r}
-mod_sim <- lmer(Y ~ 1 + cond + (1 | item_id) + (1 + cond | subj_id),
+mod_sim <- lmer(RT ~ 1 + cond + (1 | item_id) + (1 + cond | subj_id),
                 data = dat_sim, REML = TRUE)
 ```
 
@@ -208,8 +305,8 @@ Use the `summary()` function to view the results. Notice where the parameters yo
 
 | variable | explanation                     | simulated value | estimated by model |
 |:---------|:--------------------------------|----------------:|-------------------:|
-| `mu`     | grand mean                      | `r mu`          | `r ffx[[1]]`       |
-| `eff`    | effect of condition             | `r eff`         | `r ffx[[2]]`       |
+| `b0`     | grand mean                      | `r b0`          | `r ffx[[1]]`       |
+| `b1`    | effect of condition              | `r b1`          | `r ffx[[2]]`       |
 | `iri_sd` | by-item random intercept SD     | `r iri_sd`      | `r irfx[[1]]`      |
 | `sri_sd` | by-subject random intercept SD  | `r sri_sd`      | `r srfx[[1]]`      |
 | `srs_sd` | by-subject random slope SD      | `r srs_sd`      | `r srfx[[2]]`      |
@@ -234,8 +331,8 @@ You can set up a function that takes all of the parameters we set above as argum
 ```{r}
 my_sim_func <- function(nsubj  = 100, # number of subjects pre between-subject cell
                         nitem  = 25,  # number of items per between-item cell
-                        mu     = 800, # grand mean
-                        eff    = 80,  # effect of condition
+                        b0     = 800, # grand mean
+                        b1     = 80,  # effect of condition
                         iri_sd = 80,  # by-item random intercept sd (omega_00)
                         sri_sd = 100, # by-subject random intercept sd
                         srs_sd = 40,  # by-subject random slope sd
@@ -247,7 +344,7 @@ my_sim_func <- function(nsubj  = 100, # number of subjects pre between-subject c
     between = list(condition = c("ingroup", "outgroup")),
     n = nitem,
     sd = iri_sd,
-    dv = "iri",
+    dv = "I0i",
     id = "item_id",
     plot = FALSE
   )
@@ -257,8 +354,8 @@ my_sim_func <- function(nsubj  = 100, # number of subjects pre between-subject c
   
   # simulate subjects
   subjects <- faux::sim_design(
-    within = list(effect = c(sri = "By-subject random intercepts", 
-                             srs = "By-subject random slopes")), 
+    within = list(effect = c(S0s = "By-subject random intercepts", 
+                             S1s = "By-subject random slopes")), 
     n = nsubj,
     sd = c(sri = sri_sd, srs = srs_sd), 
     r = rcor,
@@ -273,9 +370,9 @@ my_sim_func <- function(nsubj  = 100, # number of subjects pre between-subject c
     mutate(err = rnorm(nrow(.), mean = 0, sd = err_sd)) %>%
     inner_join(subjects, "subj_id") %>%
     inner_join(items, "item_id") %>%
-    mutate(Y = mu + (eff*cond) + iri + sri + (srs*cond) + err)
+    mutate(RT = b0 + S0s + I0i + (b1 + S1s) * cond + err)
   
-  mod_sim <- lmer(Y ~ cond + (1 | item_id) + (1 + cond | subj_id),
+  mod_sim <- lmer(RT ~ cond + (1 | item_id) + (1 + cond | subj_id),
                 dat_sim, REML = FALSE)
   
   broom.mixed::tidy(mod_sim)
@@ -343,9 +440,9 @@ sims %>%
   scale_fill_brewer(palette = "Spectral") + theme_bw()
 ```
 
+## Conclusion
 
-
-
+## References
 
 
 
