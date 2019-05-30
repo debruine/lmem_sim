@@ -1,0 +1,320 @@
+---
+title: "Understanding mixed effects models through simulating data"
+subtitle: "Extended Example"
+author: 'Lisa DeBruine and Dale Barr'
+output: html_document
+bibliography: bibliography.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo       = TRUE,
+                      fig.path   = "images/",
+                      fig.width  = 8,
+                      fig.height = 5,
+                      fig.align  = "center",
+                      out.width  = "100%",
+                      warning    = FALSE,
+                      message    = FALSE,
+                      fig.retina = 2)
+```
+
+
+```{r pkgs}
+library(lmerTest)    # for mixed effects models
+library(tidyverse)   # for data wrangling and visualisation
+library(faux)        # devtools::install_github("debruine/faux")
+library(broom.mixed) # for extracting data from mixed effects models
+
+set.seed(90210)
+```
+
+### Set Study Parameters
+
+Set up your study parameters. In this example, 50 subjects will respond twice (pre- and post-intervention) to 50 items; 25 items in each of 2 conditions. In this example, `time` is a within-subject and within-item factor and `condition` is a within-subject and between-item factor.
+
+```{r params}
+nsubj  <- 50 # number of subjects per between-subject cell
+nitem  <- 25 # number of items per between-item cell
+```
+
+
+### Fixed effects
+
+We will predict that in a pre-intervention condition, we will see the same effects as in the first example: an 80ms difference between classification of emotions in ingroup and outgroup faces. We have an intervention that we predict will eliminate this difference. We've also observed that people get about 100ms faster the second time they do the task, so the mean RT in the post-intervention condition is 700ms, making the overal mean 750ms.
+
+* The grand mean (`mu`) will be 800 ms; this is the mean response time regardless of time or condition, so `(800 + 700)/2`.
+* The main effect of condition (`eff_cond`) will be 40 ms; this is the mean difference between ingroup and outgroup conditions, regardless of time, so `(80 + 0)/2`.
+* The main effect of time (`eff_time`) will be -100 ms; this is the mean difference between pre- and post-intervention regardless of condition.
+* The interaction between condition and time (`eff_ct`) will be -80ms; this represents a prediction that the effect of condition will be eliminated post-intervention.
+
+```{r param-mu-eff}
+mu       <- 750 # grand mean
+eff_cond <-  40 # main effect of condition
+eff_time <- -100 # main effect of time
+eff_ct   <- -80 # interaction between condition and time
+```
+
+
+### Random effects
+
+```{r param-var}
+# items
+iri_sd   <- 80 # by-item random intercept sd
+irs_t_sd <- 80 # by-item random slope for time
+icor     <- .2 # correlation between intercept and slope
+
+# subjects
+sri_sd    <- 100 # by-subject random intercept sd
+srs_c_sd  <- 40  # by-subject random slope sd for condition
+srs_t_sd  <- 80  # by-subject random slope sd for time
+srs_ct_sd <- 80  # by-subject random slope sd for conditon*time
+# correlations between intercept and slopes
+scor      <- c(.3, .3, .3,
+                   .1, .1,
+                       .1) 
+
+# error
+err_sd <- 200 # residual sd
+```
+
+### Simulate Items
+
+```{r sim-items, out.width = "75%", fig.cap="The distribution of random effects for ingroup and outgroup faces."}
+items <- faux::sim_design(
+  within = list(effect = c(iri = "By-item random intercepts", 
+                           irs.t = "By-item random slopes for time")),
+  between = list(condition = c("ingroup", "outgroup")),
+  n = nitem,
+  sd = list(ingroup = c(iri_sd, irs_t_sd),
+            outgroup = c(iri_sd, irs_t_sd)),
+  r = icor,
+  id = "item_id",
+  plot = FALSE
+)
+
+plot_design(items)
+```
+
+
+### Simulate Subjects
+
+
+```{r sim-subjects, out.width = "75%", fig.cap="The distribution of random effects for subjects"}
+subjects <- faux::sim_design(
+  within = list(effect = c(sri = "By-subject random intercepts", 
+                           srs.c = "By-subject random slopes for condition",
+                           srs.t = "By-subject random slopes for time",
+                           srs.ct = "By-subject random slopes for condition*time")), 
+  n = nsubj,
+  sd = c(sri = sri_sd, 
+         srs.c = srs_c_sd, 
+         srs.t = srs_t_sd, 
+         srs.ct = srs_ct_sd), 
+  r = scor,
+  dv = "value",
+  id = "subj_id",
+  plot = FALSE
+)
+
+plot_design(subjects)
+```
+
+
+### Simulate Trials
+
+Since all subjects respond to all items, we can set up a table of trials by crossing the subject IDs with the item IDs. Each trial has random error associated; we simulate this from a normal distribution with a mean of 0 and SD of `err_sd`.
+
+```{r}
+dat_sim <- crossing(subj_id = subjects$subj_id,
+                    item_id = items$item_id,
+                    time = factor(c("pre", "post"), levels = c("pre", "post"))) %>%
+  inner_join(subjects, "subj_id") %>%
+  inner_join(items, "item_id") %>%
+  mutate(time.e = recode(time, "pre" = -0.5, "post" = 0.5),
+         cond.e = recode(condition, "ingroup" = -0.5, "outgroup" = +0.5),
+         trial_i    = mu + iri +  sri,
+         trial_cond = eff_cond + srs.c,
+         trial_time = eff_time + irs.t + srs.t,
+         trial_ct   = eff_ct + srs.ct,
+         err = rnorm(nrow(.), mean = 0, sd = err_sd),
+         Y = trial_i + (trial_cond*cond.e) + (trial_time*time.e) + 
+           (trial_ct*cond.e*time.e) + err)
+```
+
+Plot your data to double-check it looks like you expect.
+
+```{r}
+ggplot(dat_sim, aes(time, Y, color = condition)) +
+  geom_boxplot(width = 0.25, size = 1,
+               position = position_dodge(width = 0.9))
+```
+
+
+### Analyse Data
+
+```{r}
+mod_sim <- lmer(Y ~ 1 + cond.e*time.e + 
+                  (1 + time.e | item_id) + 
+                  (1 + cond.e*time.e | subj_id),
+                data = dat_sim, REML = TRUE)
+```
+
+
+```{r, results = 'asis'}
+broom.mixed::tidy(mod_sim) %>% 
+  mutate(sim_params = c(mu, eff_cond, eff_time, eff_ct, iri_sd, irs_t_sd, icor,
+                        sri_sd, srs_c_sd, srs_t_sd, srs_ct_sd, scor, err_sd)) %>%
+  select(effect, group, term, sim_params, everything()) %>%
+  knitr::kable(digits = 3)
+```
+
+
+```{r}
+summary(mod_sim, corr = FALSE)
+```
+
+## Power
+
+```{r}
+my_sim_func <- function(nsubj     = 50,   # N subjects / between-subject cell
+                        nitem     = 25,   # N items / between-item cell
+                        mu        = 750,  # grand mean
+                        eff_cond  =  40,  # main effect of condition
+                        eff_time  = -100, # main effect of time
+                        eff_ct    = -80,  # interaction between condition and time
+                        iri_sd    = 80,   # by-item random intercept sd
+                        irs_t_sd  = 80,   # by-item random slope for time
+                        icor      = .2,   # item ranef cors
+                        sri_sd    = 100,  # by-subject random intercept sd
+                        srs_c_sd  = 40,   # by-subject random slope sd for condition
+                        srs_t_sd  = 80,   # by-subject random slope sd for time
+                        srs_ct_sd = 80,   # by-subject random slope sd for conditon*time
+                        scor      = c(.3, .3, .3, .1, .1, .1), # subject ranef cors
+                        err_sd    = 200   # residual sd
+  ) {
+  # simulate items
+  items <- faux::sim_design(
+    within = list(effect = c(iri = "By-item random intercepts", 
+                             irs.t = "By-item random slopes for time")),
+    between = list(condition = c("ingroup", "outgroup")),
+    n = nitem,
+    sd = list(ingroup = c(iri_sd, irs_t_sd),
+              outgroup = c(iri_sd, irs_t_sd)),
+    r = icor,
+    id = "item_id",
+    plot = FALSE
+  )
+
+  # simulate subjects
+  subjects <- faux::sim_design(
+    within = list(effect = c(sri = "By-subject random intercepts", 
+                             srs.c = "By-subject random slopes for condition",
+                             srs.t = "By-subject random slopes for time",
+                             srs.ct = "By-subject random slopes for condition*time")), 
+    n = nsubj,
+    sd = c(sri = sri_sd, 
+           srs.c = srs_c_sd, 
+           srs.t = srs_t_sd, 
+           srs.ct = srs_ct_sd), 
+    r = scor,
+    dv = "value",
+    id = "subj_id",
+    plot = FALSE
+  )
+  
+  # simulate trials
+  dat_sim <- crossing(subj_id = subjects$subj_id,
+                      item_id = items$item_id,
+                      time = factor(c("pre", "post"), levels = c("pre", "post"))) %>%
+    inner_join(subjects, "subj_id") %>%
+    inner_join(items, "item_id") %>%
+    mutate(time.e = recode(time, "pre" = -0.5, "post" = 0.5),
+           cond.e = recode(condition, "ingroup" = -0.5, "outgroup" = +0.5),
+           trial_i    = mu + iri +  sri,
+           trial_cond = eff_cond + srs.c,
+           trial_time = eff_time + irs.t + srs.t,
+           trial_ct   = eff_ct + srs.ct,
+           err = rnorm(nrow(.), mean = 0, sd = err_sd),
+           Y = trial_i + (trial_cond*cond.e) + (trial_time*time.e) + 
+             (trial_ct*cond.e*time.e) + err)
+  
+  mod_sim <- lmer(Y ~ 1 + cond.e*time.e + 
+                    (1 + time.e | item_id) + 
+                    (1 + cond.e*time.e | subj_id),
+                  data = dat_sim, REML = TRUE)
+  
+  broom.mixed::tidy(mod_sim)
+}
+```
+
+Run the function once with default parameters. 
+
+```{r, results = 'asis'}
+my_sim_func() %>% knitr::kable(digits = 3)
+```
+
+You can use the `purrr::map_df` function to run the simulation repeatedly and save the results to a data table. This will take a while, so test using just a few reps first, then make sure you save the full results to a CSV file so you can set this code chunk to  not run (`eval = FALSE` in the chunk header) and load from the saved data for the rest of your script in the future.
+
+```{r sim, eval = FALSE}
+reps <- 100
+sims <- purrr::map_df(1:reps, ~my_sim_func())
+write_csv(sims, "ext_sims.csv")
+```
+
+```{r read-sim}
+sims <- read_csv("ext_sims.csv")
+```
+
+You can use these data to calculate power for each fixed effect or plot the distribution of your fixed or random effects.
+
+```{r sim-fixef-plot, echo = FALSE, fig.cap = "Distribution of fixed effects across 1000 simulations"}
+alpha <- 0.05
+
+sumdat <- sims %>% 
+  filter(effect == "fixed") %>%
+  group_by(term) %>%
+  summarise(
+    power = paste("power =", mean(p.value < alpha) %>% round(3)),
+    xval = mean(estimate) - 2.5*sd(estimate),
+    value = mean(estimate)
+  )
+
+sims %>%
+  filter(effect == "fixed") %>%
+  mutate(significant = (p.value < alpha) %>% factor(levels = c(TRUE, FALSE))) %>%
+  ggplot() +
+  geom_density(aes(estimate, y = ..count.., fill = significant, color = significant), alpha = 0.5) +
+  geom_vline(data = sumdat, aes(xintercept = value), color = "grey40", show.legend = FALSE) +
+  geom_text(data = sumdat, aes(x = xval, y = 1, label = power), color = "black", show.legend = FALSE) +
+  facet_wrap(~term, ncol = 1, scales = "free_x") + theme_bw()
+```
+
+
+
+```{r sim-ranef-plot, echo = FALSE, fig.cap = "Distribution of random effects across 1000 simulations"}
+
+sim_stats <- sims %>%
+  filter(effect == "ran_pars") %>%
+  group_by(group, term) %>%
+  summarise(value = mean(estimate))
+
+sims %>%
+  filter(effect == "ran_pars") %>%
+  ggplot(aes(estimate, color = paste(group, term), fill = paste(group, term))) +
+  geom_density(alpha = 0.5, show.legend = FALSE) +
+  geom_vline(data = sim_stats, aes(xintercept = value, color = paste(group, term)), show.legend = FALSE) +
+  facet_wrap(~group*term, ncol = 3, scales = "free") + theme_bw()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
