@@ -1,5 +1,5 @@
 ---
-title: "Understanding mixed effects models through simulating data"
+title: "Understanding mixed effects models through data simulation"
 author: 'Lisa DeBruine and Dale Barr'
 output: html_document
 bibliography: bibliography.bib
@@ -19,16 +19,11 @@ knitr::opts_chunk$set(echo       = TRUE,
 
 ## Abstract
 
-Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package). The focus will be on interpreting the LMER output in light of the simulated parameters and comparing the results to by-items and by-subjects ANOVA.
+Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package). The focus will be on interpreting the `lmer()` output in light of the simulated parameters. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs.
 
-### Prerequisite knowledge or skills
+## Background
 
-* Basic familiarity with experimental designs where subjects respond to stimuli
-* Basic familiarity with R
-
-### Who will benefit from this tutorial?
-
-Researchers who use experimental designs that need to account for crossed random effects (e.g., designs that sample subjects and stimuli). For example, a large amount of experimental research in face perception or social cognition uses designs that would be better analysed using mixed effects models.
+In this article, we walk through the simulation and analysis of multilevel data with crossed random effects of subjects and stimuli. The article's target audience is researchers who work with experimental designs that sample subjects and stimuli, such as is the case for a large amount of experimental research in face perception, psycholinguistics, or social cognition. The tutorial assumes basic familiarity with R programming.
 
 ## Generalizing to a population of encounters
 
@@ -261,7 +256,7 @@ Thus, we will calculate the response variable `RT` by adding together:
 * each sum of the condition effect (`b1`) and the random slope (`S1s`), multiplied by the numerical predictor (`cond`), and
 * each residual error (`err`).
 
-After this we will use `dplyr::select()` to keep the columns we need. Note that the resulting table has the structure that we set as our goal at the start of this exercise, with the additional column `cond` which we will keep around to use in the estimation process, described in the next section.
+After this we will use `dplyr::select()` to keep the columns we need for the analysis process. Note that the resulting table has the structure that we set as our goal at the start of this exercise, with the addition of the numerical predictor variable `cond`.
 
 ```{r}
 dat_sim <- joined %>%
@@ -271,25 +266,20 @@ dat_sim <- joined %>%
 dat_sim
 ```
 
-### Analyse Data
+### Analyze Data
 
-Now we're ready to analyse our simulated data. The formula for `lmer()` maps onto how we calculated the response above.
+Now we're ready to analyse our simulated data with the `lmer()` function from the `lme4` package. The first argument to `lmer()` is a model formula that defines the structure of the linear model. For our design, we will use:
 
-```
-RT ~ 1 + cond + (1 | item_id) + (1 + cond | subj_id)
-```
+`RT ~ cond + (cond | subj_id) + (1 | item_id)`
 
-* `RT` is the response
-* `1` is the grand intercept (`mu`), 
-* `cond` is the effect of condition (`eff*cond`),
-* `1` in `(1 | item_id)` is the item-specific random intercept (`iri`), 
-* `1` in `(1 + cond | subj_id)` is the subject-specific random intercept (`sri`), 
-* `cond` in `(1 + cond | subj_id)` is the subject-specific random slope of condition (`srs*cond`)
+The 'fixed' part of the formula, `RT ~ cond`, is a shorthand way of establishing the $RT_{si} + \beta_0 + \beta_1 X_i + e_{si}$ part of our linear model, with the role of $X_i$ being played by `cond`. Because every model has an intercept ($\beta_0$) terms and residual term ($\e_{si}$) by default, these are left implicit. To make the intercept explicit, we could have written `RT ~ 1 + cond` instead.
 
-The `lmer()` function takes this formula as its first argument, then the data table. Set `REML = FALSE` to choose the method for estimating variance components. `REML = TRUE` is better when you have fairly unequal cell sizes. **EXPLAIN THIS BETTER**
+The terms in parentheses with the `|` separator define the random effects structure. For each of these bracketed terms, the left-hand side of the `|` names the effects you wish to allow to vary, the right hand side names the variable identifying the levels of the random factor over which the terms vary (e.g., subjects or items). The first term, `(cond | subj_id)`, is an instruction to allow the effect of condition (`cond`) to vary over the random factor of subjects (`subj_id`). As for the fixed part, this syntax also calls for a by-subject random intercept, although it is left implicit; if we wanted to make it explicit, we would write `(1 + cond | subj_id)` instead, which accomplishes the same thing. You could think of this first term as establishing `S0s` and `S1s` in our model, but it is more accurate to think of it as an instruction to estimate the three parameters that underlie the `S0s` and `S1s` values, namely `sri_sd`, `srs_sd`, and `rcor`.  The second term, `(1 | item_id)`, calls for a by-item random intercept, and will call for estimation of the parameter generating the `I0i` values, namely `iri_sd`
+
+The other arguments to the `lme4` function is the name of the data frame where the values are found (`dat_sim`), and `REML = TRUE`, which selects maximum-likelihood estimation (which is preferable to the default estimation technique when we are testing fixed effects.)
 
 ```{r}
-mod_sim <- lmer(RT ~ 1 + cond + (1 | item_id) + (1 + cond | subj_id),
+mod_sim <- lmer(RT ~ cond + (cond | subj_id) + (1 | item_id),
                 data = dat_sim, REML = TRUE)
 ```
 
@@ -297,36 +287,81 @@ mod_sim <- lmer(RT ~ 1 + cond + (1 | item_id) + (1 + cond | subj_id),
 srfx <- attr(VarCorr(mod_sim)$subj_id, "stddev") %>% round(2)
 irfx <- attr(VarCorr(mod_sim)$item_id, "stddev") %>% round(2)
 rc   <- attr(VarCorr(mod_sim)$subj_id, "correlation")[1, 2] %>% round(2)
-res  <- attr(VarCorr(mod_sim), "sc") %>% round(2)
+res  <- sigma(mod_sim) %>% round(2)
 ffx  <- fixef(mod_sim) %>% round(2)
 ```
 
-Use the `summary()` function to view the results. Notice where the parameters you set at the beginning show up in the results.
-
-| variable | explanation                     | simulated value | estimated by model |
-|:---------|:--------------------------------|----------------:|-------------------:|
-| `b0`     | grand mean                      | `r b0`          | `r ffx[[1]]`       |
-| `b1`    | effect of condition              | `r b1`          | `r ffx[[2]]`       |
-| `iri_sd` | by-item random intercept SD     | `r iri_sd`      | `r irfx[[1]]`      |
-| `sri_sd` | by-subject random intercept SD  | `r sri_sd`      | `r srfx[[1]]`      |
-| `srs_sd` | by-subject random slope SD      | `r srs_sd`      | `r srfx[[2]]`      |
-| `rcor`   | cor between intercept and slope | `r rcor`        | `r rc`             |
-| `err_sd` | residual SD                     | `r err_sd`      | `r res`            |
+Use the `summary()` function to view the results. Let's break down the output step-by-step and try to find estimates of the seven parameters we used to generate the data: `b0`, `b1`, `sri_sd`, `srs_sd`, `rcor`, `iri_sd` and `err`.
 
 
-```{r}
-summary(mod_sim, corr = FALSE)
+```{r lmer-summary, eval = FALSE}
+summary(mod_sim) 
 ```
+
+```{r echo=FALSE}
+.ltxt <- capture.output(summary(mod_sim, corr = FALSE))
+```
+
+After providing general information about the model fit, the output is divided into a `Random effects` and a `Fixed effects` section. Let us start with the fixed effects section, as this should be familiar from other types of linear models.
+
+```{r lmem-fix, echo=FALSE}
+cat(.ltxt[21:23], sep = "\n")
+```
+
+The `Estimate` column gives us parameter estimates for the fixed effects in the model, i.e., $\hat{\beta_0}$ and $\hat{\beta_1}$, which are estimated at about `r round(fixef(mod_sim)[1], 0)` and `r round(fixef(mod_sim)[2], 0)`. The next columns give us the standard errors, estimated degrees of freedom (using the Satterthwaite approach), $t$ value, and finally, $p$ value.
+
+The `Random effects` section is specific to mixed-effects models, and will be less familiar to the reader.
+
+```{r lmem-rfx, echo = FALSE}
+cat(.ltxt[13:17], sep = "\n")
+```
+
+These are the estimates for the *variance components* in the model. To avoid confusion, it is best to think of the information in this table as coming from three separate tables divided up by the values in the `Groups` column.
+
+The first subtable, where the value of `Groups` is `subj_id`, gives the estimates for the variance parameters defining the by-subject random effects. 
+
+```{r echo=FALSE}
+cat(.ltxt[13:15], sep = "\n")
+```
+
+We have estimates for the variance of the intercept and slope (`cond`) in the `Variance` column, which is just the square of the standard deviation in the `Std.Dev.` column. We obtain estimates for `sri_sd` and `srs_sd` of `r round(srfx[[1]], 2)` and `r round(srfx[[2]], 2)` respectively. The `Corr.` column gives us the estimated correlation between the by-subject random intercepts and slopes, estimated here as `r rc`.
+
+The second subtable gives us the by-item random effect parameter estimates of which there is only one, `r irfx[[1]]`, corresponding to `iri_sd`. Again, the `Variance` column is just this value squared.
+
+```{r rfx-sub2, echo=FALSE}
+cat(.ltxt[13], .ltxt[16], sep = "\n")
+```
+
+The last subtable is gives us the estimate of the residual term, `r res`.
+
+```{r rfx-res, echo = FALSE}
+cat(.ltxt[13], .ltxt[17], sep = "\n")
+```
+
+We have found all seven parameters in the output. Let's compare them to the values that we put in.
+
+| variable | explanation                     | simulated value | estimate      |
+|:---------|:--------------------------------|----------------:|--------------:|
+| `b0`     | grand mean (intercept)          | `r b0`          | `r ffx[[1]]`  |
+| `b1`     | effect of condition             | `r b1`          | `r ffx[[2]]`  |
+| `iri_sd` | by-item random intercept SD     | `r iri_sd`      | `r irfx[[1]]` |
+| `sri_sd` | by-subject random intercept SD  | `r sri_sd`      | `r srfx[[1]]` |
+| `srs_sd` | by-subject random slope SD      | `r srs_sd`      | `r srfx[[2]]` |
+| `rcor`   | cor between intercept and slope | `r rcor`        | `r rc`        |
+| `err_sd` | residual SD                     | `r err_sd`      | `r res`       |
+
 
 You can also use `broom.mixed::tidy()` to output fixed and/or random effects in a tidy table. This is especially useful when you need to combine the output from hundreds of simulations to calculate power.
 
-```{r, results = 'asis'}
-broom.mixed::tidy(mod_sim) %>% knitr::kable(digits = 3)
+```{r broom-mixed}
+broom.mixed::tidy(mod_sim)
 ```
 
 ### Calculate Power
 
-You can set up a function that takes all of the parameters we set above as arguments. We'll set the to default to the values we used, but you can choose your own defaults. The code below is just all of the code above, condensed a bit.
+Data simulation is useful not only for illuminating modeling approaches, but also for calculating power when planning a study. The basic idea of a power simulation is to generate a large number of datasets encoding your assumptions about likely parameter values, fit models to each dataset, and then calculate the proportion of models that reject the null hypothesis as a measure of power.
+
+To do this, you'll need to set up a function that takes all of the parameters we set above as arguments. We'll set the to default to the values we used, but you can choose your own defaults. The code below is just all of the code above, condensed a bit.
 
 ```{r}
 my_sim_func <- function(nsubj  = 100, # number of subjects pre between-subject cell
@@ -379,10 +414,10 @@ my_sim_func <- function(nsubj  = 100, # number of subjects pre between-subject c
 }
 ```
 
-Run the function once with default parameters. 
+Let's test the function out by running it once with default parameters. 
 
-```{r, results = 'asis'}
-my_sim_func() %>% knitr::kable(digits = 3)
+```{r}
+my_sim_func()
 ```
 
 You can use the `purrr::map_df` function to run the simulation repeatedly and save the results to a data table. This will take a while, so test using just a few reps first, then make sure you save the full results to a CSV file so you can set this code chunk to  not run (`eval = FALSE` in the chunk header) and load from the saved data for the rest of your script in the future.
@@ -397,7 +432,7 @@ write_csv(sims, "sims.csv")
 sims <- read_csv("sims.csv")
 ```
 
-You can use these data to calculate power for each fixed effect or plot the distribution of your fixed or random effects.
+You can use these data to calculate power for each fixed effect or plot the distribution of your fixed or random effects. The code for doing this is given in the online appendix to this article.
 
 ```{r sim-fixef-plot, echo = FALSE, fig.cap = "Distribution of fixed effects across 1000 simulations"}
 alpha <- 0.05
@@ -441,6 +476,12 @@ sims %>%
 ```
 
 ## Conclusion
+
+Mixed-effects modeling is a powerful technique for analyzing data from complex designs. The technique is close to ideal for analyzing data with crossed random factors of subjects and stimuli: it gracefully and simultaneously accounts for subject and item variance within a single analysis, and outperforms traditional techniques in terms of type I error and power. However, this additional power comes at the price of technical complexity. Through this article, we have attempted to make mixed-effects models more approachable using data simulation.
+
+We considered only a simple, one-factor design. However, the general principles are the same for higher-order designs. For instance, consider a 2x2 design, with factors $A$ and $B$ both within-subjects, but $A$ within-items and $B$ between subjects. For such a design, you would have four instead of two by-subject random effects: the intercept, main effect of $A$, main effect of $B$, and the $AB$ interaction. You would also need to specify correlations between each of these effects (although for convenience, you could also assume they are all independent). You would also have two by-item random effects: one for the intercept and one for $A$. For further guidance and discussion on how to specify the random effects structure in complex designs, see: [@barr_2013].
+
+We also have not said much in this tutorial about estimation issues, such as what to do when the fitting procedure fails to converge. Further guidance on this point can be found in [@barr_et_al_2013], and by consulting the help materials in the `lme4` package (`?lme4::convergence`).  We have also assumed that the random effects specification for the `lmer()` function should be based on the study design. However, we note that others have argued in favor of data-driven approaches for random effects specification [@matuschek_et_al_2017]. 
 
 ## References
 
