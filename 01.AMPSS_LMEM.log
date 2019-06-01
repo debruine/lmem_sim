@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.6.5)  31 MAY 2019 16:54
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.6.5)  1 JUN 2019 18:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**AMPSS_LMEM.tex
-(./AMPSS_LMEM.tex
+**01.AMPSS_LMEM.tex
+(./01.AMPSS_LMEM.tex
 LaTeX2e <2017-04-15>
 Babel <3.10> and hyphenation patterns for 84 language(s) loaded.
 (/usr/local/texlive/2017/texmf-dist/tex/latex/apa6/apa6.cls
@@ -906,23 +906,6 @@ Package: framed 2011/10/22 v 0.96: framed or shaded text with page breaks
 \fb@frh=\dimen148
 \FrameRule=\dimen149
 \FrameSep=\dimen150
-) (/usr/local/texlive/2017/texmf-dist/tex/latex/tools/longtable.sty
-Package: longtable 2014/10/28 v4.11 Multi-page Table package (DPC)
-\LTleft=\skip71
-\LTright=\skip72
-\LTpre=\skip73
-\LTpost=\skip74
-\LTchunksize=\count131
-\LTcapwidth=\dimen151
-\LT@head=\box33
-\LT@firsthead=\box34
-\LT@foot=\box35
-\LT@lastfoot=\box36
-\LT@cols=\count132
-\LT@rows=\count133
-\c@LT@tables=\count134
-\c@LT@chunks=\count135
-\LT@p@ftn=\toks27
 ) (/usr/local/texlive/2017/texmf-dist/tex/latex/oberdiek/grffile.sty
 Package: grffile 2016/05/16 v1.17 Extended file name support for graphics (HO)
 Package grffile Info: Option `multidot' is set to `true'.
@@ -933,13 +916,13 @@ Package grffile Info: \Gin@ii of package `graphicx' fixed on input line 486.
 Package: parskip 2001/04/09 non-zero parskip adjustments
 ) (/usr/local/texlive/2017/texmf-dist/tex/latex/csquotes/csquotes.sty
 Package: csquotes 2017/03/11 v5.2b context-sensitive quotations (JAW)
-\csq@reset=\count136
-\csq@gtype=\count137
-\csq@glevel=\count138
-\csq@qlevel=\count139
-\csq@maxlvl=\count140
-\csq@tshold=\count141
-\csq@ltx@everypar=\toks28
+\csq@reset=\count131
+\csq@gtype=\count132
+\csq@glevel=\count133
+\csq@qlevel=\count134
+\csq@maxlvl=\count135
+\csq@tshold=\count136
+\csq@ltx@everypar=\toks27
 (/usr/local/texlive/2017/texmf-dist/tex/latex/csquotes/csquotes.def
 File: csquotes.def 2017/03/11 v5.2b csquotes generic definitions (JAW)
 )
@@ -953,6 +936,23 @@ Package upgreek Info: Using Euler Roman for upright Greek on input line 31.
 \symugrf@m=\mathgroup9
 LaTeX Font Info:    Overwriting symbol font `ugrf@m' in version `bold'
 (Font)                  U/eur/m/n --> U/eur/b/n on input line 38.
+) (/usr/local/texlive/2017/texmf-dist/tex/latex/tools/longtable.sty
+Package: longtable 2014/10/28 v4.11 Multi-page Table package (DPC)
+\LTleft=\skip71
+\LTright=\skip72
+\LTpre=\skip73
+\LTpost=\skip74
+\LTchunksize=\count137
+\LTcapwidth=\dimen151
+\LT@head=\box33
+\LT@firsthead=\box34
+\LT@foot=\box35
+\LT@lastfoot=\box36
+\LT@cols=\count138
+\LT@rows=\count139
+\c@LT@tables=\count140
+\c@LT@chunks=\count141
+\LT@p@ftn=\toks28
 ) (/usr/local/texlive/2017/texmf-dist/tex/latex/graphics/lscape.sty
 Package: lscape 2000/10/22 v3.01 Landscape Pages (DPC)
 ) (/usr/local/texlive/2017/texmf-dist/tex/latex/multirow/multirow.sty
@@ -1014,33 +1014,33 @@ LaTeX Info: Redefining \\ on input line 3056.
 )
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... none found.
-(./AMPSS_LMEM.aux)
-\openout1 = `AMPSS_LMEM.aux'.
+(./01.AMPSS_LMEM.aux)
+\openout1 = `01.AMPSS_LMEM.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 161.
-LaTeX Font Info:    ... okay on input line 161.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 161.
-LaTeX Font Info:    ... okay on input line 161.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 161.
-LaTeX Font Info:    ... okay on input line 161.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 161.
-LaTeX Font Info:    ... okay on input line 161.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 161.
-LaTeX Font Info:    ... okay on input line 161.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 161.
-LaTeX Font Info:    ... okay on input line 161.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 161.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 161.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 152.
+LaTeX Font Info:    ... okay on input line 152.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 152.
+LaTeX Font Info:    ... okay on input line 152.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 152.
+LaTeX Font Info:    ... okay on input line 152.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 152.
+LaTeX Font Info:    ... okay on input line 152.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 152.
+LaTeX Font Info:    ... okay on input line 152.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 152.
+LaTeX Font Info:    ... okay on input line 152.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 152.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 152.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 161.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 161.
-LaTeX Font Info:    ... okay on input line 161.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 161.
-LaTeX Font Info:    ... okay on input line 161.
-LaTeX Font Info:    Try loading font information for T1+lmr on input line 161.
+LaTeX Font Info:    ... okay on input line 152.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 152.
+LaTeX Font Info:    ... okay on input line 152.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 152.
+LaTeX Font Info:    ... okay on input line 152.
+LaTeX Font Info:    Try loading font information for T1+lmr on input line 152.
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/t1lmr.fd
 File: t1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
@@ -1116,7 +1116,7 @@ Package caption Info: longtable package is loaded.
 Package: ltcaption 2013/06/09 v1.4-94 longtable captions (AR)
 )
 Package caption Info: End \AtBeginDocument code.
-LaTeX Info: Redefining \microtypecontext on input line 161.
+LaTeX Info: Redefining \microtypecontext on input line 152.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using protrusion set `basicmath'.
@@ -1131,7 +1131,7 @@ File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman
 (RS)
 )
 \AtBeginShipoutBox=\box39
-Package hyperref Info: Link coloring OFF on input line 161.
+Package hyperref Info: Link coloring OFF on input line 152.
 (/usr/local/texlive/2017/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 (/usr/local/texlive/2017/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
@@ -1139,51 +1139,51 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
 \c@section@level=\count157
 )
-LaTeX Info: Redefining \ref on input line 161.
-LaTeX Info: Redefining \pageref on input line 161.
-LaTeX Info: Redefining \nameref on input line 161.
-(./AMPSS_LMEM.out) (./AMPSS_LMEM.out)
+LaTeX Info: Redefining \ref on input line 152.
+LaTeX Info: Redefining \pageref on input line 152.
+LaTeX Info: Redefining \nameref on input line 152.
+(./01.AMPSS_LMEM.out) (./01.AMPSS_LMEM.out)
 \@outlinefile=\write6
-\openout6 = `AMPSS_LMEM.out'.
+\openout6 = `01.AMPSS_LMEM.out'.
 
-LaTeX Font Info:    Try loading font information for T1+lmss on input line 163.
+LaTeX Font Info:    Try loading font information for T1+lmss on input line 154.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/t1lmss.fd
 File: t1lmss.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Font Info:    Try loading font information for OT1+lmr on input line 163.
+LaTeX Font Info:    Try loading font information for OT1+lmr on input line 154.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Font Info:    Try loading font information for OML+lmm on input line 163.
+LaTeX Font Info:    Try loading font information for OML+lmm on input line 154.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Font Info:    Try loading font information for OMS+lmsy on input line 163
+LaTeX Font Info:    Try loading font information for OMS+lmsy on input line 154
 .
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Font Info:    Try loading font information for OMX+lmex on input line 163
+LaTeX Font Info:    Try loading font information for OMX+lmex on input line 154
 .
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 163.
+(Font)              <12> on input line 154.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 163.
+(Font)              <8> on input line 154.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 163.
-LaTeX Font Info:    Try loading font information for U+msa on input line 163.
+(Font)              <6> on input line 154.
+LaTeX Font Info:    Try loading font information for U+msa on input line 154.
 (/usr/local/texlive/2017/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 ) (/usr/local/texlive/2017/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 163.
+LaTeX Font Info:    Try loading font information for U+msb on input line 154.
 (/usr/local/texlive/2017/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) (/usr/local/texlive/2017/texmf-dist/tex/latex/microtype/mt-msb.cfg
@@ -1193,126 +1193,96 @@ File: mt-eur.cfg 2006/07/31 v1.1 microtype config. file: AMS Euler Roman (RS)
 ) [1{/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
 ] [2] [3]
-LaTeX Font Info:    Try loading font information for T1+lmtt on input line 211.
+LaTeX Font Info:    Try loading font information for T1+lmtt on input line 169.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
-Underfull \vbox (badness 4752) has occurred while \output is active []
-
-[4] [5]
+) [4] [5]
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 275.
-LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 279
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 188.
+LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 192
 .
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/ts1lmtt.fd
 File: ts1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [6]
-Underfull \vbox (badness 1648) has occurred while \output is active []
-
-[7] [8]
-Underfull \vbox (badness 1460) has occurred while \output is active []
-
-[9] [10] [11] <images/sim-items-1.png, id=129, 2364.835pt x 1451.4225pt>
+) [6] [7] [8] [9] [10] [11] [12] <images/sim-items-1.png, id=182, 2364.835pt x 
+1460.45625pt>
 File: images/sim-items-1.png Graphic file (type png)
 <use images/sim-items-1.png>
-Package pdftex.def Info: images/sim-items-1.png used on input line 558.
-(pdftex.def)             Requested size: 352.2923pt x 216.22014pt.
-[12]
-Underfull \vbox (badness 5504) has occurred while \output is active []
-
-[13 <./images/sim-items-1.png>] <images/sim-subjects-1.png, id=143, 2364.835pt 
-x 1451.4225pt>
+Package pdftex.def Info: images/sim-items-1.png used on input line 376.
+(pdftex.def)             Requested size: 352.2923pt x 217.5659pt.
+[13] [14 <./images/sim-items-1.png>] [15] <images/sim-subjects-1.png, id=203, 2
+365.83875pt x 1451.4225pt>
 File: images/sim-subjects-1.png Graphic file (type png)
 <use images/sim-subjects-1.png>
-Package pdftex.def Info: images/sim-subjects-1.png used on input line 637.
-(pdftex.def)             Requested size: 352.2923pt x 216.22014pt.
-
-Underfull \vbox (badness 1803) has occurred while \output is active []
-
-[14]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-[15 <./images/sim-subjects-1.png>] [16]
-LaTeX Font Info:    Try loading font information for TS1+lmr on input line 752.
+Package pdftex.def Info: images/sim-subjects-1.png used on input line 437.
+(pdftex.def)             Requested size: 352.29742pt x 216.13155pt.
+[16 <./images/sim-subjects-1.png>] [17]
+LaTeX Font Info:    Try loading font information for TS1+lmr on input line 517.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [17] [18] [19]
-Underfull \vbox (badness 6047) has occurred while \output is active []
+) [18] [19]
+Underfull \vbox (badness 10000) detected at line 613
+ []
 
-[20]
-Overfull \hbox (106.29907pt too wide) in paragraph at lines 919--934
+
+Underfull \vbox (badness 10000) detected at line 613
+ []
+
+[20] [21] [22] [23] [24] [25]
+Overfull \hbox (54.59778pt too wide) in paragraph at lines 779--794
  [] 
  []
 
-[21]
-Underfull \vbox (badness 10000) detected at line 993
- []
-
-
-Underfull \vbox (badness 10000) detected at line 993
- []
-
-[22]
-Underfull \vbox (badness 10000) detected at line 1011
- []
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-[23]
-Overfull \hbox (36.07043pt too wide) in paragraph at lines 1024--1039
+[26] [27]
+Overfull \hbox (15.83383pt too wide) in paragraph at lines 828--843
  [] 
  []
 
 
-Overfull \hbox (36.07043pt too wide) in paragraph at lines 1055--1070
+Overfull \hbox (15.83383pt too wide) in paragraph at lines 858--873
  [] 
  []
 
-[24] <images/sim-fixef-plot-1.png, id=211, 2339.74126pt x 1451.4225pt>
-File: images/sim-fixef-plot-1.png Graphic file (type png)
-<use images/sim-fixef-plot-1.png>
-Package pdftex.def Info: images/sim-fixef-plot-1.png used on input line 1099.
-(pdftex.def)             Requested size: 469.72505pt x 291.3867pt.
-<images/sim-ranef-plot-1.png, id=212, 2364.835pt x 1451.4225pt>
-File: images/sim-ranef-plot-1.png Graphic file (type png)
-<use images/sim-ranef-plot-1.png>
-Package pdftex.def Info: images/sim-ranef-plot-1.png used on input line 1108.
-(pdftex.def)             Requested size: 469.74712pt x 288.30829pt.
-[25] [26 <./images/sim-fixef-plot-1.png>]
-Underfull \vbox (badness 10000) detected at line 1179
+[28]
+Underfull \vbox (badness 2443) detected at line 896
  []
 
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-[27 <./images/sim-ranef-plot-1.png>]
-Underfull \vbox (badness 10000) detected at line 1194
+[29] [30] [31]
+Underfull \vbox (badness 10000) detected at line 1005
  []
 
+[32] [33] [34] <images/orcid.png, id=316, 7.82925pt x 7.82925pt>
+File: images/orcid.png Graphic file (type png)
+<use images/orcid.png>
+Package pdftex.def Info: images/orcid.png used on input line 1057.
+(pdftex.def)             Requested size: 7.82921pt x 7.82921pt.
+File: images/orcid.png Graphic file (type png)
+<use images/orcid.png>
+Package pdftex.def Info: images/orcid.png used on input line 1058.
+(pdftex.def)             Requested size: 7.82921pt x 7.82921pt.
+[35 <./images/orcid.png>] [36] [37] [38] AED endfloat: Processing end Figures a
+nd Tables [39
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
 
-[28] [29] [30] [31] AED endfloat: Processing end Figures and Tables [32]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1339.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1339.
-(./AMPSS_LMEM.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1339.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1339.
+]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1218.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1218.
+(./01.AMPSS_LMEM.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1218.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1218.
 
-Package rerunfilecheck Info: File `AMPSS_LMEM.out' has not changed.
-(rerunfilecheck)             Checksum: 86AA4DBF8911BF81BE54F46B1C4DD68B;2552.
+Package rerunfilecheck Info: File `01.AMPSS_LMEM.out' has not changed.
+(rerunfilecheck)             Checksum: 557B7BD98A275EC2FEDF802BE7C5A191;3854.
  ) 
 Here is how much of TeX's memory you used:
- 16388 strings out of 492995
- 242359 string characters out of 6132705
- 363489 words of memory out of 5000000
- 19493 multiletter control sequences out of 15000+600000
- 56821 words of font info for 87 fonts, out of 8000000 for 9000
+ 16461 strings out of 492995
+ 243516 string characters out of 6132705
+ 423325 words of memory out of 5000000
+ 19510 multiletter control sequences out of 15000+600000
+ 57128 words of font info for 90 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 43i,11n,47p,797b,531s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 43i,11n,47p,1254b,562s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}{/usr/local
 /texlive/2017/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/texlive/2017/
 texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/local/texlive/2017/texmf-dist
@@ -1329,10 +1299,10 @@ c/lm/lmss8.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/lm/lmsy10
 local/texlive/2017/texmf-dist/fonts/type1/public/lm/lmtk10.pfb></usr/local/texl
 ive/2017/texmf-dist/fonts/type1/public/lm/lmtt12.pfb></usr/local/texlive/2017/t
 exmf-dist/fonts/type1/public/lm/lmtti10.pfb>
-Output written on AMPSS_LMEM.pdf (32 pages, 670021 bytes).
+Output written on 01.AMPSS_LMEM.pdf (39 pages, 396004 bytes).
 PDF statistics:
- 349 PDF objects out of 1000 (max. 8388607)
- 291 compressed objects within 3 object streams
- 93 named destinations out of 1000 (max. 500000)
- 6277 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 459 PDF objects out of 1000 (max. 8388607)
+ 395 compressed objects within 4 object streams
+ 143 named destinations out of 1000 (max. 500000)
+ 6336 words of extra memory for PDF output out of 10000 (max. 10000000)
 
