@@ -14,7 +14,8 @@ affiliation:
   - id            : "1"
     institution   : "Institute of Neuroscience and Psychology, University of Glasgow"
 authornote: |
-  
+  Lisa DeBruine ![](images/orcid.png) https://orcid.org/0000-0002-7523-5539  
+  Dale J. Barr ![](images/orcid.png) https://orcid.org/0000-0002-1121-4608
 abstract: |
   Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package). The focus will be on interpreting the LMER output in light of the simulated parameters, using this method for power calculations. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs. All materials associated with this article can be accessed at https://osf.io/3cz2e/. 
   
@@ -743,11 +744,6 @@ We also have not said much in this tutorial about estimation issues, such as wha
 ## Author Contributions
 
 DJB drafted the substantive explanation and LDB drafted the initial tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app http://shiny.psy.gla.ac.uk/debruine/lmem_sim/ and DJB created the app http://shiny.psy.gla.ac.uk/Dale/crossed/
-
-## ORCiDs
-
-Lisa DeBruine ![](images/orcid.png) https://orcid.org/0000-0002-7523-5539
-Dale J. Barr ![](images/orcid.png) https://orcid.org/0000-0002-1121-4608
 
 ## Acknowledgements
 
