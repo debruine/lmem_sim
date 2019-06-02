@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.6.5)  2 JUN 2019 14:48
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.6.5)  2 JUN 2019 16:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1461,282 +1461,300 @@ Package pdftex.def Info: images/orcid.png used on input line 158.
 
 {/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./image
 s/orcid.png>]
-LaTeX Font Info:    Try loading font information for T1+lmtt on input line 173.
+LaTeX Font Info:    Try loading font information for T1+lmtt on input line 171.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ) [2] [3]
 
-Package xcolor Warning: Incompatible color definition on input line 230.
+Package xcolor Warning: Incompatible color definition on input line 233.
 
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 233.
-LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 237
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 236.
+LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 240
 .
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/ts1lmtt.fd
 File: ts1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 
-Package xcolor Warning: Incompatible color definition on input line 241.
+Package xcolor Warning: Incompatible color definition on input line 244.
 
 
-Package xcolor Warning: Incompatible color definition on input line 241.
+Package xcolor Warning: Incompatible color definition on input line 244.
 
 
-Package xcolor Warning: Incompatible color definition on input line 245.
+Package xcolor Warning: Incompatible color definition on input line 248.
 
 
-Package xcolor Warning: Incompatible color definition on input line 250.
+Package xcolor Warning: Incompatible color definition on input line 253.
 
 
-Package xcolor Warning: Incompatible color definition on input line 250.
+Package xcolor Warning: Incompatible color definition on input line 253.
 
-[4]
+[4] [5]
 
-Package xcolor Warning: Incompatible color definition on input line 300.
-
-
-Package xcolor Warning: Incompatible color definition on input line 306.
+Package xcolor Warning: Incompatible color definition on input line 303.
 
 
-Package xcolor Warning: Incompatible color definition on input line 306.
-
-[5]
-
-Package xcolor Warning: Incompatible color definition on input line 321.
+Package xcolor Warning: Incompatible color definition on input line 309.
 
 
-Package xcolor Warning: Incompatible color definition on input line 327.
+Package xcolor Warning: Incompatible color definition on input line 309.
 
 
-Package xcolor Warning: Incompatible color definition on input line 327.
+Package xcolor Warning: Incompatible color definition on input line 324.
+
+
+Package xcolor Warning: Incompatible color definition on input line 330.
+
+
+Package xcolor Warning: Incompatible color definition on input line 330.
 
 [6]
 
-Package xcolor Warning: Incompatible color definition on input line 341.
+Package xcolor Warning: Incompatible color definition on input line 344.
 
 
-Package xcolor Warning: Incompatible color definition on input line 348.
+Package xcolor Warning: Incompatible color definition on input line 351.
 
 
-Package xcolor Warning: Incompatible color definition on input line 348.
+Package xcolor Warning: Incompatible color definition on input line 351.
 
 
-Package xcolor Warning: Incompatible color definition on input line 358.
+Package xcolor Warning: Incompatible color definition on input line 361.
 
 
-Package xcolor Warning: Incompatible color definition on input line 369.
+Package xcolor Warning: Incompatible color definition on input line 372.
 
 
-Package xcolor Warning: Incompatible color definition on input line 369.
+Package xcolor Warning: Incompatible color definition on input line 372.
+
+
+Package xcolor Warning: Incompatible color definition on input line 372.
 
 [7]
 
-Package xcolor Warning: Incompatible color definition on input line 378.
+Package xcolor Warning: Incompatible color definition on input line 372.
 
 
-Package xcolor Warning: Incompatible color definition on input line 384.
+Package xcolor Warning: Incompatible color definition on input line 372.
 
 
-Package xcolor Warning: Incompatible color definition on input line 384.
+Package xcolor Warning: Incompatible color definition on input line 381.
 
 
-Package xcolor Warning: Incompatible color definition on input line 391.
+Package xcolor Warning: Incompatible color definition on input line 387.
 
 
-Package xcolor Warning: Incompatible color definition on input line 400.
+Package xcolor Warning: Incompatible color definition on input line 387.
 
 
-Package xcolor Warning: Incompatible color definition on input line 400.
+Package xcolor Warning: Incompatible color definition on input line 394.
 
 
-Package xcolor Warning: Incompatible color definition on input line 406.
+Package xcolor Warning: Incompatible color definition on input line 403.
 
 
-Package xcolor Warning: Incompatible color definition on input line 417.
+Package xcolor Warning: Incompatible color definition on input line 403.
 
 
-Package xcolor Warning: Incompatible color definition on input line 417.
+Package xcolor Warning: Incompatible color definition on input line 409.
 
-<images/sim-items-1.png, id=184, 2364.835pt x 1460.45625pt>
-File: images/sim-items-1.png Graphic file (type png)
-<use images/sim-items-1.png>
-Package pdftex.def Info: images/sim-items-1.png used on input line 421.
-(pdftex.def)             Requested size: 325.19289pt x 200.83006pt.
+
+Package xcolor Warning: Incompatible color definition on input line 420.
+
+
+Package xcolor Warning: Incompatible color definition on input line 420.
+
+
+Package xcolor Warning: Incompatible color definition on input line 420.
+
 [8]
 
-Package xcolor Warning: Incompatible color definition on input line 430.
+Package xcolor Warning: Incompatible color definition on input line 420.
 
 
-Package xcolor Warning: Incompatible color definition on input line 435.
+Package xcolor Warning: Incompatible color definition on input line 420.
+
+<images/sim-items-1.png, id=189, 2364.835pt x 1460.45625pt>
+File: images/sim-items-1.png Graphic file (type png)
+<use images/sim-items-1.png>
+Package pdftex.def Info: images/sim-items-1.png used on input line 424.
+(pdftex.def)             Requested size: 325.19289pt x 200.83006pt.
+
+Package xcolor Warning: Incompatible color definition on input line 433.
 
 
-Package xcolor Warning: Incompatible color definition on input line 435.
+Package xcolor Warning: Incompatible color definition on input line 438.
+
+
+Package xcolor Warning: Incompatible color definition on input line 438.
 
 [9 <./images/sim-items-1.png>]
 
-Package xcolor Warning: Incompatible color definition on input line 466.
+Package xcolor Warning: Incompatible color definition on input line 469.
 
 
-Package xcolor Warning: Incompatible color definition on input line 478.
+Package xcolor Warning: Incompatible color definition on input line 481.
 
 
-Package xcolor Warning: Incompatible color definition on input line 478.
+Package xcolor Warning: Incompatible color definition on input line 481.
 
 <images/sim-subjects-1.png, id=199, 2365.83875pt x 1451.4225pt>
 File: images/sim-subjects-1.png Graphic file (type png)
 <use images/sim-subjects-1.png>
-Package pdftex.def Info: images/sim-subjects-1.png used on input line 482.
+Package pdftex.def Info: images/sim-subjects-1.png used on input line 485.
 (pdftex.def)             Requested size: 325.18651pt x 199.49924pt.
 [10 <./images/sim-subjects-1.png>]
 
-Package xcolor Warning: Incompatible color definition on input line 514.
+Package xcolor Warning: Incompatible color definition on input line 517.
 
 
-Package xcolor Warning: Incompatible color definition on input line 526.
+Package xcolor Warning: Incompatible color definition on input line 529.
 
 
-Package xcolor Warning: Incompatible color definition on input line 526.
+Package xcolor Warning: Incompatible color definition on input line 529.
 
-LaTeX Font Info:    Try loading font information for TS1+lmr on input line 562.
+[11]
+LaTeX Font Info:    Try loading font information for TS1+lmr on input line 565.
 
 (/usr/local/texlive/2017/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [11]
+)
 
-Package xcolor Warning: Incompatible color definition on input line 575.
-
-
-Package xcolor Warning: Incompatible color definition on input line 582.
+Package xcolor Warning: Incompatible color definition on input line 578.
 
 
-Package xcolor Warning: Incompatible color definition on input line 582.
+Package xcolor Warning: Incompatible color definition on input line 585.
 
 
-Package xcolor Warning: Incompatible color definition on input line 609.
+Package xcolor Warning: Incompatible color definition on input line 585.
 
 
-Package xcolor Warning: Incompatible color definition on input line 659.
+Package xcolor Warning: Incompatible color definition on input line 612.
 
 
-Package xcolor Warning: Incompatible color definition on input line 659.
+Package xcolor Warning: Incompatible color definition on input line 662.
 
 
-Package xcolor Warning: Incompatible color definition on input line 659.
+Package xcolor Warning: Incompatible color definition on input line 662.
+
+
+Package xcolor Warning: Incompatible color definition on input line 662.
 
 [12]
 
-Package xcolor Warning: Incompatible color definition on input line 659.
+Package xcolor Warning: Incompatible color definition on input line 662.
 
 
-Package xcolor Warning: Incompatible color definition on input line 659.
+Package xcolor Warning: Incompatible color definition on input line 662.
 
 [13]
 
-Package xcolor Warning: Incompatible color definition on input line 700.
+Package xcolor Warning: Incompatible color definition on input line 703.
 
 
-Package xcolor Warning: Incompatible color definition on input line 708.
+Package xcolor Warning: Incompatible color definition on input line 711.
 
 
-Package xcolor Warning: Incompatible color definition on input line 708.
+Package xcolor Warning: Incompatible color definition on input line 711.
 
-[14] [15]
+[14] [15] [16]
 
-Package xcolor Warning: Incompatible color definition on input line 814.
-
-
-Package xcolor Warning: Incompatible color definition on input line 821.
+Package xcolor Warning: Incompatible color definition on input line 817.
 
 
-Package xcolor Warning: Incompatible color definition on input line 821.
+Package xcolor Warning: Incompatible color definition on input line 824.
 
 
-Overfull \hbox (2.32487pt too wide) in paragraph at lines 826--843
+Package xcolor Warning: Incompatible color definition on input line 824.
+
+
+Overfull \hbox (2.32487pt too wide) in paragraph at lines 829--846
  [] 
  []
 
-[16]
 
-Package xcolor Warning: Incompatible color definition on input line 853.
-
-
-Package xcolor Warning: Incompatible color definition on input line 865.
-
-
-Package xcolor Warning: Incompatible color definition on input line 865.
-
-
-Package xcolor Warning: Incompatible color definition on input line 867.
-
-
-Package xcolor Warning: Incompatible color definition on input line 872.
-
-
-Package xcolor Warning: Incompatible color definition on input line 872.
+Package xcolor Warning: Incompatible color definition on input line 856.
 
 [17]
 
-Package xcolor Warning: Incompatible color definition on input line 899.
+Package xcolor Warning: Incompatible color definition on input line 868.
 
 
-Package xcolor Warning: Incompatible color definition on input line 904.
+Package xcolor Warning: Incompatible color definition on input line 868.
 
 
-Package xcolor Warning: Incompatible color definition on input line 904.
+Package xcolor Warning: Incompatible color definition on input line 870.
 
 
-Package xcolor Warning: Incompatible color definition on input line 931.
+Package xcolor Warning: Incompatible color definition on input line 875.
 
 
-Package xcolor Warning: Incompatible color definition on input line 938.
+Package xcolor Warning: Incompatible color definition on input line 875.
 
 
-Package xcolor Warning: Incompatible color definition on input line 938.
+Package xcolor Warning: Incompatible color definition on input line 902.
 
 
-Package xcolor Warning: Incompatible color definition on input line 940.
+Package xcolor Warning: Incompatible color definition on input line 907.
 
 
-Package xcolor Warning: Incompatible color definition on input line 949.
-
-
-Package xcolor Warning: Incompatible color definition on input line 949.
-
-
-Package xcolor Warning: Incompatible color definition on input line 951.
-
-
-Package xcolor Warning: Incompatible color definition on input line 965.
-
-
-Package xcolor Warning: Incompatible color definition on input line 965.
+Package xcolor Warning: Incompatible color definition on input line 907.
 
 [18]
 
-Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 1000.
+Package xcolor Warning: Incompatible color definition on input line 934.
 
-[19] [20]
-Underfull \hbox (badness 10000) in paragraph at lines 1051--1053
+
+Package xcolor Warning: Incompatible color definition on input line 941.
+
+
+Package xcolor Warning: Incompatible color definition on input line 941.
+
+
+Package xcolor Warning: Incompatible color definition on input line 943.
+
+
+Package xcolor Warning: Incompatible color definition on input line 952.
+
+
+Package xcolor Warning: Incompatible color definition on input line 952.
+
+
+Package xcolor Warning: Incompatible color definition on input line 954.
+
+
+Package xcolor Warning: Incompatible color definition on input line 968.
+
+
+Package xcolor Warning: Incompatible color definition on input line 968.
+
+[19]
+
+Package hyperref Warning: Difference (2) between bookmark levels is greater 
+(hyperref)                than one, level fixed on input line 1003.
+
+[20]
+Underfull \hbox (badness 10000) in paragraph at lines 1049--1051
  [][]\T1/lmr/m/n/10.95 (+20) DeBruine, L. (2019). \T1/lmr/m/it/10.95 (+20) Faux
  (beta) (ver-sion v0.0.0.9011-beta)\T1/lmr/m/n/10.95 (+20) . Zen-odo.
  []
 
 [21] [22]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1078.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1078.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1076.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1076.
 (./01.AMPSS_LMEM.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1078.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1078.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1076.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1076.
 
 Package rerunfilecheck Info: File `01.AMPSS_LMEM.out' has not changed.
-(rerunfilecheck)             Checksum: 0B65BCAA505AAAB8AD6CA35EC80B5232;4608.
+(rerunfilecheck)             Checksum: F28A6711C255C7757D70EFA957BD7094;4720.
  ) 
 Here is how much of TeX's memory you used:
  25467 strings out of 492995
- 439059 string characters out of 6132705
- 597604 words of memory out of 5000000
+ 439100 string characters out of 6132705
+ 595490 words of memory out of 5000000
  28290 multiletter control sequences out of 15000+600000
  106621 words of font info for 166 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1759,10 +1777,10 @@ l/texlive/2017/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/texlive/
 dist/fonts/type1/public/lm/lmtk10.pfb></usr/local/texlive/2017/texmf-dist/fonts
 /type1/public/lm/lmtt10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/pub
 lic/lm/lmtti10.pfb>
-Output written on 01.AMPSS_LMEM.pdf (22 pages, 454542 bytes).
+Output written on 01.AMPSS_LMEM.pdf (22 pages, 453975 bytes).
 PDF statistics:
- 402 PDF objects out of 1000 (max. 8388607)
- 353 compressed objects within 4 object streams
+ 400 PDF objects out of 1000 (max. 8388607)
+ 351 compressed objects within 4 object streams
  119 named destinations out of 1000 (max. 500000)
  14564 words of extra memory for PDF output out of 17280 (max. 10000000)
 

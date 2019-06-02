@@ -33,11 +33,11 @@ draft             : no
 documentclass     : "apa6"
 classoption       : "doc"
 output            : 
-  papaja::apa6_pdf:
-    default
   rmarkdown::html_document:
     toc: true
     toc_depth: 4
+  papaja::apa6_pdf:
+    default
 header-includes   :
   - \usepackage{float}
   - \floatplacement{figure}{H}
@@ -73,8 +73,6 @@ knitr::knit_hooks$set(document = function(x) {
 # Background
 
 In this article, we walk through the simulation and analysis of multilevel data with crossed random effects of subjects and stimuli. The article's target audience is researchers who work with experimental designs that sample subjects and stimuli, such as is the case for a large amount of experimental research in face perception, psycholinguistics, or social cognition. The tutorial assumes basic familiarity with R programming.
-
-The R code in this tutorial is supplemented by two web apps at http://shiny.psy.gla.ac.uk/lmem_sim/ and http://shiny.psy.gla.ac.uk/crossed that perform data simulation without requiring knowledge of R code. These apps allow you to change parameters and inspect the results of LMEM and ANOVA analyses, as well as calculate power and false positive rates for these analyses.
 
 # Generalizing to a population of encounters
 
@@ -128,6 +126,10 @@ population\strut
 \end{minipage}\tabularnewline
 \end{longtable}
 \end{tcolorbox}
+
+# Data, materials, and online resources
+
+The code to reproduce the analyses reported in this article has been made publicly available via the Open Science Framework and can be accessed at https://osf.io/3cz2e/. This code is supplemented by two web apps at http://shiny.psy.gla.ac.uk/lmem_sim/ and http://shiny.psy.gla.ac.uk/crossed that perform data simulation without requiring knowledge of R code. These apps allow you to change parameters and inspect the results of LMEM and ANOVA analyses, as well as calculate power and false positive rates for these analyses.
 
 # Simulating data with crossed random factors
 
@@ -708,9 +710,6 @@ The author(s) declared that there were no conflicts of interest with respect to 
 
 ### Funding
 LMD is supported by European Research Council grant #647910.
-
-### Open Practices
-The code to reproduce the analyses reported in this article has been made publicly available via the Open Science Framework and can be accessed at https://osf.io/3cz2e/. 
 
 
 \newpage

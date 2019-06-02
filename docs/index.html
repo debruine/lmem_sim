@@ -399,6 +399,7 @@ Experimental designs that sample both subjects and stimuli from a larger populat
 <ul>
 <li><a href="#background">Background</a></li>
 <li><a href="#generalizing-to-a-population-of-encounters">Generalizing to a population of encounters</a></li>
+<li><a href="#data-materials-and-online-resources">Data, materials, and online resources</a></li>
 <li><a href="#simulating-data-with-crossed-random-factors">Simulating data with crossed random factors</a><ul>
 <li><a href="#required-software">Required software</a></li>
 <li><a href="#establishing-the-data-generating-parameters">Establishing the data-generating parameters</a><ul>
@@ -424,7 +425,6 @@ Experimental designs that sample both subjects and stimuli from a larger populat
 <li><a href="#author-contributions">Author Contributions</a></li>
 <li><a href="#declaration-of-conflicting-interests">Declaration of Conflicting Interests</a></li>
 <li><a href="#funding">Funding</a></li>
-<li><a href="#open-practices">Open Practices</a></li>
 </ul></li>
 <li><a href="#references">References</a></li>
 </ul>
@@ -433,7 +433,6 @@ Experimental designs that sample both subjects and stimuli from a larger populat
 <div id="background" class="section level1">
 <h1>Background</h1>
 <p>In this article, we walk through the simulation and analysis of multilevel data with crossed random effects of subjects and stimuli. The article’s target audience is researchers who work with experimental designs that sample subjects and stimuli, such as is the case for a large amount of experimental research in face perception, psycholinguistics, or social cognition. The tutorial assumes basic familiarity with R programming.</p>
-<p>The R code in this tutorial is supplemented by two web apps at <a href="http://shiny.psy.gla.ac.uk/lmem_sim/" class="uri">http://shiny.psy.gla.ac.uk/lmem_sim/</a> and <a href="http://shiny.psy.gla.ac.uk/crossed" class="uri">http://shiny.psy.gla.ac.uk/crossed</a> that perform data simulation without requiring knowledge of R code. These apps allow you to change parameters and inspect the results of LMEM and ANOVA analyses, as well as calculate power and false positive rates for these analyses.</p>
 </div>
 <div id="generalizing-to-a-population-of-encounters" class="section level1">
 <h1>Generalizing to a population of encounters</h1>
@@ -443,6 +442,10 @@ Experimental designs that sample both subjects and stimuli from a larger populat
 <p>Despite mixed-effects modeling becoming the <em>de facto</em> standard for analysis in psycholinguistics, the approach has yet to take hold in other areas where stimuli are routinely sampled, even in spite of repeated calls for improved analyses in social psychology <span class="citation">(Judd, Westfall, and Kenny 2012)</span> and neuroimaging <span class="citation">(Bedny, Aguirre, and Thompson-Schill 2007; Westfall, Nichols, and Yarkoni 2016)</span>. One of the likely reasons for the limited uptake outside of psycholinguistics is because mixed-effects models expose the analyst to a level of statistical and technical complexity far beyond most researchers’ training. While some of this complexity is specific to mixed-effects modeling, some of it is simply hidden away from users of traditional techniques by GUIs and function defaults. The novice mixed modeler is suddenly confronted with the need to make decisions about how to specify categorical predictors, which random effects to include or exclude, which of the statistics in the voluminous output to attend to, and whether and how to re-configure the optimizer function when a convergence error or singularity warning appears.</p>
 <p>We are optimisic that the increasing adoption of the mixed-effects approach will improve the generality and thus reproducibility of studies in psychology and related fields, but empathize with the frustration — and sometimes, exasperation — expressed by many novices when they attempt to grapple with these models in their research. Much of the uncertainty and unease around mixed-effects models comes from using them in situations where the ground truth is unknown. A profitable way to improve understanding and user confidence is through data simulation. Knowing the ground truth allows the user to experiment with various modeling choices and observe their impact on a model’s performance.</p>
 
+</div>
+<div id="data-materials-and-online-resources" class="section level1">
+<h1>Data, materials, and online resources</h1>
+<p>The code to reproduce the analyses reported in this article has been made publicly available via the Open Science Framework and can be accessed at <a href="https://osf.io/3cz2e/" class="uri">https://osf.io/3cz2e/</a>. This code is supplemented by two web apps at <a href="http://shiny.psy.gla.ac.uk/lmem_sim/" class="uri">http://shiny.psy.gla.ac.uk/lmem_sim/</a> and <a href="http://shiny.psy.gla.ac.uk/crossed" class="uri">http://shiny.psy.gla.ac.uk/crossed</a> that perform data simulation without requiring knowledge of R code. These apps allow you to change parameters and inspect the results of LMEM and ANOVA analyses, as well as calculate power and false positive rates for these analyses.</p>
 </div>
 <div id="simulating-data-with-crossed-random-factors" class="section level1">
 <h1>Simulating data with crossed random factors</h1>
@@ -1509,10 +1512,6 @@ sims %&gt;%
 <div id="funding" class="section level3">
 <h3>Funding</h3>
 <p>LMD is supported by European Research Council grant #647910.</p>
-</div>
-<div id="open-practices" class="section level3">
-<h3>Open Practices</h3>
-<p>The code to reproduce the analyses reported in this article has been made publicly available via the Open Science Framework and can be accessed at <a href="https://osf.io/3cz2e/" class="uri">https://osf.io/3cz2e/</a>.</p>
 
 </div>
 </div>
