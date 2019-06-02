@@ -30,7 +30,6 @@ footnotelist      : no
 linenumbers       : yes
 mask              : no
 draft             : no
-#appendix          : "appendix0_glossary.Rmd"
 documentclass     : "apa6"
 classoption       : "doc"
 output            : papaja::apa6_pdf
