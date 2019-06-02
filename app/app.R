@@ -9,7 +9,7 @@ library(ggplot2)
 library(lme4)
 library(afex)
 #library(faux)
-library(broom.mixed)
+#library(broom.mixed)
 options("scipen"=10, "digits"=4)
 
 ## Functions ----
@@ -35,14 +35,15 @@ ui <- dashboardPage(
       menuItem("Compare ANOVA & LMER", tabName = "comp_tab"),
       menuItem("Power & False Positives ", tabName = "power_tab"),
       actionButton("resim", "Re-Simulate"),
+      actionButton("reset", "Reset Parameters"),
       # fixed effects input ----
       box(
         title = "Fixed Effects",
         solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("b0", "Overall Mean", 
+        sliderInput("b0", "b0: grand mean", 
                     min = 600, max = 1000, value = 800, step = 100),
-        sliderInput("b1", "Effect of category", 
+        sliderInput("b1", "b1: effect of category", 
                     min = -200, max = 200, value = 50, step = 10)
         
       ),
@@ -51,29 +52,28 @@ ui <- dashboardPage(
         title = "Random Effects",
         solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("S0s_sd", "Subject intercept SD:", 
+        sliderInput("S0s_sd", "S0s_sd: subject intercept SD", 
                     min = 0, max = 200, value = 100, step = 10),
-        sliderInput("S1s_sd", "Subject slope SD:", 
+        sliderInput("S1s_sd", "S1s_sd: subject slope SD:", 
                     min = 0, max = 200, value =  40, step = 10),
-        sliderInput("scor", "Subject intercept*slope correlation:", 
+        sliderInput("scor", "scor: subject intercept*slope correlation", 
                     min = -0.9, max = 0.9, value = 0.2, step = 0.1),
-        sliderInput("I0i_sd", "Item intercept SD:", 
+        sliderInput("I0i_sd", "I0i_sd: item intercept SD", 
                     min = 0, max = 200, value =  80, step = 10),
-        sliderInput("err_sd", "Residual (error) SD:", 
+        sliderInput("err_sd", "err_sd: residual (error) SD", 
                     min = 0, max = 400, value = 200, step = 10)
       ),
-      actionButton("reset", "Reset Parameters"),
-     tags$a(href="https://github.com/debruine/lmem_sim/tree/master/anova_vs_lmer", "Code for this app")
-    ),
-    # sample size input ----
-    box(
-      title = "Sample Size",
-      solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-      width = NULL,
-      sliderInput("nsubj", "Subjects:", 
-                  min = 10, max = 200, value = 100, step = 10),
-      sliderInput("nitem", "Items per Group:", 
-                  min = 5, max = 50, value = 25, step = 5)
+      # sample size input ----
+      box(
+        title = "Sample Size",
+        solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
+        width = NULL,
+        sliderInput("nsubj", "nsubj: number of subjects", 
+                    min = 10, max = 200, value = 100, step = 10),
+        sliderInput("nitem", "nitem: faces per group", 
+                    min = 5, max = 50, value = 25, step = 5)
+      ),
+      tags$a(href="https://github.com/debruine/lmem_sim/tree/master/app", "Code for this app")
     )
   ),
   dashboardBody(
@@ -211,7 +211,38 @@ server <- function(input, output, session) {
   
   ## broom_output ----
   output$broom_output <- renderTable({
-    lmer_mod() %>% tidy()
+    #lmer_mod() %>% tidy()
+    mod_sim <- lmer_mod()
+    srfx <- attr(VarCorr(mod_sim)$subj_id, "stddev") %>% round(2)
+    irfx <- attr(VarCorr(mod_sim)$item_id, "stddev") %>% round(2)
+    rc   <- attr(VarCorr(mod_sim)$subj_id, "correlation")[1, 2] %>% round(2)
+    res  <- sigma(mod_sim) %>% round(2)
+    ffx  <- fixef(mod_sim) %>% round(2)
+    
+    data.frame(
+      "term" = c("intercept (grand mean)",
+                 "slope (category effect)",
+                 "subject intercept SD",
+                 "subject slope SD",
+                 "subject intercept*slope cor",
+                 "item intercept SD",
+                 "residual (error) SD"),
+      "variable" = c("b0", 
+                 "b1", 
+                 "S0s_sd", 
+                 "S1s_sd", 
+                 "Scor", 
+                 "I0i_sd", 
+                 "err_sd"),
+      "parameter" = c(input$b0,
+                      input$b1,
+                      input$S0s_sd,
+                      input$S1s_sd,
+                      input$scor,
+                      input$I0i_sd,
+                      input$err_sd),
+      "estimate" = c(ffx, srfx, rc, irfx, res)
+    )
   }, digits = 3, width = "100%")
   
   ## power_calc ----

@@ -6,7 +6,8 @@ main_tab <- tabItem(
   HTML("<p>The simulation defaults to an effect for item condition of 50 (ingroup faces are classified 50 ms faster than outgroup faces). You can change these defaults under the Fixed Effects or Random Effects tab.</p>"),
   fluidRow(
     box(
-      title = "Output from broom.mixed::tidy(lmerMod)",
+      title = "Overview",
+      #title = "Output from broom.mixed::tidy(lmerMod)",
       width = 12,
       tableOutput("broom_output")
     )
