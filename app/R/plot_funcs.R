@@ -1,24 +1,24 @@
-plot_dat <- function(dat, mu = 0, view = c("violin", "boxplot"), grp = "") {
-  min_Y <- min(dat$Y)
-  max_Y <- max(dat$Y)
+plot_dat <- function(dat, b0 = 0, view = c("violin", "boxplot"), grp = "") {
+  min_RT <- min(dat$RT)
+  max_RT <- max(dat$RT)
   
   # aggregate over subjects or stimuli if grp is set
   if (grp == "subj") {
     dat <- dat %>%
-      group_by(subj_id, condition) %>%
-      summarise(Y = mean(Y))
+      group_by(subj_id, category) %>%
+      summarise(RT = mean(RT))
   } else if (grp == "item") {
     dat <- dat %>%
-      group_by(item_id, condition) %>%
-      summarise(Y = mean(Y))
+      group_by(item_id, category) %>%
+      summarise(RT = mean(RT))
   }
   
-  plot <- ggplot(dat, aes(condition, Y, color = condition)) +
-    geom_hline(yintercept = mu) +
+  plot <- ggplot(dat, aes(category, RT, color = category)) +
+    geom_hline(yintercept = b0) +
     xlab("Stimulus Type") +
     ylab("Rating") +
     scale_color_discrete(name = "Stimulus Type") +
-    coord_cartesian(ylim = c(min_Y, max_Y)) + 
+    coord_cartesian(ylim = c(min_RT, max_RT)) + 
     theme(legend.position="bottom")
   
   if ("violin" %in% view) {

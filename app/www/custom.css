@@ -21,17 +21,17 @@ ul.sidebar-menu label { width: 100%; padding: 1px 5px; }
 
 label[for="nsubj"] { background-color: inherit; }
 label[for="nitem"] { background-color: inherit; }
-#broom_output table tbody tr:nth-child(1) td:nth-child(4), label[for="mu"] { 
+#broom_output table tbody tr:nth-child(1) td:nth-child(4), label[for="b0"] { 
   background-color: #E50F45; }
-#broom_output table tbody tr:nth-child(2) td:nth-child(4), label[for="eff"] { 
+#broom_output table tbody tr:nth-child(2) td:nth-child(4), label[for="b1"] { 
   background-color: #E76839; }
-#broom_output table tbody tr:nth-child(3) td:nth-child(4), label[for="sri_sd"] { 
+#broom_output table tbody tr:nth-child(3) td:nth-child(4), label[for="S0s_sd"] { 
   background-color: #B29700; }
-#broom_output table tbody tr:nth-child(4) td:nth-child(4), label[for="srs_sd"] { 
+#broom_output table tbody tr:nth-child(4) td:nth-child(4), label[for="S1s_sd"] { 
   background-color: #086F50; }
-#broom_output table tbody tr:nth-child(5) td:nth-child(4), label[for="rcor"] { 
+#broom_output table tbody tr:nth-child(5) td:nth-child(4), label[for="scor"] { 
   background-color: #022B76; }
-#broom_output table tbody tr:nth-child(6) td:nth-child(4), label[for="iri_sd"] { 
+#broom_output table tbody tr:nth-child(6) td:nth-child(4), label[for="I0i_sd"] { 
   background-color: #6D045D; }
 #broom_output table tbody tr:nth-child(7) td:nth-child(4), label[for="err_sd"] { 
   background-color: #C20FA7; }

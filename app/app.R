@@ -27,7 +27,7 @@ source("power_tab.R")
 
 ## UI ----
 ui <- dashboardPage(
-  dashboardHeader(title = "ANOVA vs LMER"),
+  dashboardHeader(title = "Simulating for LMEM"),
   dashboardSidebar(
     width = 350,
     sidebarMenu(
@@ -40,9 +40,10 @@ ui <- dashboardPage(
         title = "Fixed Effects",
         solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("mu", "Overall Mean", min = 0, max = 1600, value = 800, step = 100),
-        sliderInput("eff", "Effect of Condition", 
-                    min = -400, max = 400, value = 80, step = 10)
+        sliderInput("b0", "Overall Mean", 
+                    min = 600, max = 1000, value = 800, step = 100),
+        sliderInput("b1", "Effect of category", 
+                    min = -200, max = 200, value = 50, step = 10)
         
       ),
       # random effects input ----
@@ -50,12 +51,16 @@ ui <- dashboardPage(
         title = "Random Effects",
         solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("sri_sd", "Subject intercept SD:", min = 0, max = 200, value = 100, step = 10),
-        sliderInput("srs_sd", "Subject slope SD:", min = 0, max = 200, value = 40, step = 10),
-        sliderInput("rcor", "Subject intercept*slope correlation:", 
+        sliderInput("S0s_sd", "Subject intercept SD:", 
+                    min = 0, max = 200, value = 100, step = 10),
+        sliderInput("S1s_sd", "Subject slope SD:", 
+                    min = 0, max = 200, value =  40, step = 10),
+        sliderInput("scor", "Subject intercept*slope correlation:", 
                     min = -0.9, max = 0.9, value = 0.2, step = 0.1),
-        sliderInput("iri_sd", "Item intercept SD:", min = 0, max = 200, value = 80, step = 10),
-        sliderInput("err_sd", "Residual (error) SD:", min = 0, max = 400, value = 200, step = 10)
+        sliderInput("I0i_sd", "Item intercept SD:", 
+                    min = 0, max = 200, value =  80, step = 10),
+        sliderInput("err_sd", "Residual (error) SD:", 
+                    min = 0, max = 400, value = 200, step = 10)
       ),
       actionButton("reset", "Reset Parameters"),
      tags$a(href="https://github.com/debruine/lmem_sim/tree/master/anova_vs_lmer", "Code for this app")
@@ -90,16 +95,14 @@ server <- function(input, output, session) {
   
   # reset all inputs ---- 
   observeEvent(input$reset, {
-    updateSliderInput(session, "mu", value = 800)
-    updateSliderInput(session, "eff", value = 80)
-    
-    updateSliderInput(session, "nsubj", value = 100)
-    updateSliderInput(session, "nitem", value = 25)
-    
-    updateSliderInput(session, "iri_sd", value = 80)
-    updateSliderInput(session, "sri_sd", value = 100)
-    updateSliderInput(session, "srs_sd", value = 40)
-    updateSliderInput(session, "rcor", value = 0.20)
+    updateSliderInput(session, "b0",     value = 800)
+    updateSliderInput(session, "b1",     value = 50)
+    updateSliderInput(session, "nsubj",  value = 100)
+    updateSliderInput(session, "nitem",  value = 25)
+    updateSliderInput(session, "I0i_sd", value = 80)
+    updateSliderInput(session, "S0s_sd", value = 100)
+    updateSliderInput(session, "S1s_sd", value = 40)
+    updateSliderInput(session, "scor",   value = 0.20)
     updateSliderInput(session, "err_sd", value = 200)
   })
   
@@ -111,10 +114,10 @@ server <- function(input, output, session) {
     # simulate each trial
     sim_trials(nsubj  = input$nsubj,
                nitem  = input$nitem,
-               iri_sd = input$iri_sd,
-               sri_sd = input$sri_sd,
-               srs_sd = input$srs_sd,
-               rcor   = input$rcor,
+               I0i_sd = input$I0i_sd,
+               S0s_sd = input$S0s_sd,
+               S1s_sd = input$S1s_sd,
+               scor   = input$scor,
                err_sd = input$err_sd)
   })
   
@@ -124,7 +127,7 @@ server <- function(input, output, session) {
     output$power_table <- renderTable({ tibble() })
 
     # calculate DV using current effect sizes and coding
-    dat_code(trials(), mu = input$mu, eff = input$eff)
+    dat_code(trials(), b0 = input$b0, b1 = input$b1)
   })
   
   # run LMER ----
@@ -151,21 +154,21 @@ server <- function(input, output, session) {
   
   ## dat_plot ----
   output$dat_plot <- renderPlot({
-    plot_dat(dat(), input$mu, input$dat_plot_view)
+    plot_dat(dat(), input$b0, input$dat_plot_view)
   }, height = function() {
     session$clientData$output_dat_plot_width*2/3
   })
   
   ## dat_subj_plot ----
   output$dat_subj_plot <- renderPlot({
-    plot_dat(dat(), input$mu, input$dat_plot_view, "subj")
+    plot_dat(dat(), input$b0, input$dat_plot_view, "subj")
   }, height = function() {
     session$clientData$output_dat_subj_plot_width*2/3
   })
   
   ## dat_item_plot ----
   output$dat_item_plot <- renderPlot({
-    plot_dat(dat(), input$mu, input$dat_plot_view, "item")
+    plot_dat(dat(), input$b0, input$dat_plot_view, "item")
   }, height = function() {
     session$clientData$output_dat_item_plot_width*2/3
   })
@@ -224,21 +227,21 @@ server <- function(input, output, session) {
       if (r == n_reps) progress$close()
       sim_power(r, 
                 nsubj = input$nsubj,
-                sri_sd = input$sri_sd,
+                S0s_sd = input$S0s_sd,
                 nitem = input$nitem,
-                iri_sd = input$iri_sd,
-                srs_sd = input$srs_sd,
-                rcor = input$rcor,
+                I0i_sd = input$I0i_sd,
+                S1s_sd = input$S1s_sd,
+                scor = input$scor,
                 err_sd = input$err_sd,
-                mu = input$mu,
-                eff = input$eff)
+                b0 = input$b0,
+                b1 = input$b1)
     })
     
     output$power_table <- renderTable({
       message("power_table()")
       
       dp %>% 
-        filter(effect == "cond") %>%
+        filter(effect == "cat") %>%
         mutate(
           analysis = recode(analysis, 
                             "lmer" = "LMER",

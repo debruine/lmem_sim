@@ -62,7 +62,7 @@ comp_tab <- tabItem(
       box(
         title = "LMER",
         width = NULL,
-        p("The p-value for the main effect in LMER will be identical to the by-stimuli ANOVA if the random slope for the main effect is set to zero (i.e., where between-subject variation in the effect of stimulus type is 0)."),
+        p("The p-value for the main effect in LMER will be near-identical to the by-stimuli ANOVA if the random slope for the main effect is set to zero (i.e., where between-subject variation in the effect of stimulus type is 0)."),
         tableOutput("lmer_coef")
       )
     ),

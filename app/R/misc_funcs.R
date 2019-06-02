@@ -3,11 +3,11 @@ cohen_d <- function(x, y, paired = TRUE) {
   # adapted from https://github.com/Lakens/anchor_based_methods_SESOI/blob/master/effect_size_d_paired_function.R
   
   m_diff <- mean(y-x) # mean difference
-  sd1 <- sd(x) #standard deviation of measurement 1
-  sd2 <- sd(y) #standard deviation of measurement 2
+  sd1    <- sd(x) #standard deviation of measurement 1
+  sd2    <- sd(y) #standard deviation of measurement 2
   s_diff <- sd(y-x) #standard deviation of the difference scores
-  N <- length(x) #number of observations of measurement 1
-  N2 <- length(y) #number of observations of measurement 2
+  N      <- length(x) #number of observations of measurement 1
+  N2     <- length(y) #number of observations of measurement 2
   
   # design-specific pooled standard deviation and
   # bias correction (unb)

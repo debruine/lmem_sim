@@ -1,24 +1,24 @@
 sim_lmer <- function(dat_sim) {
-  mod_sim <- lmer(Y ~ cond + (1 | item_id) + (1 + cond | subj_id),
-                  dat_sim, REML = FALSE)
+  mod_sim <- lmer(RT ~ cat + (1 | item_id) + (1 + cat | subj_id),
+                  dat_sim, REML = TRUE)
   
   return(mod_sim)
 }
 
 sim_subj_anova <- function(dat) {
   dat_sub <- dat %>%
-    group_by(subj_id, condition, cond) %>%
-    summarise(Y = mean(Y))
+    group_by(subj_id, category, cat) %>%
+    summarise(RT = mean(RT))
   
-  mod <- afex::aov_4(Y ~ (cond | subj_id),
+  mod <- afex::aov_4(RT ~ (cat | subj_id),
                      factorize = FALSE, check_contrasts = FALSE,
                      data = dat_sub)
   
   mod.sum <- anova(mod)
 
   # within cohen's d  
-  x <- filter(dat_sub, condition == "ingroup") %>% pull(Y)
-  y <- filter(dat_sub, condition == "outgroup") %>% pull(Y)
+  x <- filter(dat_sub, category == "ingroup") %>% pull(RT)
+  y <- filter(dat_sub, category == "outgroup") %>% pull(RT)
   mod.sum$d <- cohen_d(x, y, TRUE)
 
   return(mod.sum)
@@ -26,18 +26,18 @@ sim_subj_anova <- function(dat) {
 
 sim_item_anova <- function(dat) {
   dat_item <- dat %>%
-    group_by(item_id, condition, cond) %>%
-    summarise(Y = mean(Y))
+    group_by(item_id, category, cat) %>%
+    summarise(RT = mean(RT))
   
-  mod <- afex::aov_4(Y ~ cond + (1 | item_id),
+  mod <- afex::aov_4(RT ~ cat + (1 | item_id),
                      factorize = FALSE, check_contrasts = FALSE,
                      data = dat_item)
   
   mod.sum <- anova(mod)
   
   # between cohen's d
-  x <- filter(dat_item, condition == "ingroup") %>% pull(Y)
-  y <- filter(dat_item, condition == "outgroup") %>% pull(Y)
+  x <- filter(dat_item, category == "ingroup") %>% pull(RT)
+  y <- filter(dat_item, category == "outgroup") %>% pull(RT)
   mod.sum$d <- cohen_d(x, y, FALSE)
   
   return(mod.sum)
@@ -54,7 +54,7 @@ sim_power <- function(rep = 0, ...) {
   
   if (dots$eff != 0) {
     # run models for null effect to calculate false positives
-    dat$Y <- dat$Y_null
+    dat$RT <- dat$RT_null
     
     mod.lmer.null <- sim_lmer(dat)
     mod.subj.null <- sim_subj_anova(dat)
