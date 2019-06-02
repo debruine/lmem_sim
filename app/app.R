@@ -213,11 +213,11 @@ server <- function(input, output, session) {
   output$broom_output <- renderTable({
     #lmer_mod() %>% tidy()
     mod_sim <- lmer_mod()
-    srfx <- attr(VarCorr(mod_sim)$subj_id, "stddev") %>% round(2)
-    irfx <- attr(VarCorr(mod_sim)$item_id, "stddev") %>% round(2)
-    rc   <- attr(VarCorr(mod_sim)$subj_id, "correlation")[1, 2] %>% round(2)
-    res  <- sigma(mod_sim) %>% round(2)
-    ffx  <- fixef(mod_sim) %>% round(2)
+    srfx <- attr(VarCorr(mod_sim)$subj_id, "stddev")
+    irfx <- attr(VarCorr(mod_sim)$item_id, "stddev")
+    rc   <- attr(VarCorr(mod_sim)$subj_id, "correlation")[1, 2]
+    res  <- sigma(mod_sim)
+    ffx  <- fixef(mod_sim)
     
     data.frame(
       "term" = c("intercept (grand mean)",
@@ -243,7 +243,7 @@ server <- function(input, output, session) {
                       input$err_sd),
       "estimate" = c(ffx, srfx, rc, irfx, res)
     )
-  }, digits = 3, width = "100%")
+  }, digits = 2, width = "100%")
   
   ## power_calc ----
   observeEvent(input$calc_power, {
