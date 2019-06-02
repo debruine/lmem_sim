@@ -1992,10 +1992,11 @@ mod_sim &lt;- lmer(RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id),
 
 summary(mod_sim, corr = FALSE)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiTGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBSRU1MLiB0LXRlc3RzIHVzZSBTYXR0ZXJ0aHdhaXRlJ3MgbWV0aG9kIFtcbmxtZXJNb2RMbWVyVGVzdF1cbkZvcm11bGE6IFJUIH4gMSArIGNhdCArICgxIHwgaXRlbV9pZCkgKyAoMSArIGNhdCB8IHN1YmpfaWQpXG4gICBEYXRhOiBkYXRfc2ltXG5cblJFTUwgY3JpdGVyaW9uIGF0IGNvbnZlcmdlbmNlOiA2Nzc0Ni42XG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTMuNjkwNiAtMC42NzQzIC0wLjAwMjkgIDAuNjc5MSAgMy41ODY2IFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgICBOYW1lICAgICAgICBWYXJpYW5jZSBTdGQuRGV2LiBDb3JyXG4gc3Vial9pZCAgKEludGVyY2VwdCkgIDgyMTkgICAgIDkwLjY2ICAgICAgIFxuICAgICAgICAgIGNhdCAgICAgICAgICAyNjgzICAgICA1MS44MCAgIDAuMTBcbiBpdGVtX2lkICAoSW50ZXJjZXB0KSAgNDQ2NyAgICAgNjYuODMgICAgICAgXG4gUmVzaWR1YWwgICAgICAgICAgICAgNDEzOTkgICAgMjAzLjQ3ICAgICAgIFxuTnVtYmVyIG9mIG9iczogNTAwMCwgZ3JvdXBzOiAgc3Vial9pZCwgMTAwOyBpdGVtX2lkLCA1MFxuXG5GaXhlZCBlZmZlY3RzOlxuICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciAgICAgZGYgdCB2YWx1ZSBQcig+fHR8KSAgICBcbihJbnRlcmNlcHQpICAgODA3LjcyICAgICAgMTMuNDEgMTE0Ljk2ICA2MC4yMzggICA8MmUtMTYgKioqXG5jYXQgICAgICAgICAgICA0Ny45MSAgICAgIDIwLjQzICA1NC4yMCAgIDIuMzQ2ICAgMC4wMjI3ICogIFxuLS0tXG5TaWduaWYuIGNvZGVzOiAgMCDigJgqKirigJkgMC4wMDEg4oCYKirigJkgMC4wMSDigJgq4oCZIDAuMDUg4oCYLuKAmSAwLjEg4oCYIOKAmSAxXG4ifQ== -->
-<pre><code>Linear mixed model fit by REML. t-tests use Satterthwaite's method [
-lmerModLmerTest]
-Formula: RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id)
+<!-- rnb-output-begin eyJkYXRhIjoiTGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBSRU1MLiB0LXRlc3RzIHVzZVxuICBTYXR0ZXJ0aHdhaXRlJ3MgbWV0aG9kIFtsbWVyTW9kTG1lclRlc3RdXG5Gb3JtdWxhOiBcblJUIH4gMSArIGNhdCArICgxIHwgaXRlbV9pZCkgKyAoMSArIGNhdCB8IHN1YmpfaWQpXG4gICBEYXRhOiBkYXRfc2ltXG5cblJFTUwgY3JpdGVyaW9uIGF0IGNvbnZlcmdlbmNlOiA2Nzc0Ni42XG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTMuNjkwNiAtMC42NzQzIC0wLjAwMjkgIDAuNjc5MSAgMy41ODY2IFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgICBOYW1lICAgICAgICBWYXJpYW5jZSBTdGQuRGV2LiBDb3JyXG4gc3Vial9pZCAgKEludGVyY2VwdCkgIDgyMTkgICAgIDkwLjY2ICAgICAgIFxuICAgICAgICAgIGNhdCAgICAgICAgICAyNjgzICAgICA1MS44MCAgIDAuMTBcbiBpdGVtX2lkICAoSW50ZXJjZXB0KSAgNDQ2NyAgICAgNjYuODMgICAgICAgXG4gUmVzaWR1YWwgICAgICAgICAgICAgNDEzOTkgICAgMjAzLjQ3ICAgICAgIFxuTnVtYmVyIG9mIG9iczogNTAwMCwgZ3JvdXBzOiAgc3Vial9pZCwgMTAwOyBpdGVtX2lkLCA1MFxuXG5GaXhlZCBlZmZlY3RzOlxuICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciAgICAgZGYgdCB2YWx1ZSBQcig+fHR8KVxuKEludGVyY2VwdCkgICA4MDcuNzIgICAgICAxMy40MSAxMTQuOTYgIDYwLjIzOCAgIDwyZS0xNlxuY2F0ICAgICAgICAgICAgNDcuOTEgICAgICAyMC40MyAgNTQuMjAgICAyLjM0NiAgIDAuMDIyN1xuICAgICAgICAgICAgICAgXG4oSW50ZXJjZXB0KSAqKipcbmNhdCAgICAgICAgICogIFxuLS0tXG5TaWduaWYuIGNvZGVzOiAgXG4wIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgu4oCZIDAuMSDigJgg4oCZIDFcbiJ9 -->
+<pre><code>Linear mixed model fit by REML. t-tests use
+  Satterthwaite's method [lmerModLmerTest]
+Formula: 
+RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id)
    Data: dat_sim
 
 REML criterion at convergence: 67746.6
@@ -2013,11 +2014,15 @@ Random effects:
 Number of obs: 5000, groups:  subj_id, 100; item_id, 50
 
 Fixed effects:
-            Estimate Std. Error     df t value Pr(&gt;|t|)    
-(Intercept)   807.72      13.41 114.96  60.238   &lt;2e-16 ***
-cat            47.91      20.43  54.20   2.346   0.0227 *  
+            Estimate Std. Error     df t value Pr(&gt;|t|)
+(Intercept)   807.72      13.41 114.96  60.238   &lt;2e-16
+cat            47.91      20.43  54.20   2.346   0.0227
+               
+(Intercept) ***
+cat         *  
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</code></pre>
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -2133,14 +2138,15 @@ afex::aov_ez(
   data = dat_subj
 )</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiQW5vdmEgVGFibGUgKFR5cGUgMyB0ZXN0cylcblxuUmVzcG9uc2U6IFJUXG4gICAgRWZmZWN0ICAgIGRmICAgICBNU0UgICAgICAgICBGIGdlcyBwLnZhbHVlXG4xIGNhdGVnb3J5IDEsIDk5IDI5OTcuMzcgMzguMjkgKioqIC4wNSAgPC4wMDAxXG4tLS1cblNpZ25pZi4gY29kZXM6ICAwIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgr4oCZIDAuMSDigJgg4oCZIDFcbiJ9 -->
+<!-- rnb-output-begin eyJkYXRhIjoiQW5vdmEgVGFibGUgKFR5cGUgMyB0ZXN0cylcblxuUmVzcG9uc2U6IFJUXG4gICAgRWZmZWN0ICAgIGRmICAgICBNU0UgICAgICAgICBGIGdlcyBwLnZhbHVlXG4xIGNhdGVnb3J5IDEsIDk5IDI5OTcuMzcgMzguMjkgKioqIC4wNSAgPC4wMDAxXG4tLS1cblNpZ25pZi4gY29kZXM6ICBcbjAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmCvigJkgMC4xIOKAmCDigJkgMVxuIn0= -->
 <pre><code>Anova Table (Type 3 tests)
 
 Response: RT
     Effect    df     MSE         F ges p.value
 1 category 1, 99 2997.37 38.29 *** .05  &lt;.0001
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘+’ 0.1 ‘ ’ 1</code></pre>
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘+’ 0.1 ‘ ’ 1</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -2158,14 +2164,15 @@ afex::aov_ez(
   data = dat_item
 )</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiQW5vdmEgVGFibGUgKFR5cGUgMyB0ZXN0cylcblxuUmVzcG9uc2U6IFJUXG4gICAgRWZmZWN0ICAgIGRmICAgICBNU0UgICAgICBGIGdlcyBwLnZhbHVlXG4xIGNhdGVnb3J5IDEsIDQ4IDQ4ODAuNTUgNS44OCAqIC4xMSAgICAgLjAyXG4tLS1cblNpZ25pZi4gY29kZXM6ICAwIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgr4oCZIDAuMSDigJgg4oCZIDFcbiJ9 -->
+<!-- rnb-output-begin eyJkYXRhIjoiQW5vdmEgVGFibGUgKFR5cGUgMyB0ZXN0cylcblxuUmVzcG9uc2U6IFJUXG4gICAgRWZmZWN0ICAgIGRmICAgICBNU0UgICAgICBGIGdlcyBwLnZhbHVlXG4xIGNhdGVnb3J5IDEsIDQ4IDQ4ODAuNTUgNS44OCAqIC4xMSAgICAgLjAyXG4tLS1cblNpZ25pZi4gY29kZXM6ICBcbjAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmCvigJkgMC4xIOKAmCDigJkgMVxuIn0= -->
 <pre><code>Anova Table (Type 3 tests)
 
 Response: RT
     Effect    df     MSE      F ges p.value
 1 category 1, 48 4880.55 5.88 * .11     .02
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘+’ 0.1 ‘ ’ 1</code></pre>
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘+’ 0.1 ‘ ’ 1</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->

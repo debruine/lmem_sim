@@ -10,7 +10,7 @@ output:
 
 ```{r, message=FALSE}
 library("lme4")        # model specification / estimation
-library("afex")        # anova and deriving p-values from lmer
+library("afex")        # deriving p-values from lmer
 library("broom.mixed") # extracting data from model fits 
 library("faux")        # data simulation
 # NOTE: to install the 'faux' package, use:
@@ -30,7 +30,7 @@ set.seed(90210)
 
 In this example, 100 subjects will respond twice (for happy and angry expressions) to 50 items; 25 items in each of 2 categories. In this example, `expression` is a within-subject and within-item factor and `category` is a within-subject and between-item factor.
 
-We will set our grand intercept and the fixed effect of category the same as before (800 ms and 50ms). We will predict that classification speed will be faster for angry than happy outgroup faces, and faster for happy than angy ingroup faces, but these effects will cancel each other out, so there will be no main effect of expression, just an interaction between category and expression, which we will set at 
+We will set our grand intercept and the fixed effect of category the same as before (800 ms and 50ms). We will predict that classification speed will be faster for angry than happy outgroup faces, and faster for happy than angry ingroup faces. In other words, the effect of category will be bigger for happy faces than angry faces, but there will be no main effect of expression, just an interaction between category and expression, which we will set at 70 ms (the 50ms effect of category will be 35 ms bigger for happy faces and 35 ms smaller for angry faces).
 
 Therefore, you will need to set up more complicated random effect parameters. Items and subjects will need standard deviations assigned for their random intercepts and the random slopes for any within factors (and their interactions), plus the correlations among all these SDs.
 
@@ -44,7 +44,7 @@ ext_sim_data <- function(
   b0           = 800, # grand mean
   b_cat        =  50, # main effect of category
   b_exp        =   0, # main effect of expression
-  b_cat_exp    =  40, # interaction between category and expression
+  b_cat_exp    =  70, # interaction between category and expression
   I0i_sd       =  80, # by-item random intercept sd
   Iexp_sd      =  60, # by-item random slope for exp
   icor         = 0.2, # by-item random effect correlation

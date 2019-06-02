@@ -1,10 +1,11 @@
 base
+methods
+datasets
+utils
+grDevices
+graphics
+stats
 papaja
-Matrix
-lme4
-afex
-broom.mixed
-faux
 tidyverse
 ggplot2
 tibble
@@ -14,3 +15,8 @@ purrr
 dplyr
 stringr
 forcats
+Matrix
+lme4
+afex
+broom.mixed
+faux
