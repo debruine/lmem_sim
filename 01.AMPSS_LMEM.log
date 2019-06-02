@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.6.5)  2 JUN 2019 13:32
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.6.5)  2 JUN 2019 14:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1759,7 +1759,7 @@ l/texlive/2017/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/texlive/
 dist/fonts/type1/public/lm/lmtk10.pfb></usr/local/texlive/2017/texmf-dist/fonts
 /type1/public/lm/lmtt10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/pub
 lic/lm/lmtti10.pfb>
-Output written on 01.AMPSS_LMEM.pdf (22 pages, 454534 bytes).
+Output written on 01.AMPSS_LMEM.pdf (22 pages, 454495 bytes).
 PDF statistics:
  402 PDF objects out of 1000 (max. 8388607)
  353 compressed objects within 4 object streams

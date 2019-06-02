@@ -11,6 +11,8 @@ This repository contains all materials needed to reproduce the manuscript, as we
 * Example code: [Rmd](https://raw.githubusercontent.com/debruine/lmem_sim/master/appendix1_example_code.Rmd) / [html](https://debruine.github.io/lmem_sim/appendix1_example_code.nb.html)
 * Example code without tidyverse: [Rmd](https://raw.githubusercontent.com/debruine/lmem_sim/master/appendix1b_example_code.Rmd) / [html](https://debruine.github.io/lmem_sim/appendix1b_example_code.nb.html)
 * More complex example: [Rmd](https://raw.githubusercontent.com/debruine/lmem_sim/master/appendix2_extended_example.Rmd) / [html](https://debruine.github.io/lmem_sim/appendix2_extended_example.nb.html)
+* Shiny App [Simulating LMEM](http://shiny.psy.gla.ac.uk/lmem_sim/)
+* Shiny App [Crossed Random Effects](http://shiny.psy.gla.ac.uk/crossed/)
 
 
 

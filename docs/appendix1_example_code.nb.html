@@ -1994,11 +1994,10 @@ mod_sim &lt;- lmer(RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id),
 
 summary(mod_sim, corr = FALSE)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiTGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBSRU1MLiB0LXRlc3RzIHVzZVxuICBTYXR0ZXJ0aHdhaXRlJ3MgbWV0aG9kIFtsbWVyTW9kTG1lclRlc3RdXG5Gb3JtdWxhOiBcblJUIH4gMSArIGNhdCArICgxIHwgaXRlbV9pZCkgKyAoMSArIGNhdCB8IHN1YmpfaWQpXG4gICBEYXRhOiBkYXRfc2ltXG5cblJFTUwgY3JpdGVyaW9uIGF0IGNvbnZlcmdlbmNlOiA2NzY5MS41XG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTMuNzYzOCAtMC42NzM3IC0wLjAwNDYgIDAuNjc3NiAgMy42NDI4IFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgICBOYW1lICAgICAgICBWYXJpYW5jZSBTdGQuRGV2LiBDb3JyXG4gc3Vial9pZCAgKEludGVyY2VwdCkgMTAzOTYgICAgMTAxLjk2ICAgICAgIFxuICAgICAgICAgIGNhdCAgICAgICAgICAyNDIxICAgICA0OS4yMSAgIDAuMTZcbiBpdGVtX2lkICAoSW50ZXJjZXB0KSAgNDcyMyAgICAgNjguNzIgICAgICAgXG4gUmVzaWR1YWwgICAgICAgICAgICAgNDA3NjkgICAgMjAxLjkxICAgICAgIFxuTnVtYmVyIG9mIG9iczogNTAwMCwgZ3JvdXBzOiAgc3Vial9pZCwgMTAwOyBpdGVtX2lkLCA1MFxuXG5GaXhlZCBlZmZlY3RzOlxuICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciAgICAgZGYgdCB2YWx1ZSBQcig+fHR8KVxuKEludGVyY2VwdCkgICA4MTYuMDUgICAgICAxNC4zNyAxMjMuMjEgIDU2Ljc3OCAgIDwyZS0xNlxuY2F0ICAgICAgICAgICAgNTIuNDIgICAgICAyMC44NSAgNTMuMzMgICAyLjUxNSAgICAwLjAxNVxuICAgICAgICAgICAgICAgXG4oSW50ZXJjZXB0KSAqKipcbmNhdCAgICAgICAgICogIFxuLS0tXG5TaWduaWYuIGNvZGVzOiAgXG4wIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgu4oCZIDAuMSDigJgg4oCZIDFcbiJ9 -->
-<pre><code>Linear mixed model fit by REML. t-tests use
-  Satterthwaite's method [lmerModLmerTest]
-Formula: 
-RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id)
+<!-- rnb-output-begin eyJkYXRhIjoiTGluZWFyIG1peGVkIG1vZGVsIGZpdCBieSBSRU1MLiB0LXRlc3RzIHVzZSBTYXR0ZXJ0aHdhaXRlJ3MgbWV0aG9kIFtcbmxtZXJNb2RMbWVyVGVzdF1cbkZvcm11bGE6IFJUIH4gMSArIGNhdCArICgxIHwgaXRlbV9pZCkgKyAoMSArIGNhdCB8IHN1YmpfaWQpXG4gICBEYXRhOiBkYXRfc2ltXG5cblJFTUwgY3JpdGVyaW9uIGF0IGNvbnZlcmdlbmNlOiA2NzY5MS41XG5cblNjYWxlZCByZXNpZHVhbHM6IFxuICAgIE1pbiAgICAgIDFRICBNZWRpYW4gICAgICAzUSAgICAgTWF4IFxuLTMuNzYzOCAtMC42NzM3IC0wLjAwNDYgIDAuNjc3NiAgMy42NDI4IFxuXG5SYW5kb20gZWZmZWN0czpcbiBHcm91cHMgICBOYW1lICAgICAgICBWYXJpYW5jZSBTdGQuRGV2LiBDb3JyXG4gc3Vial9pZCAgKEludGVyY2VwdCkgMTAzOTYgICAgMTAxLjk2ICAgICAgIFxuICAgICAgICAgIGNhdCAgICAgICAgICAyNDIxICAgICA0OS4yMSAgIDAuMTZcbiBpdGVtX2lkICAoSW50ZXJjZXB0KSAgNDcyMyAgICAgNjguNzIgICAgICAgXG4gUmVzaWR1YWwgICAgICAgICAgICAgNDA3NjkgICAgMjAxLjkxICAgICAgIFxuTnVtYmVyIG9mIG9iczogNTAwMCwgZ3JvdXBzOiAgc3Vial9pZCwgMTAwOyBpdGVtX2lkLCA1MFxuXG5GaXhlZCBlZmZlY3RzOlxuICAgICAgICAgICAgRXN0aW1hdGUgU3RkLiBFcnJvciAgICAgZGYgdCB2YWx1ZSBQcig+fHR8KSAgICBcbihJbnRlcmNlcHQpICAgODE2LjA1ICAgICAgMTQuMzcgMTIzLjIxICA1Ni43NzggICA8MmUtMTYgKioqXG5jYXQgICAgICAgICAgICA1Mi40MiAgICAgIDIwLjg1ICA1My4zMyAgIDIuNTE1ICAgIDAuMDE1ICogIFxuLS0tXG5TaWduaWYuIGNvZGVzOiAgMCDigJgqKirigJkgMC4wMDEg4oCYKirigJkgMC4wMSDigJgq4oCZIDAuMDUg4oCYLuKAmSAwLjEg4oCYIOKAmSAxXG4ifQ== -->
+<pre><code>Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id)
    Data: dat_sim
 
 REML criterion at convergence: 67691.5
@@ -2016,15 +2015,11 @@ Random effects:
 Number of obs: 5000, groups:  subj_id, 100; item_id, 50
 
 Fixed effects:
-            Estimate Std. Error     df t value Pr(&gt;|t|)
-(Intercept)   816.05      14.37 123.21  56.778   &lt;2e-16
-cat            52.42      20.85  53.33   2.515    0.015
-               
-(Intercept) ***
-cat         *  
+            Estimate Std. Error     df t value Pr(&gt;|t|)    
+(Intercept)   816.05      14.37 123.21  56.778   &lt;2e-16 ***
+cat            52.42      20.85  53.33   2.515    0.015 *  
 ---
-Signif. codes:  
-0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</code></pre>
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -2126,10 +2121,10 @@ sims %&gt;%
     power = mean(p.value &lt; alpha)
   )</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibmNvbCI6NCwibnJvdyI6Mn0sInJkZiI6Ikg0c0lBQUFBQUFBQUErMVV2VzdiTUJDbTlSUGJLdXdZOEVzMGd3UUVRWkFpU0JBUFFZRjJMQklnVXd5R29tekJFa2xRVkpPeFl6TVVmWWdNZllRdWZZbE96dHdoYS9JQVFaeVRUTW9Ca2NGcmdRaWdlUGZ4dStNZHBZOWZqczkyZ3JNQUllUWlkd1BlUHBqSVB6MzVHSDVBeUhQQWFTRVBkYXY1Q3BhSFlIZ3dCakFjdmZEdS9TZW1xQ1JVcUMwTnVRUXJtUG9WYTNUdC9QNlozOStPUHUvZmZMOEwvUWFQem5mbTk0OTh0SGZ3NisrUFA4emdSdytvZm83K0hZcWJlWEJvbGVFem5OTkNsK0JwMElQOWMyMzNjb3JabUJZcXpiR2lHbXpYWUdGY1gvQkxLdTNNSk1PRnlXekFJTVlLUjRtRVRTMTZWL0xMeUJUVHF5ci9CcS9GWXZGa0ViMUNVS0xQemdWYU5YZTBqNVpjZDJHZDZaRHdMS05FY1RrbVV5d3hnUWJOdnMwU09FLy9XWjdCS2svTXk0dU12aVZaTzBrVjdKamdqaVp0MENRQmp2bUZKNUtYNGhWUmRDdzlkQXNWUjFSS0xsY0FWaW1RaUFhY09ESGFFZEZYbkpWMGpWWTJWNjFNU2dwaWVyMlRXdWd0STNTck05ZVVEMEVtUVR1bUNTNHoxU2hxbGdxckJLTzJEb1NObDRxcnQ3TFYyT1pDcFp3VldvaStGZDZTRmpBb1dTWHlPQ1RUa3MzQzdWM0FnbnA5K2ZTMDdieXdQYXNsdi9sWWJKS3k1aExLOEFYTnROT0gyNlMrVENJaFUyWWFEUUF0SXNVVk5yeWdPaFdONkFhZkFSbTgrNWJFQlFBQSJ9 -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibmNvbCI6NCwibnJvdyI6Mn0sInJkZiI6Ikg0c0lBQUFBQUFBQUErMVV2MHZFTUJUTzlZZDNWems5Y0hWMDBPRUtJcUtiTjRnaU9JbUNnM0RFTkQyTHZhU2txUW91cmpyb1grRHE2dURvcElOL2gwNnVPcWliNTJzdjZVbHdjQlVzcEhudnkvZGUza3Y3WldONWU4N2I5aEJDTnJKSDRPMkNpZHl0elpYV0lrS09CVTRGT2FpZXowZXdQQUdHQTZNSncxSUxvOU5yVEZKQmFDSm5GR1FUTEdFYXkxbnQwMGwrYzIyZHQxY2Y3cVptajU5TDNIOTYvYmhkdjJ3dlhNMU5ucjEzTmI3MGdvcG42Zkh0L21Kbit0MG93Mlc0UjFOVmdxTkFCL2J2S2J2Um81aDFhQ3FqSHBaVWdkVUNUTFhySnZ5UUNqTXppWEdxTTJ2UUM3REVmaWhnVTROZUYvelExOFUwOHNwUDROWHY5ejhOb3BNbWxLaXpzNEdXenpYbG93SFg3aHRuT2tGNEhGTWl1ZWlRUFN3d2dRYjF2dVVTT0o5L0xFOXptQ2ZnMlc1TS81UDhPa2tlYk9uZ21pS04wREFFanY2RnU0Sm55UStpcUJsNnFLY3k4S2tRWEF3QkxDTWdFUVZZUWFpMWsvZ0hPTTdvTDFvWkg3YlN6U2lJNmVkT0NxRlh0TkNOem14ZFBnVHBCTldBaGppTFphbW8vU2d4U3RCcXEwRllaNkM0WWl0VGpWV2V5SWl6VkFuUk5jSXJ3Z0NhR2N0RkhyVElYc2IyVzdQemdIbkYrdUJwS052NlpqdEdTMjc1c1ZnM1l1VWxGT05kR2l0bkRHNlQ0akx4RXhFeDNhZ0hhT3BMTHJIbWVmbXBLRVExK0FWSEF6NVJ4QVVBQUE9PSJ9 -->
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["mean_estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mean_se"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["power"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"800.33963","3":"15.18399","4":"1.00"},{"1":"cat","2":"52.45812","3":"23.23694","4":"0.57"}],"options":{"columns":{"min":{},"max":[10],"total":[4]},"rows":{"min":[10],"max":[10],"total":[2]},"pages":{}}}
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["mean_estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mean_se"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["power"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"803.55454","3":"15.44130","4":"1.00"},{"1":"cat","2":"47.55277","3":"23.64922","4":"0.53"}],"options":{"columns":{"min":{},"max":[10],"total":[4]},"rows":{"min":[10],"max":[10],"total":[2]},"pages":{}}}
   </script>
 </div>
 <!-- rnb-frame-end -->
@@ -2154,15 +2149,14 @@ afex::aov_ez(
   data = dat_subj
 )</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiQW5vdmEgVGFibGUgKFR5cGUgMyB0ZXN0cylcblxuUmVzcG9uc2U6IFJUXG4gICAgRWZmZWN0ICAgIGRmICAgICBNU0UgICAgICAgICBGIGdlcyBwLnZhbHVlXG4xIGNhdGVnb3J5IDEsIDk5IDI4NDEuMTkgNDguMzcgKioqIC4wNSAgPC4wMDAxXG4tLS1cblNpZ25pZi4gY29kZXM6ICBcbjAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmCvigJkgMC4xIOKAmCDigJkgMVxuIn0= -->
+<!-- rnb-output-begin eyJkYXRhIjoiQW5vdmEgVGFibGUgKFR5cGUgMyB0ZXN0cylcblxuUmVzcG9uc2U6IFJUXG4gICAgRWZmZWN0ICAgIGRmICAgICBNU0UgICAgICAgICBGIGdlcyBwLnZhbHVlXG4xIGNhdGVnb3J5IDEsIDk5IDI4NDEuMTkgNDguMzcgKioqIC4wNSAgPC4wMDAxXG4tLS1cblNpZ25pZi4gY29kZXM6ICAwIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgr4oCZIDAuMSDigJgg4oCZIDFcbiJ9 -->
 <pre><code>Anova Table (Type 3 tests)
 
 Response: RT
     Effect    df     MSE         F ges p.value
 1 category 1, 99 2841.19 48.37 *** .05  &lt;.0001
 ---
-Signif. codes:  
-0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘+’ 0.1 ‘ ’ 1</code></pre>
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘+’ 0.1 ‘ ’ 1</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -2185,15 +2179,14 @@ afex::aov_ez(
 <!-- rnb-output-begin eyJkYXRhIjoiQ29udHJhc3RzIHNldCB0byBjb250ci5zdW0gZm9yIHRoZSBmb2xsb3dpbmcgdmFyaWFibGVzOiBjYXRlZ29yeVxuIn0= -->
 <pre><code>Contrasts set to contr.sum for the following variables: category</code></pre>
 <!-- rnb-output-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiQW5vdmEgVGFibGUgKFR5cGUgMyB0ZXN0cylcblxuUmVzcG9uc2U6IFJUXG4gICAgRWZmZWN0ICAgIGRmICAgICBNU0UgICAgICBGIGdlcyBwLnZhbHVlXG4xIGNhdGVnb3J5IDEsIDQ4IDUxMzAuNTQgNi43MCAqIC4xMiAgICAgLjAxXG4tLS1cblNpZ25pZi4gY29kZXM6ICBcbjAg4oCYKioq4oCZIDAuMDAxIOKAmCoq4oCZIDAuMDEg4oCYKuKAmSAwLjA1IOKAmCvigJkgMC4xIOKAmCDigJkgMVxuIn0= -->
+<!-- rnb-output-begin eyJkYXRhIjoiQW5vdmEgVGFibGUgKFR5cGUgMyB0ZXN0cylcblxuUmVzcG9uc2U6IFJUXG4gICAgRWZmZWN0ICAgIGRmICAgICBNU0UgICAgICBGIGdlcyBwLnZhbHVlXG4xIGNhdGVnb3J5IDEsIDQ4IDUxMzAuNTQgNi43MCAqIC4xMiAgICAgLjAxXG4tLS1cblNpZ25pZi4gY29kZXM6ICAwIOKAmCoqKuKAmSAwLjAwMSDigJgqKuKAmSAwLjAxIOKAmCrigJkgMC4wNSDigJgr4oCZIDAuMSDigJgg4oCZIDFcbiJ9 -->
 <pre><code>Anova Table (Type 3 tests)
 
 Response: RT
     Effect    df     MSE      F ges p.value
 1 category 1, 48 5130.54 6.70 * .12     .01
 ---
-Signif. codes:  
-0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘+’ 0.1 ‘ ’ 1</code></pre>
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘+’ 0.1 ‘ ’ 1</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -2238,14 +2231,10 @@ my_anova_power &lt;- function(...) {
 <p>Run this function with the default parameters to determine the power each analysis has to detect an effect of category of 50 ms.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBydW4gc2ltdWxhdGlvbnMgYW5kIGNhbGN1bGF0ZSBwb3dlciBcbnJlcHMgPC0gMTAwXG5hbm92YV9zaW1zIDwtIHB1cnJyOjptYXBfZGYoMTpyZXBzLCB+bXlfYW5vdmFfcG93ZXIoKSlcblxuYWxwaGEgPC0gMC4wNVxucG93ZXJfc3ViaiA8LSBtZWFuKGFub3ZhX3NpbXMkc3ViaiA8IGFscGhhKVxucG93ZXJfaXRlbSA8LSBtZWFuKGFub3ZhX3NpbXMkaXRlbSA8IGFscGhhKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBydW4gc2ltdWxhdGlvbnMgYW5kIGNhbGN1bGF0ZSBwb3dlciBcbnJlcHMgPC0gMTAwXG5hbm92YV9zaW1zIDwtIHB1cnJyOjptYXBfZGYoMTpyZXBzLCB+bXlfYW5vdmFfcG93ZXIoKSlcbmBgYCJ9 -->
 <pre class="r"><code># run simulations and calculate power 
 reps &lt;- 100
-anova_sims &lt;- purrr::map_df(1:reps, ~my_anova_power())
-
-alpha &lt;- 0.05
-power_subj &lt;- mean(anova_sims$subj &lt; alpha)
-power_item &lt;- mean(anova_sims$item &lt; alpha)</code></pre>
+anova_sims &lt;- purrr::map_df(1:reps, ~my_anova_power())</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->

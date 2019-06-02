@@ -14,12 +14,12 @@ affiliation:
   - id            : "1"
     institution   : "Institute of Neuroscience and Psychology, University of Glasgow"
 authornote: |
-  Lisa DeBruine ![](images/orcid.png) https://orcid.org/0000-0002-7523-5539  
   
+  Lisa DeBruine ![](images/orcid.png) https://orcid.org/0000-0002-7523-5539  
   Dale J. Barr ![](images/orcid.png) https://orcid.org/0000-0002-1121-4608
 abstract: |
-  Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package), with a focus on interpreting the output in light of the simulated parameters. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs. All materials associated with this article can be accessed at https://osf.io/3cz2e/. 
   
+  Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package), with a focus on interpreting the output in light of the simulated parameters. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs. All materials associated with this article can be accessed at https://osf.io/3cz2e/. 
 keywords          : "simulation, mixed effects models, power, lme4, R"
 wordcount         : "5572"
 bibliography      : ["bibliography.bib", "r-references.bib"]
@@ -32,11 +32,12 @@ mask              : no
 draft             : no
 documentclass     : "apa6"
 classoption       : "doc"
-output            : papaja::apa6_pdf
-#output:
-#  rmarkdown::html_document:
-#    toc: true
-#    toc_depth: 4
+output            : 
+  rmarkdown::html_document:
+    toc: true
+    toc_depth: 4
+  papaja::apa6_pdf:
+    default
 header-includes   :
   - \usepackage{float}
   - \floatplacement{figure}{H}
@@ -700,7 +701,7 @@ In this tutorial, we have introduced the main concepts needed to get started wit
 
 ### Author Contributions
 
-DJB drafted the substantive explanation and LDB drafted the initial tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app http://shiny.psy.gla.ac.uk/debruine/lmem_sim/ and DJB created the app http://shiny.psy.gla.ac.uk/crossed/
+DJB drafted the substantive explanation and LDB drafted the tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app http://shiny.psy.gla.ac.uk/lmem_sim/ and DJB created the app http://shiny.psy.gla.ac.uk/crossed/.
 
 ## Declaration of Conflicting Interests
 The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.
