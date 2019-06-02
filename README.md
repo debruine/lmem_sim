@@ -8,9 +8,9 @@ This repository contains all materials needed to reproduce the manuscript, as we
 
 * [PDF version](https://github.com/debruine/lmem_sim/blob/master/01.AMPSS_LMEM.pdf)
 * [HTML version](https://debruine.github.io/lmem_sim/index.html) (may have some formatting issues)
-* [Example code](https://debruine.github.io/lmem_sim/appendix1_example_code.nb.html)
-* [Example code: without tidyverse](https://debruine.github.io/lmem_sim/appendix1b_example_code.nb.html)
-* [Extended example](https://debruine.github.io/lmem_sim/appendix2_extended_example.nb.html)
+* Example code: [Rmd](https://debruine.github.io/lmem_sim/appendix1_example_code.Rmd)/[html](https://debruine.github.io/lmem_sim/appendix1_example_code.nb.html)
+* Example code without tidyverse: [Rmd](https://debruine.github.io/lmem_sim/appendix1b_example_code.Rmd)/[html](https://debruine.github.io/lmem_sim/appendix1b_example_code.nb.html)
+* More complex example: [Rmd](https://debruine.github.io/lmem_sim/appendix2_extended_example.Rmd)/[html](https://debruine.github.io/lmem_sim/appendix2_extended_example.nb.html)
 
 
 
