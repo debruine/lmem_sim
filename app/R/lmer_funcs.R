@@ -11,7 +11,7 @@ sim_subj_anova <- function(dat) {
     summarise(RT = mean(RT))
   
   mod <- afex::aov_4(RT ~ (cat | subj_id),
-                     factorize = FALSE, check_contrasts = FALSE,
+                     factorize = FALSE,
                      data = dat_sub)
   
   mod.sum <- anova(mod)
@@ -52,7 +52,7 @@ sim_power <- function(rep = 0, ...) {
   mod.subj <- sim_subj_anova(dat)
   mod.item<- sim_item_anova(dat)
   
-  if (dots$eff != 0) {
+  if (dots$b1 != 0) {
     # run models for null effect to calculate false positives
     dat$RT <- dat$RT_null
     
@@ -78,7 +78,7 @@ sim_power <- function(rep = 0, ...) {
     select(effect, es = d, p = 7) %>%
     mutate(analysis = "anova_item", type = "power")
   
-  if (dots$eff == 0) {
+  if (dots$b1 == 0) {
     # avoid duplicate models if effect is null
     table.lmer.null <- mutate(table.lmer, type = "false positive")
     table.subj.null <- mutate(table.subj, type = "false positive")
