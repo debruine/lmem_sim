@@ -30,7 +30,7 @@ sim_item_anova <- function(dat) {
     summarise(RT = mean(RT))
   
   mod <- afex::aov_4(RT ~ cat + (1 | item_id),
-                     factorize = FALSE, check_contrasts = FALSE,
+                     factorize = FALSE, 
                      data = dat_item)
   
   mod.sum <- anova(mod)

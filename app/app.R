@@ -21,6 +21,7 @@ source("R/lmer_funcs.R")
 
 ## Interface Tab Items ----
 
+source("intro_tab.R")
 source("main_tab.R")
 source("comp_tab.R")
 source("power_tab.R")
@@ -31,9 +32,10 @@ ui <- dashboardPage(
   dashboardSidebar(
     width = 350,
     sidebarMenu(
+      menuItem("Introduction", tabName = "intro_tab"),
       menuItem("Simulating LMER", tabName = "main_tab"),
       menuItem("Compare ANOVA & LMER", tabName = "comp_tab"),
-      menuItem("Power & False Positives ", tabName = "power_tab"),
+      menuItem("Power & False Positives", tabName = "power_tab"),
       actionButton("resim", "Re-Simulate"),
       actionButton("reset", "Reset Parameters"),
       # fixed effects input ----
@@ -72,8 +74,7 @@ ui <- dashboardPage(
                     min = 10, max = 200, value = 100, step = 10),
         sliderInput("nitem", "nitem: faces per group", 
                     min = 5, max = 50, value = 25, step = 5)
-      ),
-      tags$a(href="https://github.com/debruine/lmem_sim/tree/master/app", "Code for this app")
+      )
     )
   ),
   dashboardBody(
@@ -84,7 +85,8 @@ ui <- dashboardPage(
     tabItems(
       main_tab,
       comp_tab,
-      power_tab
+      power_tab,
+      intro_tab
     )
   )
 )
