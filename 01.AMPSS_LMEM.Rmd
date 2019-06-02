@@ -15,9 +15,10 @@ affiliation:
     institution   : "Institute of Neuroscience and Psychology, University of Glasgow"
 authornote: |
   Lisa DeBruine ![](images/orcid.png) https://orcid.org/0000-0002-7523-5539  
+  
   Dale J. Barr ![](images/orcid.png) https://orcid.org/0000-0002-1121-4608
 abstract: |
-  Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package). The focus will be on interpreting the LMER output in light of the simulated parameters, using this method for power calculations. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs. All materials associated with this article can be accessed at https://osf.io/3cz2e/. 
+  Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package), with a focus on interpreting the output in light of the simulated parameters. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs. All materials associated with this article can be accessed at https://osf.io/3cz2e/. 
   
 keywords          : "simulation, mixed effects models, power, lme4, R"
 wordcount         : "5572"
@@ -29,13 +30,19 @@ footnotelist      : no
 linenumbers       : yes
 mask              : no
 draft             : no
-appendix          : "appendix0_glossary.Rmd"
+#appendix          : "appendix0_glossary.Rmd"
 documentclass     : "apa6"
-classoption       : "man"
+classoption       : "doc"
 output            : papaja::apa6_pdf
+#output:
+#  rmarkdown::html_document:
+#    toc: true
+#    toc_depth: 4
 header-includes   :
+  - \usepackage{float}
   - \floatplacement{figure}{H}
   - \raggedbottom
+  - \usepackage{tcolorbox}
 note              : "Preprint submitted for publication"
 ---
 
@@ -54,6 +61,13 @@ knitr::opts_chunk$set(cache.extra = knitr::rand_seed,
                       warning    = FALSE,
                       message    = FALSE
                       )
+
+# fixes latex warnings about colour definitions
+knitr::knit_hooks$set(document = function(x) {
+  sub('\\usepackage[]{color}', 
+      '\\usepackage{xcolor}', 
+      x, fixed = TRUE)
+})
 ```
 
 ## Background
@@ -73,6 +87,67 @@ Recently, psycholinguists have adopted linear mixed-effects modeling as the stan
 Despite mixed-effects modeling becoming the *de facto* standard for analysis in psycholinguistics, the approach has yet to take hold in other areas where stimuli are routinely sampled, even in spite of repeated calls for improved analyses in social psychology [@judd_westfall_kenny_2012] and neuroimaging [@bedny_aguirre_thompson-schill_2007;@westfall_yarkoni_2016]. One of the likely reasons for the limited uptake outside of psycholinguistics is because mixed-effects models expose the analyst to a level of statistical and technical complexity far beyond most researchers' training. While some of this complexity is specific to mixed-effects modeling, some of it is simply hidden away from users of traditional techniques by GUIs and function defaults. The novice mixed modeler is suddenly confronted with the need to make decisions about how to specify categorical predictors, which random effects to include or exclude, which of the statistics in the voluminous output to attend to, and whether and how to re-configure the optimizer function when a convergence error or singularity warning appears.
 
 We are optimisic that the increasing adoption of the mixed-effects approach will improve the generality and thus reproducibility of studies in psychology and related fields, but empathize with the frustration --- and sometimes, exasperation --- expressed by many novices when they attempt to grapple with these models in their research. Much of the uncertainty and unease around mixed-effects models comes from using them in situations where the ground truth is unknown. A profitable way to improve understanding and user confidence is through data simulation. Knowing the ground truth allows the user to experiment with various modeling choices and observe their impact on a model's performance.
+
+\begin{tcolorbox}[colback=black!5!white,colframe=white!5!black,title=Box 1. Glossary of terms]
+\begin{longtable}[]{@{}ll@{}}
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+by-subjects analysis (\(F_1\))\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+An analysis where responses are averaged across items within each factor
+and subjects are the unit of analysis\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+by-items analysis (\(F_2\))\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+An analysis where responses are averaged across subjects within each
+factor and items are the unit of analysis\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+crossed random factors\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+A design where there are two groups of random factors, such as subjects
+and items, and multiple subjects respond to multiple stimuli\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+data-generating process (DGP)\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+The equation approximating the process we assume to give rise to the
+data\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+fixed effect\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+An independent variable being measured or manipulated\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+intercept/grand mean\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+The mean response across subjects and items\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+random effect\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+A unit being sampled from a larger population that we want to generalize
+to\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+random intercept\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+The subject or item's mean deviation from the grand mean\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+random slope\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+The subject or item's mean deviation from the mean fixed effect\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+variance components\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+Parameters describing the distribution of random effects in the
+population\strut
+\end{minipage}\tabularnewline
+\end{longtable}
+\end{tcolorbox}
 
 ## Simulating data with crossed random factors
 
@@ -433,14 +508,13 @@ The terms in parentheses with the `|` separator define the random effects struct
 
 The other arguments to the `lme4` function are the name of the data frame where the values are found (`dat_sim`), and `REML = TRUE`, which selects maximum-likelihood estimation (which is preferable to the default estimation technique when we are testing fixed effects). Use the `summary()` function to view the results. 
 
-```{r run-lmer}
+```{r run-lmer, results='hide'}
 # fit a linear mixed-effects model to data
 mod_sim <- lmer(RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id),
                 data = dat_sim, REML = TRUE)
 
 summary(mod_sim, corr = FALSE)
 ```
-
 
 Let's break down the output step-by-step and try to find estimates of the seven parameters we used to generate the data: `b0`, `b1`, `S0s_sd`, `S1s_sd`, `scor`, `I0i_sd` and `err`. If you analyze existing data with a mixed effects model, you can use these estimates to help you set reasonable values for random effects in your own simulations. 
 
@@ -527,7 +601,9 @@ broom.mixed::tidy(mod_sim) %>%
   select(1:3, 9, 4:8) %>%
   apa_table(caption="The output of the tidy function from broom.mixed.",
             digits = c(0,0,0,1,2,1,1,1,3),
-            align = "lllrrrrrr", placement = "H")
+            align = "lllrrrrrr", 
+            placement = "H",
+            font_size = "footnotesize")
 ```
 
 ## Calculate Power
@@ -554,12 +630,13 @@ my_lmer_power <- function(...) {
 my_lmer_power()
 ```
 
-```{r, echo = FALSE, results = 'asis'}
+```{r lmer_power-default, echo = FALSE, results = 'asis'}
 my_lmer_power() %>% 
   apa_table(digits = c(0,0,0,2,1,1,1,3),
             align = "lllrrrrr",
             caption="The output of lmer_power().",
-            placement = "H")
+            placement = "H",
+            font_size = "small")
 ```
 
 You can also change parameters. For example, what would happen if you increase the number of items to 50 in each group and decrease the effect of category to 20 ms?
@@ -569,12 +646,13 @@ You can also change parameters. For example, what would happen if you increase t
 my_lmer_power(nitem = c(ingroup = 50, outgroup = 50), b1 = 20)
 ```
 
-```{r, echo = FALSE, results = 'asis'}
+```{r lmer_power-new, echo = FALSE, results = 'asis'}
 my_lmer_power(nitem = c(ingroup = 50, outgroup = 50), b1 = 20) %>%
   apa_table(digits = c(0,0,0,2,1,1,1,3),
             align = "lllrrrrr",
-            caption="The output of lmer_power(nitem = c(ingroup = 50, outgroup = 50), b1 = 20).",
-            placement = "H")
+            caption="The output of lmer_power() with 50 items per group and a category effect of 20 ms.",
+            placement = "H",
+            font_size = "small")
 ```
 
 You can use the `purrr::map_df` function to run the simulation repeatedly and save the results to a data table. This will take a while, so test using just a few repetitions (`reps`) first, then make sure you save the full results to a CSV file so you can set this code chunk to not run (`eval = FALSE` in the chunk header) and load from the saved data for the rest of your script in the future. You can use these data to calculate power for each fixed effect.
@@ -595,7 +673,7 @@ sims <- read_csv("sims/sims.csv", col_types = cols(
 ))
 ```
 
-```{r, eval = FALSE}
+```{r calc-power, eval = FALSE}
 # calculate mean estimates and power for specified alpha
 alpha <- 0.05
 
@@ -609,7 +687,7 @@ sims %>%
   )
 ```
 
-```{r, echo = FALSE, results='asis'}
+```{r calc-power-table, echo = FALSE, results='asis'}
 alpha <- 0.05
 
 sims %>% 
@@ -646,7 +724,10 @@ a_subj <- afex::aov_ez(
 )
 ```
 
-`r apa_print(a_subj)$table %>% apa_table(placement = "H")`
+```{r by-subject-anova, echo = FALSE, results='asis'} 
+apa_print(a_subj)$table %>% apa_table(placement = "H",
+                                      caption = "By-subject ANOVA")
+```
 
 Alternatively, you could aggregate by item, averaging all subjects' scores for each item.
 
@@ -664,7 +745,10 @@ a_item <- afex::aov_ez(
 )
 ```
 
-`r apa_print(a_item)$table %>% apa_table(placement = "H")`
+```{r by-item-anova, echo = FALSE, results = 'asis'} 
+apa_print(a_item)$table %>% apa_table(placement = "H",
+                                      caption = "By-item ANOVA")
+```
 
 We can create a power analysis function that simulates data using our data-generating process from `my_sim_data()`, creates these two aggregated datasets, and analyses them with ANOVA. We'll just return the p-values for the effect of category as we can calculate power as the percentage of these simulations that reject the null hypothesis.
 
@@ -732,30 +816,28 @@ Ideally, your false positive rate will be equal to alpha, which we set here at `
 
 ## Conclusion
 
-In this tutorial, we have introduced the main concepts needed to get started with mixed effects models. Through data simulation, you can develop your understanding and perform power calculations to guide your sample size plans. We have also demonstrated through simulation the dangers of aggregating data over a unit of analysis. 
-
 Mixed-effects modeling is a powerful technique for analyzing data from complex designs. The technique is close to ideal for analyzing data with crossed random factors of subjects and stimuli: it gracefully and simultaneously accounts for subject and item variance within a single analysis, and outperforms traditional techniques in terms of type I error and power. However, this additional power comes at the price of technical complexity. Through this article, we have attempted to make mixed-effects models more approachable using data simulation.
 
 We considered only a simple, one-factor design. However, the general principles are the same for higher-order designs. For instance, consider a 2x2 design, with factors $A$ and $B$ both within-subjects, but $A$ within-items and $B$ between subjects. For such a design, you would have four instead of two by-subject random effects: the intercept, main effect of $A$, main effect of $B$, and the $AB$ interaction. You would also need to specify correlations between each of these effects (although for convenience, you could also assume they are all independent). You would also have two by-item random effects: one for the intercept and one for $A$. For further guidance and discussion on how to specify the random effects structure in complex designs, see: [@barr_2013].
 
-We also have not said much in this tutorial about estimation issues, such as what to do when the fitting procedure fails to converge. Further guidance on this point can be found in [@barr_et_al_2013], and by consulting the help materials in the `lme4` package (`?lme4::convergence`).  We have also assumed that the random effects specification for the `lmer()` function should be based on the study design. However, we note that others have argued in favor of data-driven approaches for random effects specification [@matuschek_et_al_2017]. 
+We also have not said much in this tutorial about estimation issues, such as what to do when the fitting procedure fails to converge. Further guidance on this point can be found in [@barr_et_al_2013], and by consulting the help materials in the `lme4` package (`?lme4::convergence`).  We have also assumed that the random effects specification for the `lmer()` function should be based on the study design. However, we note that others have argued in favor of data-driven approaches for random effects specification [@matuschek_et_al_2017].
 
+In this tutorial, we have introduced the main concepts needed to get started with mixed effects models. Through data simulation of your own study designs, you can develop your understanding and perform power calculations to guide your sample size plans.
 
-## Author Contributions
-
-DJB drafted the substantive explanation and LDB drafted the initial tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app http://shiny.psy.gla.ac.uk/debruine/lmem_sim/ and DJB created the app http://shiny.psy.gla.ac.uk/Dale/crossed/
 
 ## Acknowledgements
 
+### Author Contributions
 
+DJB drafted the substantive explanation and LDB drafted the initial tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app http://shiny.psy.gla.ac.uk/debruine/lmem_sim/ and DJB created the app http://shiny.psy.gla.ac.uk/Dale/crossed/
 
-## Declaration of Conflicting Interests
+### Declaration of Conflicting Interests
 The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.
 
-## Funding
+### Funding
 LMD is supported by European Research Council grant #647910.
 
-## Open Practices
+### Open Practices
 The code to reproduce the analyses reported in this article has been made publicly available via the Open Science Framework and can be accessed at https://osf.io/3cz2e/. 
 
 

@@ -1,4 +1,4 @@
-\documentclass[man,floatsintext]{apa6}
+\documentclass[doc,floatsintext]{apa6}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
@@ -135,16 +135,19 @@
 \usepackage{lineno}
 
 \linenumbers
+\usepackage{float}
 \floatplacement{figure}{H}
 \raggedbottom
+\usepackage{tcolorbox}
 
-\authornote{Lisa DeBruine \includegraphics{images/orcid.png} \url{https://orcid.org/0000-0002-7523-5539}\\
+\authornote{Lisa DeBruine \includegraphics{images/orcid.png} \url{https://orcid.org/0000-0002-7523-5539}
+
 Dale J. Barr \includegraphics{images/orcid.png} \url{https://orcid.org/0000-0002-1121-4608}
 
 Correspondence concerning this article should be addressed to Lisa M. DeBruine, 62 Hillhead Street, Glasgow, G12 8QB. E-mail: \href{mailto:lisa.debruine@glasgow.ac.uk}{\nolinkurl{lisa.debruine@glasgow.ac.uk}}}
 \note{Preprint submitted for publication}
 \abstract{
-Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package). The focus will be on interpreting the LMER output in light of the simulated parameters, using this method for power calculations. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs. All materials associated with this article can be accessed at \url{https://osf.io/3cz2e/}.
+Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package), with a focus on interpreting the output in light of the simulated parameters. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs. All materials associated with this article can be accessed at \url{https://osf.io/3cz2e/}.
 
 
 
@@ -172,6 +175,67 @@ Recently, psycholinguists have adopted linear mixed-effects modeling as the stan
 Despite mixed-effects modeling becoming the \emph{de facto} standard for analysis in psycholinguistics, the approach has yet to take hold in other areas where stimuli are routinely sampled, even in spite of repeated calls for improved analyses in social psychology (Judd, Westfall, \& Kenny, 2012) and neuroimaging (Bedny, Aguirre, \& Thompson-Schill, 2007; Westfall, Nichols, \& Yarkoni, 2016). One of the likely reasons for the limited uptake outside of psycholinguistics is because mixed-effects models expose the analyst to a level of statistical and technical complexity far beyond most researchers' training. While some of this complexity is specific to mixed-effects modeling, some of it is simply hidden away from users of traditional techniques by GUIs and function defaults. The novice mixed modeler is suddenly confronted with the need to make decisions about how to specify categorical predictors, which random effects to include or exclude, which of the statistics in the voluminous output to attend to, and whether and how to re-configure the optimizer function when a convergence error or singularity warning appears.
 
 We are optimisic that the increasing adoption of the mixed-effects approach will improve the generality and thus reproducibility of studies in psychology and related fields, but empathize with the frustration --- and sometimes, exasperation --- expressed by many novices when they attempt to grapple with these models in their research. Much of the uncertainty and unease around mixed-effects models comes from using them in situations where the ground truth is unknown. A profitable way to improve understanding and user confidence is through data simulation. Knowing the ground truth allows the user to experiment with various modeling choices and observe their impact on a model's performance.
+
+\begin{tcolorbox}[colback=black!5!white,colframe=white!5!black,title=Box 1. Glossary of terms]
+\begin{longtable}[]{@{}ll@{}}
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+by-subjects analysis (\(F_1\))\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+An analysis where responses are averaged across items within each factor
+and subjects are the unit of analysis\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+by-items analysis (\(F_2\))\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+An analysis where responses are averaged across subjects within each
+factor and items are the unit of analysis\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+crossed random factors\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+A design where there are two groups of random factors, such as subjects
+and items, and multiple subjects respond to multiple stimuli\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+data-generating process (DGP)\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+The equation approximating the process we assume to give rise to the
+data\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+fixed effect\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+An independent variable being measured or manipulated\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+intercept/grand mean\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+The mean response across subjects and items\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+random effect\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+A unit being sampled from a larger population that we want to generalize
+to\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+random intercept\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+The subject or item's mean deviation from the grand mean\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+random slope\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+The subject or item's mean deviation from the mean fixed effect\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.29\columnwidth}\raggedright
+variance components\strut
+\end{minipage} & \begin{minipage}[t]{0.65\columnwidth}\raggedright
+Parameters describing the distribution of random effects in the
+population\strut
+\end{minipage}\tabularnewline
+\end{longtable}
+\end{tcolorbox}
 
 \hypertarget{simulating-data-with-crossed-random-factors}{%
 \subsection{Simulating data with crossed random factors}\label{simulating-data-with-crossed-random-factors}}
@@ -662,34 +726,6 @@ The other arguments to the \texttt{lme4} function are the name of the data frame
 \end{Highlighting}
 \end{Shaded}
 
-\begin{verbatim}
-## Linear mixed model fit by REML. t-tests use Satterthwaite's method [
-## lmerModLmerTest]
-## Formula: RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id)
-##    Data: dat_sim
-## 
-## REML criterion at convergence: 67691.5
-## 
-## Scaled residuals: 
-##     Min      1Q  Median      3Q     Max 
-## -3.7638 -0.6737 -0.0046  0.6776  3.6428 
-## 
-## Random effects:
-##  Groups   Name        Variance Std.Dev. Corr
-##  subj_id  (Intercept) 10396    101.96       
-##           cat          2421     49.21   0.16
-##  item_id  (Intercept)  4723     68.72       
-##  Residual             40769    201.91       
-## Number of obs: 5000, groups:  subj_id, 100; item_id, 50
-## 
-## Fixed effects:
-##             Estimate Std. Error     df t value Pr(>|t|)    
-## (Intercept)   816.05      14.37 123.21  56.778   <2e-16 ***
-## cat            52.42      20.85  53.33   2.515    0.015 *  
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-\end{verbatim}
-
 Let's break down the output step-by-step and try to find estimates of the seven parameters we used to generate the data: \texttt{b0}, \texttt{b1}, \texttt{S0s\_sd}, \texttt{S1s\_sd}, \texttt{scor}, \texttt{I0i\_sd} and \texttt{err}. If you analyze existing data with a mixed effects model, you can use these estimates to help you set reasonable values for random effects in your own simulations.
 
 After providing general information about the model fit, the output is divided into a \texttt{Random\ effects} and a \texttt{Fixed\ effects} section. The fixed effects section should be familiar from other types of linear models.
@@ -778,6 +814,7 @@ You can also use \texttt{broom.mixed::tidy()} to output fixed and/or random effe
 \begin{center}
 \begin{threeparttable}
 \caption{\label{tab:broom-tidy-table}The output of the tidy function from broom.mixed.}
+\footnotesize{
 \begin{tabular}{lllrrrrrrlllrrrrrrlllrrrrrrlllrrrrrrlllrrrrrrlllrrrrrrlllrrrrrrlllrrrrrrlllrrrrrr}
 \toprule
 effect & \multicolumn{1}{c}{group} & \multicolumn{1}{c}{term} & \multicolumn{1}{c}{sim} & \multicolumn{1}{c}{estimate} & \multicolumn{1}{c}{std.error} & \multicolumn{1}{c}{statistic} & \multicolumn{1}{c}{df} & \multicolumn{1}{c}{p.value}\\
@@ -791,6 +828,7 @@ ran\_pars & item\_id & sd\_\_(Intercept) & 80.0 & 68.72 & NA & NA & NA & NA\\
 ran\_pars & Residual & sd\_\_Observation & 200.0 & 201.91 & NA & NA & NA & NA\\
 \bottomrule
 \end{tabular}
+}
 \end{threeparttable}
 \end{center}
 \end{table}
@@ -826,7 +864,8 @@ First we create a function that analyses the simulated data and test it by runni
 \begin{table}[H]
 \begin{center}
 \begin{threeparttable}
-\caption{\label{tab:unnamed-chunk-4}The output of lmer\_power().}
+\caption{\label{tab:lmer_power-default}The output of lmer\_power().}
+\small{
 \begin{tabular}{lllrrrrrlllrrrrrlllrrrrrlllrrrrrlllrrrrrlllrrrrrlllrrrrrlllrrrrr}
 \toprule
 effect & \multicolumn{1}{c}{group} & \multicolumn{1}{c}{term} & \multicolumn{1}{c}{estimate} & \multicolumn{1}{c}{std.error} & \multicolumn{1}{c}{statistic} & \multicolumn{1}{c}{df} & \multicolumn{1}{c}{p.value}\\
@@ -840,6 +879,7 @@ ran\_pars & item\_id & sd\_\_(Intercept) & 58.13 & NA & NA & NA & NA\\
 ran\_pars & Residual & sd\_\_Observation & 200.18 & NA & NA & NA & NA\\
 \bottomrule
 \end{tabular}
+}
 \end{threeparttable}
 \end{center}
 \end{table}
@@ -856,7 +896,8 @@ You can also change parameters. For example, what would happen if you increase t
 \begin{table}[H]
 \begin{center}
 \begin{threeparttable}
-\caption{\label{tab:unnamed-chunk-6}The output of lmer\_power(nitem = c(ingroup = 50, outgroup = 50), b1 = 20).}
+\caption{\label{tab:lmer_power-new}The output of lmer\_power() with 50 items per group and a category effect of 20 ms.}
+\small{
 \begin{tabular}{lllrrrrrlllrrrrrlllrrrrrlllrrrrrlllrrrrrlllrrrrrlllrrrrrlllrrrrr}
 \toprule
 effect & \multicolumn{1}{c}{group} & \multicolumn{1}{c}{term} & \multicolumn{1}{c}{estimate} & \multicolumn{1}{c}{std.error} & \multicolumn{1}{c}{statistic} & \multicolumn{1}{c}{df} & \multicolumn{1}{c}{p.value}\\
@@ -870,6 +911,7 @@ ran\_pars & subj\_id & cor\_\_(Intercept).cat & 0.48 & NA & NA & NA & NA\\
 ran\_pars & Residual & sd\_\_Observation & 198.86 & NA & NA & NA & NA\\
 \bottomrule
 \end{tabular}
+}
 \end{threeparttable}
 \end{center}
 \end{table}
@@ -915,7 +957,7 @@ You can use the \texttt{purrr::map\_df} function to run the simulation repeatedl
 \begin{table}[H]
 \begin{center}
 \begin{threeparttable}
-\caption{\label{tab:unnamed-chunk-8}Power calculation for fixed effects.}
+\caption{\label{tab:calc-power-table}Power calculation for fixed effects.}
 \begin{tabular}{lrrrlrrrlrrrlrrr}
 \toprule
 term & \multicolumn{1}{c}{Mean Estimate} & \multicolumn{1}{c}{Mean Std. Error} & \multicolumn{1}{c}{Power}\\
@@ -949,6 +991,21 @@ One way many researchers would normally analyse data like this is by averaging e
 \end{Highlighting}
 \end{Shaded}
 
+\begin{table}[H]
+\begin{center}
+\begin{threeparttable}
+\caption{\label{tab:by-subject-anova}By-subject ANOVA}
+\begin{tabular}{lllllll}
+\toprule
+Effect & \multicolumn{1}{c}{$F$} & \multicolumn{1}{c}{$\mathit{df}_1^{GG}$} & \multicolumn{1}{c}{$\mathit{df}_2^{GG}$} & \multicolumn{1}{c}{$\mathit{MSE}$} & \multicolumn{1}{c}{$p$} & \multicolumn{1}{c}{$\hat{\eta}^2_G$}\\
+\midrule
+Category & 48.37 & 1 & 99 & 2,841.19 & < .001 & .052\\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{center}
+\end{table}
+
 Alternatively, you could aggregate by item, averaging all subjects' scores for each item.
 
 \begin{Shaded}
@@ -966,6 +1023,21 @@ Alternatively, you could aggregate by item, averaging all subjects' scores for e
 \NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
+
+\begin{table}[H]
+\begin{center}
+\begin{threeparttable}
+\caption{\label{tab:by-item-anova}By-item ANOVA}
+\begin{tabular}{lllllll}
+\toprule
+Effect & \multicolumn{1}{c}{$F$} & \multicolumn{1}{c}{$\mathit{df}_1$} & \multicolumn{1}{c}{$\mathit{df}_2$} & \multicolumn{1}{c}{$\mathit{MSE}$} & \multicolumn{1}{c}{$p$} & \multicolumn{1}{c}{$\hat{\eta}^2_G$}\\
+\midrule
+Category & 6.70 & 1 & 48 & 5,130.54 & .013 & .122\\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{center}
+\end{table}
 
 We can create a power analysis function that simulates data using our data-generating process from \texttt{my\_sim\_data()}, creates these two aggregated datasets, and analyses them with ANOVA. We'll just return the p-values for the effect of category as we can calculate power as the percentage of these simulations that reject the null hypothesis.
 
@@ -1039,34 +1111,34 @@ Ideally, your false positive rate will be equal to alpha, which we set here at 0
 \hypertarget{conclusion}{%
 \subsection{Conclusion}\label{conclusion}}
 
-In this tutorial, we have introduced the main concepts needed to get started with mixed effects models. Through data simulation, you can develop your understanding and perform power calculations to guide your sample size plans. We have also demonstrated through simulation the dangers of aggregating data over a unit of analysis.
-
 Mixed-effects modeling is a powerful technique for analyzing data from complex designs. The technique is close to ideal for analyzing data with crossed random factors of subjects and stimuli: it gracefully and simultaneously accounts for subject and item variance within a single analysis, and outperforms traditional techniques in terms of type I error and power. However, this additional power comes at the price of technical complexity. Through this article, we have attempted to make mixed-effects models more approachable using data simulation.
 
 We considered only a simple, one-factor design. However, the general principles are the same for higher-order designs. For instance, consider a 2x2 design, with factors \(A\) and \(B\) both within-subjects, but \(A\) within-items and \(B\) between subjects. For such a design, you would have four instead of two by-subject random effects: the intercept, main effect of \(A\), main effect of \(B\), and the \(AB\) interaction. You would also need to specify correlations between each of these effects (although for convenience, you could also assume they are all independent). You would also have two by-item random effects: one for the intercept and one for \(A\). For further guidance and discussion on how to specify the random effects structure in complex designs, see: (Barr, 2013).
 
 We also have not said much in this tutorial about estimation issues, such as what to do when the fitting procedure fails to converge. Further guidance on this point can be found in (Barr et al., 2013), and by consulting the help materials in the \texttt{lme4} package (\texttt{?lme4::convergence}). We have also assumed that the random effects specification for the \texttt{lmer()} function should be based on the study design. However, we note that others have argued in favor of data-driven approaches for random effects specification (Matuschek, Kliegl, Vasishth, Baayen, \& Bates, 2017).
 
-\hypertarget{author-contributions}{%
-\subsection{Author Contributions}\label{author-contributions}}
-
-DJB drafted the substantive explanation and LDB drafted the initial tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app \url{http://shiny.psy.gla.ac.uk/debruine/lmem_sim/} and DJB created the app \url{http://shiny.psy.gla.ac.uk/Dale/crossed/}
+In this tutorial, we have introduced the main concepts needed to get started with mixed effects models. Through data simulation of your own study designs, you can develop your understanding and perform power calculations to guide your sample size plans.
 
 \hypertarget{acknowledgements}{%
 \subsection{Acknowledgements}\label{acknowledgements}}
 
+\hypertarget{author-contributions}{%
+\subsubsection{Author Contributions}\label{author-contributions}}
+
+DJB drafted the substantive explanation and LDB drafted the initial tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app \url{http://shiny.psy.gla.ac.uk/debruine/lmem_sim/} and DJB created the app \url{http://shiny.psy.gla.ac.uk/Dale/crossed/}
+
 \hypertarget{declaration-of-conflicting-interests}{%
-\subsection{Declaration of Conflicting Interests}\label{declaration-of-conflicting-interests}}
+\subsubsection{Declaration of Conflicting Interests}\label{declaration-of-conflicting-interests}}
 
 The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.
 
 \hypertarget{funding}{%
-\subsection{Funding}\label{funding}}
+\subsubsection{Funding}\label{funding}}
 
 LMD is supported by European Research Council grant \#647910.
 
 \hypertarget{open-practices}{%
-\subsection{Open Practices}\label{open-practices}}
+\subsubsection{Open Practices}\label{open-practices}}
 
 The code to reproduce the analyses reported in this article has been made publicly available via the Open Science Framework and can be accessed at \url{https://osf.io/3cz2e/}.
 
@@ -1129,85 +1201,6 @@ Westfall, J., Nichols, T. E., \& Yarkoni, T. (2016). Fixing the stimulus-as-fixe
 Wickham, H., \& Henry, L. (2019). \emph{Tidyr: Easily tidy data with 'spread()' and 'gather()' functions}. Retrieved from \url{https://CRAN.R-project.org/package=tidyr}
 
 \endgroup
-
-\clearpage
-\makeatletter
-\efloat@restorefloats
-\makeatother
-
-
-\begin{appendix}
-\hypertarget{glossary-of-terms}{%
-\section{Glossary of terms}\label{glossary-of-terms}}
-
-\begin{longtable}[]{@{}ll@{}}
-\toprule
-\begin{minipage}[b]{0.27\columnwidth}\raggedright
-Term\strut
-\end{minipage} & \begin{minipage}[b]{0.67\columnwidth}\raggedright
-Definition\strut
-\end{minipage}\tabularnewline
-\midrule
-\endhead
-\begin{minipage}[t]{0.27\columnwidth}\raggedright
-by-subjects analysis (\(F_1\))\strut
-\end{minipage} & \begin{minipage}[t]{0.67\columnwidth}\raggedright
-An analysis where responses are averaged across items within each factor
-and subjects are the unit of analysis\strut
-\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.27\columnwidth}\raggedright
-by-items analysis (\(F_2\))\strut
-\end{minipage} & \begin{minipage}[t]{0.67\columnwidth}\raggedright
-An analysis where responses are averaged across subjects within each
-factor and items are the unit of analysis\strut
-\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.27\columnwidth}\raggedright
-crossed random factors\strut
-\end{minipage} & \begin{minipage}[t]{0.67\columnwidth}\raggedright
-A design where there are two groups of random factors, such as subjects
-and items, and multiple subjects respond to multiple stimuli\strut
-\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.27\columnwidth}\raggedright
-data-generating process (DGP)\strut
-\end{minipage} & \begin{minipage}[t]{0.67\columnwidth}\raggedright
-The equation approximating the process we assume to give rise to the
-data\strut
-\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.27\columnwidth}\raggedright
-fixed effect\strut
-\end{minipage} & \begin{minipage}[t]{0.67\columnwidth}\raggedright
-An independent variable being measured or manipulated\strut
-\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.27\columnwidth}\raggedright
-intercept/grand mean\strut
-\end{minipage} & \begin{minipage}[t]{0.67\columnwidth}\raggedright
-The mean response across subjects and items\strut
-\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.27\columnwidth}\raggedright
-random effect\strut
-\end{minipage} & \begin{minipage}[t]{0.67\columnwidth}\raggedright
-A unit being sampled from a larger population that we want to generalize
-to\strut
-\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.27\columnwidth}\raggedright
-random intercept\strut
-\end{minipage} & \begin{minipage}[t]{0.67\columnwidth}\raggedright
-The subject or item's mean deviation from the grand mean\strut
-\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.27\columnwidth}\raggedright
-random slope\strut
-\end{minipage} & \begin{minipage}[t]{0.67\columnwidth}\raggedright
-The subject or item's mean deviation from the mean fixed effect\strut
-\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.27\columnwidth}\raggedright
-variance components\strut
-\end{minipage} & \begin{minipage}[t]{0.67\columnwidth}\raggedright
-Parameters describing the distribution of random effects in the
-population\strut
-\end{minipage}\tabularnewline
-\bottomrule
-\end{longtable}
-\end{appendix}
 
 
 \end{document}

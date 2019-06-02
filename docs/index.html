@@ -385,20 +385,52 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Understanding mixed effects models through data simulation</h1>
 <h4 class="author">Lisa M. DeBruine</h4>
-<address class="author_afil">
-<a class="author_email" href="mailto:lisa.debruine@glasgow.ac.uk">lisa.debruine@glasgow.ac.uk</a>
-</address>
+<a href="mailto:lisa.debruine@glasgow.ac.uk" class="email">lisa.debruine@glasgow.ac.uk</a>
 <h4 class="author">Dale J. Barr</h4>
-<address class="author_afil">
-<a class="author_email" href="mailto:dale.barr@glasgow.ac.uk">dale.barr@glasgow.ac.uk</a>
-</address>
+<a href="mailto:dale.barr@glasgow.ac.uk" class="email">dale.barr@glasgow.ac.uk</a>
 <div class="abstract">
 <p class="abstract">Abstract</p>
-Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package). The focus will be on interpreting the LMER output in light of the simulated parameters, using this method for power calculations. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs. All materials associated with this article can be accessed at <a href="https://osf.io/3cz2e/" class="uri">https://osf.io/3cz2e/</a>.
+Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package), with a focus on interpreting the output in light of the simulated parameters. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs. All materials associated with this article can be accessed at <a href="https://osf.io/3cz2e/" class="uri">https://osf.io/3cz2e/</a>.
 </div>
 
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#background">Background</a><ul>
+<li><a href="#generalizing-to-a-population-of-encounters">Generalizing to a population of encounters</a></li>
+</ul></li>
+<li><a href="#simulating-data-with-crossed-random-factors">Simulating data with crossed random factors</a><ul>
+<li><a href="#required-software">Required software</a></li>
+<li><a href="#establishing-the-data-generating-parameters">Establishing the data-generating parameters</a><ul>
+<li><a href="#specify-the-data-structure">Specify the data structure</a></li>
+<li><a href="#specify-the-fixed-effects">Specify the fixed effects</a></li>
+<li><a href="#specify-the-random-effects">Specify the random effects</a></li>
+</ul></li>
+<li><a href="#simulating-the-sampling-process">Simulating the sampling process</a><ul>
+<li><a href="#simulate-the-sampling-of-stimulus-items">Simulate the sampling of stimulus items</a></li>
+<li><a href="#simulate-the-sampling-of-subjects">Simulate the sampling of subjects</a></li>
+<li><a href="#simulate-trials-encounters">Simulate trials (encounters)</a></li>
+<li><a href="#calculate-the-response-values">Calculate the response values</a></li>
+</ul></li>
+<li><a href="#data-simulation-function">Data simulation function</a></li>
+</ul></li>
+<li><a href="#analyzing-the-simulated-data">Analyzing the simulated data</a><ul>
+<li><a href="#setting-up-the-formula">Setting up the formula</a></li>
+<li><a href="#interpreting-the-lmer-summary">Interpreting the lmer summary</a></li>
+</ul></li>
+<li><a href="#calculate-power">Calculate Power</a></li>
+<li><a href="#comparison-to-anova">Comparison to ANOVA</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+<li><a href="#acknowledgements">Acknowledgements</a><ul>
+<li><a href="#author-contributions">Author Contributions</a></li>
+<li><a href="#declaration-of-conflicting-interests">Declaration of Conflicting Interests</a></li>
+<li><a href="#funding">Funding</a></li>
+<li><a href="#open-practices">Open Practices</a></li>
+</ul></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
 
 <div id="background" class="section level2">
 <h2>Background</h2>
@@ -411,6 +443,7 @@ Experimental designs that sample both subjects and stimuli from a larger populat
 <p>Recently, psycholinguists have adopted linear mixed-effects modeling as the standard for the statistical analysis, given numerous advantages over ANOVA, including the ability to simultaneously model subject and stimulus variation, to gracefully deal with missing data or unbalanced designs, and to accommodate arbitrary types of continuous and categorical predictors or response variables <span class="citation">(Baayen, Davidson, and Bates 2008; Locker, Hoffman, and Bovaird 2007)</span>. This development has been facilitated by the <code>lme4</code> package for R <span class="citation">(Bates et al. 2015)</span>, which provides powerful functionality for model specification and estimation. With an appropriately specified model, mixed-effects models yield major improvements in power over quasi-<span class="math inline">\(F\)</span> approaches and avoid the increased false positive rate associated with separate <span class="math inline">\(F_1\)</span> and <span class="math inline">\(F_2\)</span> <span class="citation">(Barr et al. 2013)</span>.</p>
 <p>Despite mixed-effects modeling becoming the <em>de facto</em> standard for analysis in psycholinguistics, the approach has yet to take hold in other areas where stimuli are routinely sampled, even in spite of repeated calls for improved analyses in social psychology <span class="citation">(Judd, Westfall, and Kenny 2012)</span> and neuroimaging <span class="citation">(Bedny, Aguirre, and Thompson-Schill 2007; Westfall, Nichols, and Yarkoni 2016)</span>. One of the likely reasons for the limited uptake outside of psycholinguistics is because mixed-effects models expose the analyst to a level of statistical and technical complexity far beyond most researchers’ training. While some of this complexity is specific to mixed-effects modeling, some of it is simply hidden away from users of traditional techniques by GUIs and function defaults. The novice mixed modeler is suddenly confronted with the need to make decisions about how to specify categorical predictors, which random effects to include or exclude, which of the statistics in the voluminous output to attend to, and whether and how to re-configure the optimizer function when a convergence error or singularity warning appears.</p>
 <p>We are optimisic that the increasing adoption of the mixed-effects approach will improve the generality and thus reproducibility of studies in psychology and related fields, but empathize with the frustration — and sometimes, exasperation — expressed by many novices when they attempt to grapple with these models in their research. Much of the uncertainty and unease around mixed-effects models comes from using them in situations where the ground truth is unknown. A profitable way to improve understanding and user confidence is through data simulation. Knowing the ground truth allows the user to experiment with various modeling choices and observe their impact on a model’s performance.</p>
+
 </div>
 </div>
 <div id="simulating-data-with-crossed-random-factors" class="section level2">
@@ -982,31 +1015,6 @@ mod_sim &lt;- lmer(RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id),
                 data = dat_sim, REML = TRUE)
 
 summary(mod_sim, corr = FALSE)</code></pre>
-<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite's method [
-## lmerModLmerTest]
-## Formula: RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id)
-##    Data: dat_sim
-## 
-## REML criterion at convergence: 67691.5
-## 
-## Scaled residuals: 
-##     Min      1Q  Median      3Q     Max 
-## -3.7638 -0.6737 -0.0046  0.6776  3.6428 
-## 
-## Random effects:
-##  Groups   Name        Variance Std.Dev. Corr
-##  subj_id  (Intercept) 10396    101.96       
-##           cat          2421     49.21   0.16
-##  item_id  (Intercept)  4723     68.72       
-##  Residual             40769    201.91       
-## Number of obs: 5000, groups:  subj_id, 100; item_id, 50
-## 
-## Fixed effects:
-##             Estimate Std. Error     df t value Pr(&gt;|t|)    
-## (Intercept)   816.05      14.37 123.21  56.778   &lt;2e-16 ***
-## cat            52.42      20.85  53.33   2.515    0.015 *  
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <p>Let’s break down the output step-by-step and try to find estimates of the seven parameters we used to generate the data: <code>b0</code>, <code>b1</code>, <code>S0s_sd</code>, <code>S1s_sd</code>, <code>scor</code>, <code>I0i_sd</code> and <code>err</code>. If you analyze existing data with a mixed effects model, you can use these estimates to help you set reasonable values for random effects in your own simulations.</p>
 <p>After providing general information about the model fit, the output is divided into a <code>Random effects</code> and a <code>Fixed effects</code> section. The fixed effects section should be familiar from other types of linear models.</p>
 <pre><code>## Fixed effects:
@@ -1217,7 +1225,7 @@ my_lmer_power &lt;- function(...) {
 <pre class="r"><code># run one model with default parameters
 my_lmer_power()</code></pre>
 <caption>
-(#tab:unnamed-chunk-4)
+(#tab:lmer_power-default)
 </caption>
 <caption>
 <em>The output of lmer_power().</em>
@@ -1312,10 +1320,10 @@ my_lmer_power()</code></pre>
 <pre class="r"><code># run one model with new parameters
 my_lmer_power(nitem = c(ingroup = 50, outgroup = 50), b1 = 20)</code></pre>
 <caption>
-(#tab:unnamed-chunk-6)
+(#tab:lmer_power-new)
 </caption>
 <caption>
-<em>The output of lmer_power(nitem = c(ingroup = 50, outgroup = 50), b1 = 20).</em>
+<em>The output of lmer_power() with 50 items per group and a category effect of 20 ms.</em>
 </caption>
 <table>
 <thead>
@@ -1426,7 +1434,7 @@ sims %&gt;%
     power = mean(p.value &lt; alpha)
   )</code></pre>
 <caption>
-(#tab:unnamed-chunk-8)
+(#tab:calc-power-table)
 </caption>
 <caption>
 <em>Power calculation for fixed effects.</em>
@@ -1470,6 +1478,36 @@ a_subj &lt;- afex::aov_ez(
   within = &quot;category&quot;,
   data = dat_subj
 )</code></pre>
+<caption>
+(#tab:by-subject-anova)
+</caption>
+<caption>
+<em>By-subject ANOVA</em>
+</caption>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Effect</th>
+<th align="left"><span class="math inline">\(F\)</span></th>
+<th align="left"><span class="math inline">\(\mathit{df}_1^{GG}\)</span></th>
+<th align="left"><span class="math inline">\(\mathit{df}_2^{GG}\)</span></th>
+<th align="left"><span class="math inline">\(\mathit{MSE}\)</span></th>
+<th align="left"><span class="math inline">\(p\)</span></th>
+<th align="left"><span class="math inline">\(\hat{\eta}^2_G\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Category</td>
+<td align="left">48.37</td>
+<td align="left">1</td>
+<td align="left">99</td>
+<td align="left">2,841.19</td>
+<td align="left">&lt; .001</td>
+<td align="left">.052</td>
+</tr>
+</tbody>
+</table>
 <p>Alternatively, you could aggregate by item, averaging all subjects’ scores for each item.</p>
 <pre class="r"><code># aggregate by item and analyze with ANOVA
 dat_item &lt;-  dat_sim %&gt;%
@@ -1482,6 +1520,36 @@ a_item &lt;- afex::aov_ez(
   between = &quot;category&quot;,
   data = dat_item
 )</code></pre>
+<caption>
+(#tab:by-item-anova)
+</caption>
+<caption>
+<em>By-item ANOVA</em>
+</caption>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Effect</th>
+<th align="left"><span class="math inline">\(F\)</span></th>
+<th align="left"><span class="math inline">\(\mathit{df}_1\)</span></th>
+<th align="left"><span class="math inline">\(\mathit{df}_2\)</span></th>
+<th align="left"><span class="math inline">\(\mathit{MSE}\)</span></th>
+<th align="left"><span class="math inline">\(p\)</span></th>
+<th align="left"><span class="math inline">\(\hat{\eta}^2_G\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Category</td>
+<td align="left">6.70</td>
+<td align="left">1</td>
+<td align="left">48</td>
+<td align="left">5,130.54</td>
+<td align="left">.013</td>
+<td align="left">.122</td>
+</tr>
+</tbody>
+</table>
 <p>We can create a power analysis function that simulates data using our data-generating process from <code>my_sim_data()</code>, creates these two aggregated datasets, and analyses them with ANOVA. We’ll just return the p-values for the effect of category as we can calculate power as the percentage of these simulations that reject the null hypothesis.</p>
 <pre class="r"><code># power function for ANOVA
 my_anova_power &lt;- function(...) {
@@ -1534,30 +1602,30 @@ false_pos_item &lt;- mean(anova_fp$item &lt; alpha)</code></pre>
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
-<p>In this tutorial, we have introduced the main concepts needed to get started with mixed effects models. Through data simulation, you can develop your understanding and perform power calculations to guide your sample size plans. We have also demonstrated through simulation the dangers of aggregating data over a unit of analysis.</p>
 <p>Mixed-effects modeling is a powerful technique for analyzing data from complex designs. The technique is close to ideal for analyzing data with crossed random factors of subjects and stimuli: it gracefully and simultaneously accounts for subject and item variance within a single analysis, and outperforms traditional techniques in terms of type I error and power. However, this additional power comes at the price of technical complexity. Through this article, we have attempted to make mixed-effects models more approachable using data simulation.</p>
 <p>We considered only a simple, one-factor design. However, the general principles are the same for higher-order designs. For instance, consider a 2x2 design, with factors <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> both within-subjects, but <span class="math inline">\(A\)</span> within-items and <span class="math inline">\(B\)</span> between subjects. For such a design, you would have four instead of two by-subject random effects: the intercept, main effect of <span class="math inline">\(A\)</span>, main effect of <span class="math inline">\(B\)</span>, and the <span class="math inline">\(AB\)</span> interaction. You would also need to specify correlations between each of these effects (although for convenience, you could also assume they are all independent). You would also have two by-item random effects: one for the intercept and one for <span class="math inline">\(A\)</span>. For further guidance and discussion on how to specify the random effects structure in complex designs, see: <span class="citation">(Barr 2013)</span>.</p>
 <p>We also have not said much in this tutorial about estimation issues, such as what to do when the fitting procedure fails to converge. Further guidance on this point can be found in <span class="citation">(Barr et al. 2013)</span>, and by consulting the help materials in the <code>lme4</code> package (<code>?lme4::convergence</code>). We have also assumed that the random effects specification for the <code>lmer()</code> function should be based on the study design. However, we note that others have argued in favor of data-driven approaches for random effects specification <span class="citation">(Matuschek et al. 2017)</span>.</p>
-</div>
-<div id="author-contributions" class="section level2">
-<h2>Author Contributions</h2>
-<p>DJB drafted the substantive explanation and LDB drafted the initial tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app <a href="http://shiny.psy.gla.ac.uk/debruine/lmem_sim/" class="uri">http://shiny.psy.gla.ac.uk/debruine/lmem_sim/</a> and DJB created the app <a href="http://shiny.psy.gla.ac.uk/Dale/crossed/" class="uri">http://shiny.psy.gla.ac.uk/Dale/crossed/</a></p>
+<p>In this tutorial, we have introduced the main concepts needed to get started with mixed effects models. Through data simulation of your own study designs, you can develop your understanding and perform power calculations to guide your sample size plans.</p>
 </div>
 <div id="acknowledgements" class="section level2">
 <h2>Acknowledgements</h2>
+<div id="author-contributions" class="section level3">
+<h3>Author Contributions</h3>
+<p>DJB drafted the substantive explanation and LDB drafted the initial tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app <a href="http://shiny.psy.gla.ac.uk/debruine/lmem_sim/" class="uri">http://shiny.psy.gla.ac.uk/debruine/lmem_sim/</a> and DJB created the app <a href="http://shiny.psy.gla.ac.uk/Dale/crossed/" class="uri">http://shiny.psy.gla.ac.uk/Dale/crossed/</a></p>
 </div>
-<div id="declaration-of-conflicting-interests" class="section level2">
-<h2>Declaration of Conflicting Interests</h2>
+<div id="declaration-of-conflicting-interests" class="section level3">
+<h3>Declaration of Conflicting Interests</h3>
 <p>The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.</p>
 </div>
-<div id="funding" class="section level2">
-<h2>Funding</h2>
+<div id="funding" class="section level3">
+<h3>Funding</h3>
 <p>LMD is supported by European Research Council grant #647910.</p>
 </div>
-<div id="open-practices" class="section level2">
-<h2>Open Practices</h2>
+<div id="open-practices" class="section level3">
+<h3>Open Practices</h3>
 <p>The code to reproduce the analyses reported in this article has been made publicly available via the Open Science Framework and can be accessed at <a href="https://osf.io/3cz2e/" class="uri">https://osf.io/3cz2e/</a>.</p>
 
+</div>
 </div>
 <div id="references" class="section level1">
 <h1>References</h1>
