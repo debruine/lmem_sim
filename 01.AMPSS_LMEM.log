@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.6.5)  2 JUN 2019 14:39
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.6.5)  2 JUN 2019 14:48
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1731,12 +1731,12 @@ Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1078.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1078.
 
 Package rerunfilecheck Info: File `01.AMPSS_LMEM.out' has not changed.
-(rerunfilecheck)             Checksum: 085C8E905570E9B7186C595DEE627F15;4608.
+(rerunfilecheck)             Checksum: 0B65BCAA505AAAB8AD6CA35EC80B5232;4608.
  ) 
 Here is how much of TeX's memory you used:
  25467 strings out of 492995
  439059 string characters out of 6132705
- 597600 words of memory out of 5000000
+ 597604 words of memory out of 5000000
  28290 multiletter control sequences out of 15000+600000
  106621 words of font info for 166 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1759,7 +1759,7 @@ l/texlive/2017/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/texlive/
 dist/fonts/type1/public/lm/lmtk10.pfb></usr/local/texlive/2017/texmf-dist/fonts
 /type1/public/lm/lmtt10.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/pub
 lic/lm/lmtti10.pfb>
-Output written on 01.AMPSS_LMEM.pdf (22 pages, 454495 bytes).
+Output written on 01.AMPSS_LMEM.pdf (22 pages, 454542 bytes).
 PDF statistics:
  402 PDF objects out of 1000 (max. 8388607)
  353 compressed objects within 4 object streams

@@ -33,11 +33,11 @@ draft             : no
 documentclass     : "apa6"
 classoption       : "doc"
 output            : 
+  papaja::apa6_pdf:
+    default
   rmarkdown::html_document:
     toc: true
     toc_depth: 4
-  papaja::apa6_pdf:
-    default
 header-includes   :
   - \usepackage{float}
   - \floatplacement{figure}{H}
@@ -703,13 +703,13 @@ In this tutorial, we have introduced the main concepts needed to get started wit
 
 DJB drafted the substantive explanation and LDB drafted the tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app http://shiny.psy.gla.ac.uk/lmem_sim/ and DJB created the app http://shiny.psy.gla.ac.uk/crossed/.
 
-## Declaration of Conflicting Interests
+### Declaration of Conflicting Interests
 The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.
 
-## Funding
+### Funding
 LMD is supported by European Research Council grant #647910.
 
-## Open Practices
+### Open Practices
 The code to reproduce the analyses reported in this article has been made publicly available via the Open Science Framework and can be accessed at https://osf.io/3cz2e/. 
 
 
