@@ -43,10 +43,15 @@ ui <- dashboardPage(
         title = "Fixed Effects",
         solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("b0", "b0: grand mean", 
+        sliderInput("b0", "intercept (b0)", 
                     min = 600, max = 1000, value = 800, step = 100),
-        sliderInput("b1", "b1: effect of category", 
+        sliderInput("b1", "effect of category (b1)", 
                     min = -200, max = 200, value = 50, step = 10)
+        # selectInput("x1", "category coding (X)", 
+        #             c("Deviation (ingroup = -0.5, outgroup = +0.5)" = "deviation",
+        #               "Sum (ingroup = -1, outgroup = +1)" = "sum",
+        #               "Treatment (ingroup = 0, outgroup = 1)" = "treatment"))
+                      
         
       ),
       # random effects input ----
@@ -54,25 +59,25 @@ ui <- dashboardPage(
         title = "Random Effects",
         solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("S0s_sd", "S0s_sd: subject intercept SD", 
+        sliderInput("S0s_sd", "subject intercept SD (S0s_sd)", 
                     min = 0, max = 200, value = 100, step = 10),
-        sliderInput("S1s_sd", "S1s_sd: subject slope SD:", 
+        sliderInput("S1s_sd", "subject slope SD (S1s_sd)", 
                     min = 0, max = 200, value =  40, step = 10),
-        sliderInput("scor", "scor: subject intercept*slope correlation", 
+        sliderInput("scor", "subject intercept*slope correlation (Scor)", 
                     min = -0.9, max = 0.9, value = 0.2, step = 0.1),
-        sliderInput("I0i_sd", "I0i_sd: item intercept SD", 
+        sliderInput("I0i_sd", "item intercept SD (I0i_sd)", 
                     min = 0, max = 200, value =  80, step = 10),
-        sliderInput("err_sd", "err_sd: residual (error) SD", 
+        sliderInput("err_sd", "residual SD (err_sd)", 
                     min = 0, max = 400, value = 200, step = 10)
       ),
       # sample size input ----
       box(
         title = "Sample Size",
-        solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
+        solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("nsubj", "nsubj: number of subjects", 
+        sliderInput("nsubj", "number of subjects (nsubj)", 
                     min = 10, max = 200, value = 100, step = 10),
-        sliderInput("nitem", "nitem: faces per group", 
+        sliderInput("nitem", "faces per group (nitem)", 
                     min = 5, max = 50, value = 25, step = 5)
       )
     )
@@ -95,10 +100,92 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
   ggplot2::theme_set(ggplot2::theme_bw())
   
+  # b0 link
+  observeEvent(input$b0, {if (input$b0 != input$b0_) {
+    updateSliderInput(session, "b0_", value = input$b0)
+  }})
+  
+  observeEvent(input$b0_, {if (input$b0 != input$b0_) {
+    updateSliderInput(session, "b0", value = input$b0_)
+  }})
+  
+  # b1 link
+  observeEvent(input$b1, {if (input$b1 != input$b1_) {
+    updateSliderInput(session, "b1_", value = input$b1)
+  }})
+  
+  observeEvent(input$b1_, {if (input$b1 != input$b1_) {
+    updateSliderInput(session, "b1", value = input$b1_)
+  }})
+  
+  # S0s_sd link
+  observeEvent(input$S0s_sd, {if (input$S0s_sd != input$S0s_sd_) {
+    updateSliderInput(session, "S0s_sd_", value = input$S0s_sd)
+  }})
+  
+  observeEvent(input$S0s_sd_, {if (input$S0s_sd != input$S0s_sd_) {
+    updateSliderInput(session, "S0s_sd", value = input$S0s_sd_)
+  }})
+  
+  # S1s_sd link
+  observeEvent(input$S1s_sd, {if (input$S1s_sd != input$S1s_sd_) {
+    updateSliderInput(session, "S1s_sd_", value = input$S1s_sd)
+  }})
+  
+  observeEvent(input$S1s_sd_, {if (input$S1s_sd != input$S1s_sd_) {
+    updateSliderInput(session, "S1s_sd", value = input$S1s_sd_)
+  }})
+  
+  # scor link
+  observeEvent(input$scor, {if (input$scor != input$scor_) {
+    updateSliderInput(session, "scor_", value = input$scor)
+  }})
+  
+  observeEvent(input$scor_, {if (input$scor != input$scor_) {
+    updateSliderInput(session, "scor", value = input$scor_)
+  }})
+  
+  # I0i_sd link
+  observeEvent(input$I0i_sd, {if (input$I0i_sd != input$I0i_sd_) {
+    updateSliderInput(session, "I0i_sd_", value = input$I0i_sd)
+  }})
+  
+  observeEvent(input$I0i_sd_, {if (input$I0i_sd != input$I0i_sd_) {
+    updateSliderInput(session, "I0i_sd", value = input$I0i_sd_)
+  }})
+  
+  # err_sd link
+  observeEvent(input$err_sd, {if (input$err_sd != input$err_sd_) {
+    updateSliderInput(session, "err_sd_", value = input$err_sd)
+  }})
+  
+  observeEvent(input$err_sd_, {if (input$err_sd != input$err_sd_) {
+    updateSliderInput(session, "err_sd", value = input$err_sd_)
+  }})
+  
+  # nsubj link
+  observeEvent(input$nsubj, {if (input$nsubj != input$nsubj_) {
+    updateSliderInput(session, "nsubj_", value = input$nsubj)
+  }})
+  
+  observeEvent(input$nsubj_, {if (input$nsubj != input$nsubj_) {
+    updateSliderInput(session, "nsubj", value = input$nsubj_)
+  }})
+  
+  # nitem link
+  observeEvent(input$nitem, {if (input$nitem != input$nitem_) {
+    updateSliderInput(session, "nitem_", value = input$nitem)
+  }})
+  
+  observeEvent(input$nitem_, {if (input$nitem != input$nitem_) {
+    updateSliderInput(session, "nitem", value = input$nitem_)
+  }})
+  
   # reset all inputs ---- 
   observeEvent(input$reset, {
     updateSliderInput(session, "b0",     value = 800)
     updateSliderInput(session, "b1",     value = 50)
+    # updateSliderInput(session, "x1",     value = "deviation")
     updateSliderInput(session, "nsubj",  value = 100)
     updateSliderInput(session, "nitem",  value = 25)
     updateSliderInput(session, "I0i_sd", value = 80)
@@ -129,7 +216,7 @@ server <- function(input, output, session) {
     output$power_table <- renderTable({ tibble() })
 
     # calculate DV using current effect sizes and coding
-    dat_code(trials(), b0 = input$b0, b1 = input$b1)
+    dat_code(trials(), b0 = input$b0, b1 = input$b1) #, x1 = input$x1)
   })
   
   # run LMER ----
@@ -149,7 +236,7 @@ server <- function(input, output, session) {
   # get LMER summary ----
   lmer_text <- reactive({
     message("lmer_text()")
-    summary(lmer_mod())
+    summary(lmer_mod(), corr = FALSE)
   })
   
   # Plots ----

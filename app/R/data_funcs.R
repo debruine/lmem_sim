@@ -38,12 +38,20 @@ sim_trials  <- function(nsubj, nitem, I0i_sd, S0s_sd, S1s_sd, scor, err_sd, ...)
   return(trials)
 }
 
-dat_code <- function(trials, b0, b1 = 0, ...) {
+dat_code <- function(trials, b0, b1 = 0, x1 = "deviation", ...) {
+  # cat_code <- switch(x1,
+  #                "deviation" = c(ingroup = -0.5, outgroup = +0.5),
+  #                "sum" = c(ingroup = -1, outgroup = +1),
+  #                "treatment" = c(ingroup = 0, outgroup = 1))
+  
   mutate(trials,
+         # cat = recode(category, 
+         #             "ingroup"  = cat_code[["ingroup"]], 
+         #             "outgroup" = cat_code[["outgroup"]]),
          RT = b0 + I0i + S0s + (b1 + S1s) * cat + err,
          RT_null = b0 + I0i + S0s + ( 0 + S1s) * cat + err
   )
-}
+} 
 
 
 descr <- function(dat) {

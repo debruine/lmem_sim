@@ -25,59 +25,94 @@ label[for="nitem"] { background-color: inherit; }
 #broom_output table tbody tr:nth-child(2) td:nth-child(3) { background-color: #E76839; }
 #broom_output table tbody tr:nth-child(3) td:nth-child(3) { background-color: #B29700; }
 #broom_output table tbody tr:nth-child(4) td:nth-child(3) { background-color: #086F50; }
-#broom_output table tbody tr:nth-child(5) td:nth-child(3) { background-color: #3B5CA7; }
+#broom_output table tbody tr:nth-child(5) td:nth-child(3) { background-color: #015FA1; }
 #broom_output table tbody tr:nth-child(6) td:nth-child(3) { background-color: #702981; }
 #broom_output table tbody tr:nth-child(7) td:nth-child(3) { background-color: #C20FA7; }
-  
-ul.sidebar-menu div:nth-child(7) .form-group:nth-child(1) span.irs-bar, 
-ul.sidebar-menu div:nth-child(7) .form-group:nth-child(1) span.irs-bar-edge { 
+
+label[for="b0"] + span.irs span.irs-bar,
+label[for="b0"] + span.irs span.irs-bar-edge,
+label[for="b0_"] + span.irs span.irs-bar,
+label[for="b0_"] + span.irs span.irs-bar-edge
+{ 
   background-color: #E50F45;
   border-color: #E50F45;
 }
 
-ul.sidebar-menu div:nth-child(7) .form-group:nth-child(2) span.irs-bar, 
-ul.sidebar-menu div:nth-child(7) .form-group:nth-child(2) span.irs-bar-edge { 
+label[for="b1"] + span.irs span.irs-bar,
+label[for="b1"] + span.irs span.irs-bar-edge,
+label[for="b1_"] + span.irs span.irs-bar,
+label[for="b1_"] + span.irs span.irs-bar-edge 
+{ 
   background-color: #E76839;
   border-color: #E76839;
 }
 
-ul.sidebar-menu div:nth-child(8) .form-group:nth-child(1) span.irs-bar, 
-ul.sidebar-menu div:nth-child(8) .form-group:nth-child(1) span.irs-bar-edge { 
+label[for="S0s_sd"] + span.irs span.irs-bar,
+label[for="S0s_sd"] + span.irs span.irs-bar-edge,
+label[for="S0s_sd_"] + span.irs span.irs-bar,
+label[for="S0s_sd_"] + span.irs span.irs-bar-edge 
+{ 
   background-color: #B29700;
   border-color: #B29700;
 }
 
-ul.sidebar-menu div:nth-child(8) .form-group:nth-child(2) span.irs-bar, 
-ul.sidebar-menu div:nth-child(8) .form-group:nth-child(2) span.irs-bar-edge { 
+label[for="S1s_sd"] + span.irs span.irs-bar,
+label[for="S1s_sd"] + span.irs span.irs-bar-edge,
+label[for="S1s_sd_"] + span.irs span.irs-bar,
+label[for="S1s_sd_"] + span.irs span.irs-bar-edge 
+{ 
   background-color: #086F50;
   border-color: #086F50;
 }
 
-ul.sidebar-menu div:nth-child(8) .form-group:nth-child(3) span.irs-bar, 
-ul.sidebar-menu div:nth-child(8) .form-group:nth-child(3) span.irs-bar-edge { 
-  background-color: #3B5CA7;
-  border-color: #3B5CA7;
+label[for="scor"] + span.irs span.irs-bar,
+label[for="scor"] + span.irs span.irs-bar-edge,
+label[for="scor_"] + span.irs span.irs-bar,
+label[for="scor_"] + span.irs span.irs-bar-edge 
+{ 
+  background-color: #015FA1;
+  border-color: #015FA1;
 }
 
-ul.sidebar-menu div:nth-child(8) .form-group:nth-child(4) span.irs-bar, 
-ul.sidebar-menu div:nth-child(8) .form-group:nth-child(4) span.irs-bar-edge { 
+label[for="I0i_sd"] + span.irs span.irs-bar,
+label[for="I0i_sd"] + span.irs span.irs-bar-edge,
+label[for="I0i_sd_"] + span.irs span.irs-bar,
+label[for="I0i_sd_"] + span.irs span.irs-bar-edge { 
   background-color: #702981;
   border-color: #702981;
 }
 
-ul.sidebar-menu div:nth-child(8) .form-group:nth-child(5) span.irs-bar, 
-ul.sidebar-menu div:nth-child(8) .form-group:nth-child(5) span.irs-bar-edge { 
+label[for="err_sd"] + span.irs span.irs-bar,
+label[for="err_sd"] + span.irs span.irs-bar-edge,
+label[for="err_sd_"] + span.irs span.irs-bar,
+label[for="err_sd_"] + span.irs span.irs-bar-edge { 
   background-color: #C20FA7;
   border-color: #C20FA7;
+}
+
+label[for="nsubj"] + span.irs span.irs-bar,
+label[for="nsubj"] + span.irs span.irs-bar-edge,
+label[for="nsubj_"] + span.irs span.irs-bar,
+label[for="nsubj_"] + span.irs span.irs-bar-edge { 
+  background-color: #F5AABF;
+  border-color: #F5AABF;
+}
+
+label[for="nitem"] + span.irs span.irs-bar,
+label[for="nitem"] + span.irs span.irs-bar-edge,
+label[for="nitem_"] + span.irs span.irs-bar,
+label[for="nitem_"] + span.irs span.irs-bar-edge { 
+  background-color: #64D2E0;
+  border-color: #64D2E0;
 }
 
 #resim, #reset { display: inline-block; width: 40%;}
 
 
-.b0, .b1, .S0s, .S1s, .scor, .I0i, .err { 
+.RT, .b0, .b1, .S0s, .S1s, .scor, .I0i, .err, .X1 { 
   background-color: transparent; 
   color: black; 
-  border-bottom: 3px solid black; 
+  border-bottom: 2px solid transparent; 
   border-radius: 0;
 }
 .b0   { border-color: #E50F45; }
