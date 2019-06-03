@@ -293,9 +293,29 @@ server <- function(input, output, session) {
   
   ## lmer_output ----
   output$lmer_output <- renderText({
-    lmer_text() %>%
-    capture.output() %>% 
-      paste(collapse = "\n")
+    txt <- lmer_text() %>%
+      capture.output() %>%
+      paste(collapse = "<br>") %>%
+      #S0s
+      gsub("(subj_id\\s+\\(Intercept\\)\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)" , "\\1<span class='S0s'>\\2</span>", .) %>%
+      # S1s and scor
+      gsub("(\\s+\\cat\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)(\\s+)((?:\\d|\\.)+)" , "\\1<span class='S1s'>\\2</span>\\3<span class='scor'>\\4</span>", .) %>%
+      # I0i
+      gsub("(item_id\\s+\\(Intercept\\)\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)" , "\\1<span class='I0i'>\\2</span>", .) %>%
+      # err
+      gsub("(Residual\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)" , "\\1<span class='err'>\\2</span>", .) %>%
+      
+      # nsubj, nitem
+      gsub("subj_id,(\\s+)(\\d+); item_id,(\\s+)(\\d+)", 
+           "subj_id,\\1<span class='nsubj'>\\2</span>; item_id,\\3<span class='nitem'>\\4</span>", .) %>%
+      
+      #b0
+      gsub("(<br>\\(Intercept\\)\\s+)((?:\\d|\\.)+)" , "\\1<span class='b0'>\\2</span>", .) %>%
+      #b1
+      gsub("(<br>cat\\s+)((?:\\d|\\.)+)" , "\\1<span class='b1'>\\2</span>", .) %>%
+      gsub(" ", "&nbsp;", .) %>%
+      gsub("<span&nbsp;class", "<span class", .)
+      
   })
   
   ## broom_output ----

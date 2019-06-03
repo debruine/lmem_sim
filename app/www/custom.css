@@ -109,7 +109,7 @@ label[for="nitem_"] + span.irs span.irs-bar-edge {
 #resim, #reset { display: inline-block; width: 40%;}
 
 
-.RT, .b0, .b1, .S0s, .S1s, .scor, .I0i, .err, .X1 { 
+.RT, .b0, .b1, .S0s, .S1s, .scor, .I0i, .err, .X1, .nsubj, .nitem { 
   background-color: transparent; 
   color: black; 
   border-bottom: 2px solid transparent; 
@@ -122,3 +122,9 @@ label[for="nitem_"] + span.irs span.irs-bar-edge {
 .scor { border-color: #3B5CA7; }
 .I0i  { border-color: #702981; }
 .err  { border-color: #C20FA7; }
+.nsubj{ border-color: #F5AABF; }
+.nitem{ border-color: #64D2E0; }
+
+#lmer_output {
+  font-family: Courier, sans-serif;
+}

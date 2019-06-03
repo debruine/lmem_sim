@@ -13,7 +13,7 @@ main_tab <- tabItem(
     box(
       title = "Output from summary(lmerMod)",
       width = 12,
-      verbatimTextOutput("lmer_output")
+      htmlOutput("lmer_output")
     )
   )
 )
