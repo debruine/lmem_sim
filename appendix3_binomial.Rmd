@@ -1,0 +1,317 @@
+---
+title: 'Appendix 3: Binomial Example'
+subtitle: "Understanding mixed effects models through data simulation"
+author: "Lisa M. DeBruine & Dale J. Barr"
+
+output: 
+  html_notebook:
+    toc: true
+---
+
+## Simulating binomial data with crossed random factors
+
+To give an overview of the simulation task, we will simulate data from a design with crossed random factors of subjects and stimuli, fit a model to the simulated data, and then try to recover the parameter values we put in from the output. In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use accuracy (correct/incorrect) as the primary dependent variable. The faces are of two intrinsic types: either from the subject's ingroup or from an outgroup. For simplicity, we further assume that each face appears only once in the stimulus set. The key question is whether there is any difference in classification accuracy across the type of face.
+
+### Required software
+
+```{r, message=FALSE}
+# load required packages
+library("lme4")        # model specification / estimation
+library("afex")        # anova and deriving p-values from lmer
+library("broom.mixed") # extracting data from model fits 
+library("faux")        # data simulation
+# NOTE: to install the 'faux' package, use:
+# devtools::install_github("debruine/faux")
+library("tidyverse")   # data wrangling and visualisation
+
+# ensure this script returns the same results on each run
+set.seed(8675309)
+```
+
+```{r fig.width = 8, fig.height = 3}
+
+logit <- function(x) { log(x / (1 - x)) }
+inv_logit <- function(x) { 1 / (1 + exp(-x)) }
+
+data.frame(
+  prob = seq(0,1,.01)
+) %>%
+  mutate(logit = logit(prob)) %>%
+  ggplot(aes(prob, logit)) +
+  geom_point()
+
+```
+
+### Data simulation function
+
+The data generating process is slighly different for binomial logistic regression. The random effects and their correlations are set the same way as for a gaussian model (you'll need some pilot data to estimate reasonable parameters), but we don't need an error term.
+
+
+```{r}
+
+# set up the custom data simulation function
+my_bin_data <- function(nsubj  = 100, # number of subjects
+                        nitem  = 50,  # number of items
+                        b0     = 0, # intercept
+                        b1     = 0, # effect of category
+                        I0i_sd = 1, # by-item random intercept sd
+                        S0s_sd = 1, # by-subject random intercept sd
+                        S1s_sd = 1, # by-subject random slope sd
+                        scor   = 0 # correlation between intercept and slope
+                        ) {
+  # simulate items
+  items <- faux::sim_design(
+    between = list(category = c("ingroup", "outgroup")),
+    n = nitem,
+    sd = I0i_sd,
+    dv = "I0i",
+    id = "item_id",
+    plot = FALSE
+  )
+
+  # effect code category
+  items$cat <- recode(items$category, "ingroup" = -0.5, "outgroup" = 0.5)
+  
+  # simulate subjects
+  subjects <- faux::sim_design(
+    within = list(effect = c(S0s = "By-subject random intercepts", 
+                             S1s = "By-subject random slopes")), 
+    n = nsubj,
+    sd = c(S0s_sd, S1s_sd), 
+    r = scor,
+    id = "subj_id",
+    plot = FALSE
+  )
+  
+  # simulate trials
+  dat_sim <- crossing(subj_id = subjects$subj_id,
+                      item_id = items$item_id) %>%
+    inner_join(subjects, "subj_id") %>%
+    inner_join(items, "item_id") %>%
+    mutate(Y = b0 + I0i + S0s + (b1 + S1s) * cat, # calculate gaussian DV
+           pr = inv_logit(Y), # transform to probability of getting 1
+           Y_bin = rbinom(nrow(.), 1, pr)) %>% # sample from bernoulli distribution 
+  select(subj_id, item_id, category, cat, Y, Y_bin)
+  
+  dat_sim
+}
+
+# set up the power function
+my_glmer_power <- function(...) {
+  # ... is a shortcut that forwards any arguments to my_sim_data()
+  dat_sim <- my_bin_data(...)
+  mod_sim <- glmer(Y_bin ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id),
+                data = dat_sim, family = "binomial")
+  
+  broom.mixed::tidy(mod_sim)
+}
+
+
+```
+
+
+
+```{r}
+# run simulations
+
+prob2param <- function(a = 0, b = 0) {
+  list(
+    b0 = (logit(a) + logit(b))/2,
+    b1 = logit(a) - logit(b)
+  )
+}
+
+reps <- 5
+b = prob2param(.4, .6)
+S0s_sd = 1
+S1s_sd = 1
+I0i_sd = 1
+scor = 0.5
+
+sims <- purrr::map_df(1:reps, ~my_glmer_power(b0 = b$b0,
+                                             b1 = b$b1,
+                                             S0s_sd = S0s_sd, 
+                                             S1s_sd = S1s_sd, 
+                                             I0i_sd = I0i_sd, 
+                                             scor = scor))
+```
+
+
+### Calculate mean estimates and cell probabilities
+
+```{r}
+est <- sims %>%
+  group_by(group, term) %>%
+  summarise(
+    mean_estimate = mean(estimate)
+  ) %>% ungroup()
+
+
+pr0 <- inv_logit(est[[1,3]]) %>% round(2)
+pr1_plus <- inv_logit(est[[1,3]] + .5*est[[2,3]]) %>% round(2)
+pr1_minus <- inv_logit(est[[1,3]] - .5*est[[2,3]]) %>% round(2)
+
+est %>% mutate(
+  sim = c(b$b0, b$b1, I0i_sd, scor, S0s_sd, S1s_sd),
+  prob = c(pr0, paste0(pr1_minus, ":", pr1_plus), rep(NA, 4))
+) %>%
+  mutate_if(is.numeric, round, 2)
+```
+
+## 2ww*2wb design
+
+In this example, 100 subjects will respond twice (for happy and angry expressions) to 50 items; 25 items in each of 2 categories. In this example, `expression` is a within-subject and within-item factor and `category` is a within-subject and between-item factor.
+
+```{r}
+ext_bin_data <- function(
+  nsubj        = 100, # number of subjects/btwn-grp
+  nitem        =  25, # number of items/btwn-grp
+  b0           =   0, # grand mean
+  b_cat        =   0, # main effect of category
+  b_exp        =   0, # main effect of expression
+  b_cat_exp    =   0, # interaction between category and expression
+  I0i_sd       =   1, # by-item random intercept sd
+  Iexp_sd      =   1, # by-item random slope for exp
+  icor         =   0, # by-item random effect correlation
+  S0s_sd       =   1, # by-subject random intercept sd
+  Scat_sd      =   1, # by-subject random slope sd for category
+  Sexp_sd      =   1, # by-subject random slope sd for exp
+  Scat_exp_sd  =   1, # by-subject random slope sd for category*exp
+  # by-subject random effect correlations
+  scor         = c(0, 0, 0,   # S0s  * cat, exp, tc
+                      0, 0,   # cat  *      exp, tc
+                         0)  # exp  *           tc
+) {
+
+  # simulate items
+  items <- faux::sim_design(
+    within  = list(components = c("I0i", "Iexp")),
+    between = list(category = c("ingroup", "outgroup")),
+    n = nitem,
+    sd = data.frame(I0i = I0i_sd, 
+                    Iexp = Iexp_sd),
+    r = icor,
+    id = "item_id",
+    plot = FALSE
+  )
+
+  # simulate subjects
+  subjects <- faux::sim_design(
+    within = list(components = c("S0s", "Scat", "Sexp", "Scat_exp")), 
+    n = nsubj,
+    sd = c(S0s  = S0s_sd,
+           Scat = Scat_sd, 
+           Sexp = Sexp_sd, 
+           Scat.exp  = Scat_exp_sd), 
+    r = scor,
+    id = "subj_id",
+    plot = FALSE
+  )
+
+  # simulate trials
+  dat_sim <- crossing(
+    subj_id = subjects$subj_id,
+    item_id = items$item_id,
+    expression = factor(c("happy", "angry"), ordered = TRUE)
+  ) %>%
+    inner_join(subjects, "subj_id") %>%
+    inner_join(items, "item_id") %>%
+    mutate(exp = recode(expression, "happy" = -0.5, "angry" = 0.5),
+           cat = recode(category, "ingroup" = -0.5, "outgroup" = +0.5),
+           trial_i    = b0 + I0i +  S0s,
+           trial_cat  = b_cat + Scat,
+           trial_exp  = b_exp + Iexp + Sexp,
+           trial_ct   = b_cat_exp + Scat.exp,
+           Y = trial_i + 
+             (trial_cat*cat) + 
+             (trial_exp*exp) + 
+             (trial_ct*cat*exp),
+           pr = inv_logit(Y), 
+           Y_bin = rbinom(nrow(.), 1, pr))
+  
+  dat_sim
+}
+
+ext_bin_func <- function(...) {
+  
+  dat_sim <- ext_bin_data(...)
+  
+  mod_sim <- glmer(Y_bin ~ 1 + cat*exp + 
+                    (1 + exp | item_id) + 
+                    (1 + cat*exp | subj_id),
+                  data = dat_sim, family = "binomial")
+  
+  broom.mixed::tidy(mod_sim)
+}
+```
+
+```{r}
+# run simulations
+prob2param <- function(angry_ingroup = 0,
+                       angry_outgroup = 0,
+                       happy_ingroup = 0,
+                       happy_outgroup = 0) {
+  ai <- logit(angry_ingroup)
+  ao <- logit(angry_outgroup)
+  hi <- logit(happy_ingroup)
+  ho <- logit(happy_outgroup)
+  list(
+    b0 = mean(c(ai,ao,hi,ho)),
+    b_cat = (ao+ho) - (ai+hi),
+    b_exp = (ao+ai) - (ho+hi),
+    b_cat_exp = (ao-ai) - (ho-hi)
+  )
+}
+
+reps <- 10
+b = prob2param(.5, .6, .4, .5)
+
+sims <- purrr::map_df(1:reps, ~ext_bin_func(b0 = b$b0,
+                                            b_cat = b$b_cat,
+                                            b_exp = b$b_exp,
+                                            b_cat_exp = b$b_cat_exp,
+                                            ))
+```
+
+
+
+# Calculate mean estimates
+
+```{r}
+
+est <- sims %>%
+  filter(effect == "fixed") %>%
+  group_by(term) %>%
+  summarise(
+    mean_estimate = mean(estimate)
+  ) %>% ungroup()
+
+est %>% mutate(
+  sim = c(b$b0, b$b_cat, b$b_cat_exp, b$b_exp)
+) %>%
+  mutate_if(is.numeric, round, 2)
+```
+
+### Calculate probabilities
+
+Sum estimates for each cell and use inverse logit transform to recover probabilities.
+
+```{r}
+int <- est[[1,2]]
+cat <- est[[2,2]]
+exp <- est[[4,2]]
+cat_exp <- est[[3,2]]
+
+data.frame(
+  angry_outgroup = inv_logit(int + .5*cat + .5*exp + .5*.5*cat_exp),
+  angry_ingroup  = inv_logit(int - .5*cat + .5*exp - .5*.5*cat_exp),
+  happy_outgroup = inv_logit(int + .5*cat - .5*exp - .5*.5*cat_exp),
+  happy_ingroup  = inv_logit(int - .5*cat - .5*exp + .5*.5*cat_exp)
+) %>%
+  gather(key, val, 1:4) %>%
+  separate(key, c("exp", "cat")) %>%
+  spread(cat, val) %>%
+  mutate_if(is.numeric, round, 2)
+
+```
+
