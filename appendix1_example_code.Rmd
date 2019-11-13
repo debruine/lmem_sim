@@ -19,9 +19,6 @@ To give an overview of the simulation task, we will simulate data from a design 
 library("lme4")        # model specification / estimation
 library("afex")        # anova and deriving p-values from lmer
 library("broom.mixed") # extracting data from model fits 
-library("faux")        # data simulation
-# NOTE: to install the 'faux' package, use:
-# devtools::install_github("debruine/faux")
 library("tidyverse")   # data wrangling and visualisation
 
 # ensure this script returns the same results on each run
@@ -63,17 +60,6 @@ items <- data.frame(
 
 
 ```{r}
-# simulate a sample of items using sim_design()
-items <- faux::sim_design(
-  between = list(category = c("ingroup", "outgroup")),
-  n = nitem,
-  sd = I0i_sd,
-  dv = "I0i",
-  id = "item_id"
-)
-```
-
-```{r}
 # effect-code category
 items$cat <- recode(items$category, "ingroup" = -0.5, "outgroup" = +0.5)
 ```
@@ -83,13 +69,25 @@ items$cat <- recode(items$category, "ingroup" = -0.5, "outgroup" = +0.5)
 
 ```{r}
 # simulate a sample of subjects
-subjects <- faux::sim_design(
-  within = list(effect = c(S0s = "By-subject random intercepts", 
-                           S1s = "By-subject random slopes")), 
-  n = nsubj,
-  sd = c(S0s_sd, S1s_sd), 
-  r = scor,
-  id = "subj_id"
+
+# make the correlation matrix
+cormat <- matrix(c(   1, scor,
+                   scor,    1), 
+             nrow = 2, byrow = TRUE) 
+
+# make a corresponding matrix of the variance 
+# (multiply the SDs for each cell)
+varmat <- matrix(c(S0s_sd * S0s_sd, S0s_sd * S1s_sd,
+                  S0s_sd * S1s_sd, S1s_sd * S1s_sd), 
+             nrow = 2, byrow = TRUE) 
+
+# create correlated variables with the specified parameters
+S <- MASS::mvrnorm(n = nsubj, mu = c(0, 0), Sigma = cormat * varmat)
+
+subjects <- data.frame(
+  subj_id = 1:nsubj,
+  S0s = S[, 1],
+  S1s = S[, 2]
 )
 ```
 
@@ -135,27 +133,34 @@ my_sim_data <- function(nsubj  = 100, # number of subjects
                         err_sd = 200  # residual (standard deviation)
                         ) {
   # simulate items
-  items <- faux::sim_design(
-    between = list(category = c("ingroup", "outgroup")),
-    n = nitem,
-    sd = I0i_sd,
-    dv = "I0i",
-    id = "item_id",
-    plot = FALSE
+  items <- data.frame(
+    item_id = 1:sum(nitem),
+    category = rep(c("ingroup", "outgroup"), nitem),
+    I0i = rnorm(sum(nitem), 0, I0i_sd)
   )
 
   # effect code category
   items$cat <- recode(items$category, "ingroup" = -0.5, "outgroup" = 0.5)
   
   # simulate subjects
-  subjects <- faux::sim_design(
-    within = list(effect = c(S0s = "By-subject random intercepts", 
-                             S1s = "By-subject random slopes")), 
-    n = nsubj,
-    sd = c(S0s_sd, S1s_sd), 
-    r = scor,
-    id = "subj_id",
-    plot = FALSE
+  # make the correlation matrix
+  cormat <- matrix(c(   1, scor,
+                     scor,    1), 
+               nrow = 2, byrow = TRUE) 
+  
+  # make a corresponding matrix of the variance 
+  # (multiply the SDs for each cell)
+  varmat <- matrix(c(S0s_sd * S0s_sd, S0s_sd * S1s_sd,
+                    S0s_sd * S1s_sd, S1s_sd * S1s_sd), 
+               nrow = 2, byrow = TRUE) 
+  
+  # create correlated variables with the specified parameters
+  S <- MASS::mvrnorm(n = nsubj, mu = c(0, 0), Sigma = cormat * varmat)
+  
+  subjects <- data.frame(
+    subj_id = 1:nsubj,
+    S0s = S[, 1],
+    S1s = S[, 2]
   )
   
   # simulate trials

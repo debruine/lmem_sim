@@ -137,16 +137,13 @@ To give an overview of the simulation task, we will simulate data from a design 
 
 ## Required software
 
-The simulation will be presented in the R programming language [@R-base]. To run the code, you will need to have some add-on packages available. Any packages you are missing can be installed using R's `install.packages()` function, except for the development package `faux` [@R-faux] which, at the time of writing, must be installed from the development repository on github.
+The simulation will be presented in the R programming language [@R-base]. To run the code, you will need to have some add-on packages available.
 
 ```{r libraries}
 # load required packages
 library("lme4")        # model specification / estimation
 library("afex")        # anova and deriving p-values from lmer
 library("broom.mixed") # extracting data from model fits 
-library("faux")        # data simulation
-# NOTE: to install the 'faux' package, use:
-# devtools::install_github("debruine/faux")
 library("tidyverse")   # data wrangling and visualisation
 ```
 
@@ -283,7 +280,7 @@ nitem  <- c(ingroup = 25, outgroup = 25)  # number of items
 
 ### Simulate the sampling of stimulus items
 
-We need to create a table listing each item, which category it is in, and simulated values for its random effects. We can do this with the code below, setting item ID to the numbers 1 through the total number of items, category for the first `r nitem[["ingroup"]]` items to "ingroup" and the next `r nitem[["outgroup"]]` faces to "outgroup", and sampling `r sum(nitem)` numbers from a normal distribution with a mean of 0 and a standard deviation of `I0i_sd`.
+We need to create a table listing each item, which category it is in, and simulated values for its random effects. We can do this with the code below, setting item ID to the numbers 1 through the total number of items (we'll use this later to join this information to the table of trials), category for the first `r nitem[["ingroup"]]` items to "ingroup" and the next `r nitem[["outgroup"]]` faces to "outgroup", and sampling `r sum(nitem)` numbers from a normal distribution with a mean of 0 and a standard deviation of `I0i_sd`.
 
 ```{r}
 # simulate a sample of items
@@ -291,21 +288,6 @@ items <- data.frame(
   item_id = 1:sum(nitem),
   category = rep(c("ingroup", "outgroup"), nitem),
   I0i = rnorm(sum(nitem), 0, I0i_sd)
-)
-```
-
-The function `faux::sim_design()` is a more flexible way to generate data with specified parameters. This function will create a dataset with any number of between and/or within factors, `n` items per between-cell, and the specified means (`mu`), standard deviations (`sd`) and correlations (\texttt{r}). By default, it plots a schematic of the design you specified. See the package vignette [@R-faux] for more details.
-
-Category is a between-items factor, so we need to include it in the `between` argument. Set `n = nitem` to specify the number of items per category. Set `sd = I0i_sd` to set the standard deviation for the by-item random effects. Set `dv = "I0i"` to give the random effect column that name. Set `id = "item_id"`; we'll use this later to join this information to the table of trials.
-
-```{r sim-items, out.width = "75%", fig.cap="The specified distribution of random effects for ingroup and outgroup faces."}
-# simulate a sample of items using sim_design()
-items <- faux::sim_design(
-  between = list(category = c("ingroup", "outgroup")),
-  n = nitem,
-  sd = I0i_sd,
-  dv = "I0i",
-  id = "item_id"
 )
 ```
 
@@ -328,21 +310,31 @@ head(items) %>%
 
 ### Simulate the sampling of subjects
 
-Now we will simulate the sampling of individual subjects, resulting in a table listing each subject and their two correlated random effects. We will again use `faux::sim_design()` for this task.
+Now we will simulate the sampling of individual subjects, resulting in a table listing each subject and their two correlated random effects.
 
-Set the `within` argument in `sim_design()` to a list with one factor (`effect`) that has two levels: `S0s` and `S1s`. If you set a factor's levels as a named vector, the names (`S0s` and `S1s`) become the column names in the data table and the values are used in plots created by faux.
+To create two correlated random effects, first specify the correlation matrix with 1s down the diagonal and using the value of `scor`, and a corresponding variance matrix (multiply the standard deviations `S0s_sd` and `S1s_sd`). Then use the `mvrnorm()` function from the `{MASS}` package to create a pair of correlated values for each subject, with means of 0 and `Sigma` equal to the product of the correlation and variance matrices. 
 
-Set `n = nsubj` to specify the number of subjects. There are two random effects to specify standard deviation for, so set `sd` using a named vector and set their correlation with \texttt{r = scor}. Set `id = "subj_id"`; we'll use this later to join this information to the table of trials.
-
-```{r sim-subjects, out.width = "75%", fig.cap="The specified distribution of random effects for subjects"}
+```{r sim-subjects}
 # simulate a sample of subjects
-subjects <- faux::sim_design(
-  within = list(effect = c(S0s = "By-subject random intercepts", 
-                           S1s = "By-subject random slopes")), 
-  n = nsubj,
-  sd = c(S0s_sd, S1s_sd), 
-  r = scor,
-  id = "subj_id"
+
+# make the correlation matrix
+cormat <- matrix(c(   1, scor,
+                   scor,    1), 
+             nrow = 2, byrow = TRUE) 
+
+# make a corresponding matrix of the variance 
+# (multiply the SDs for each cell)
+varmat <- matrix(c(S0s_sd * S0s_sd, S0s_sd * S1s_sd,
+                  S0s_sd * S1s_sd, S1s_sd * S1s_sd), 
+             nrow = 2, byrow = TRUE) 
+
+# create correlated variables with the specified parameters
+S <- MASS::mvrnorm(n = nsubj, mu = c(0, 0), Sigma = cormat * varmat)
+
+subjects <- data.frame(
+  subj_id = 1:nsubj,
+  S0s = S[, 1],
+  S1s = S[, 2]
 )
 ```
 
@@ -426,27 +418,34 @@ my_sim_data <- function(
   err_sd = 200){  # residual (standard deviation)
   
   # simulate items
-  items <- faux::sim_design(
-    between = list(category = c("ingroup", "outgroup")),
-    n = nitem,
-    sd = I0i_sd,
-    dv = "I0i",
-    id = "item_id",
-    plot = FALSE
+  items <- data.frame(
+    item_id = 1:sum(nitem),
+    category = rep(c("ingroup", "outgroup"), nitem),
+    I0i = rnorm(sum(nitem), 0, I0i_sd)
   )
 
   # effect code category
   items$cat <- recode(items$category, "ingroup" = -0.5, "outgroup" = 0.5)
   
   # simulate subjects
-  subjects <- faux::sim_design(
-    within = list(effect = c(S0s = "By-subject random intercepts", 
-                             S1s = "By-subject random slopes")), 
-    n = nsubj,
-    sd = c(S0s_sd, S1s_sd), 
-    r = scor,
-    id = "subj_id",
-    plot = FALSE
+  # make the correlation matrix
+  cormat <- matrix(c(   1, scor,
+                     scor,    1), 
+               nrow = 2, byrow = TRUE) 
+  
+  # make a corresponding matrix of the variance 
+  # (multiply the SDs for each cell)
+  varmat <- matrix(c(S0s_sd * S0s_sd, S0s_sd * S1s_sd,
+                    S0s_sd * S1s_sd, S1s_sd * S1s_sd), 
+               nrow = 2, byrow = TRUE) 
+  
+  # create correlated variables with the specified parameters
+  S <- MASS::mvrnorm(n = nsubj, mu = c(0, 0), Sigma = cormat * varmat)
+  
+  subjects <- data.frame(
+    subj_id = 1:nsubj,
+    S0s = S[, 1],
+    S1s = S[, 2]
   )
   
   # simulate trials

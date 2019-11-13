@@ -26,6 +26,8 @@ knitr::opts_chunk$set(echo       = TRUE,
 set.seed(90210)
 ```
 
+This script uses the `sim_design()` function in [faux](https://debruine.github.io/faux/) to create data tables with correlated random effects with specified parameters without needing to set up the correlation and variance matrices manually.
+
 ### Set Study Parameters
 
 In this example, 100 subjects will respond twice (for happy and angry expressions) to 50 items; 25 items in each of 2 categories. In this example, `expression` is a within-subject and within-item factor and `category` is a within-subject and between-item factor.

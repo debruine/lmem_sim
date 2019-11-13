@@ -1,5 +1,5 @@
 ---
-title: 'Appendix 1b: Example Code (no tidyverse or faux)'
+title: 'Appendix 1b: Example Code (no tidyverse)'
 subtitle: "Understanding mixed effects models through data simulation"
 author: "Lisa M. DeBruine & Dale J. Barr"
 
@@ -8,7 +8,7 @@ output:
     toc: true
 ---
 
-This script provides equivalent code to the version using pipes and functions from the tidyverse and faux. While this code may be of interest to people who want to learn more about the computations that generate correlated data, it will be more difficult to extend to more complicated designs.
+This script provides equivalent code to the version using pipes and functions from the tidyverse. While this code may be of interest to people who want to learn more about the computations that generate correlated data, it will be more difficult to extend to more complicated designs.
 
 ## Simulating data with crossed random factors
 
@@ -68,18 +68,18 @@ items <- data.frame(
 # simulate a sample of subjects
 
 # make the correlation matrix
-cormat <- matrix(c(1, scor,
-                   scor, 1), 
+cormat <- matrix(c(   1, scor,
+                   scor,    1), 
              nrow = 2, byrow = TRUE) 
 
 # make a corresponding matrix of the variance 
 # (multiply the SDs for each cell)
-sdmat <- matrix(c(S0s_sd * S0s_sd, S0s_sd * S1s_sd,
+varmat <- matrix(c(S0s_sd * S0s_sd, S0s_sd * S1s_sd,
                   S0s_sd * S1s_sd, S1s_sd * S1s_sd), 
              nrow = 2, byrow = TRUE) 
 
 # create correlated variables with the specified parameters
-S <-MASS::mvrnorm(nsubj, c(0, 0), Sigma = cormat * sdmat)
+S <- MASS::mvrnorm(n = nsubj, mu = c(0, 0), Sigma = cormat * varmat)
 
 subjects <- data.frame(
   subj_id = 1:nsubj,
