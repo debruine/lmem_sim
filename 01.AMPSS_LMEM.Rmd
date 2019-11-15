@@ -72,7 +72,7 @@ knitr::knit_hooks$set(document = function(x) {
 
 # Background
 
-In this article, we walk through the simulation and analysis of multilevel data with crossed random effects of subjects and stimuli. The article's target audience is researchers who work with experimental designs that sample subjects and stimuli, such as is the case for a large amount of experimental research in face perception, psycholinguistics, or social cognition. The tutorial assumes basic familiarity with R programming.
+In this article, we walk through the simulation and analysis of multilevel data with crossed random effects of subjects and stimuli. The article's target audience is researchers who work with experimental designs that sample subjects and stimuli, such as is the case for a large amount of experimental research in face perception, psycholinguistics, or social cognition. Simulation is useful not only for helping understand how models work, but also for estimating power when planning a study or performing a sensitivity analysis. The tutorial assumes basic familiarity with R programming.
 
 # Generalizing to a population of encounters
 
@@ -133,6 +133,15 @@ The code to reproduce the analyses reported in this article and appendices with 
 
 # Simulating data with crossed random factors
 
+Data simulation can play a powerful role in statistics education, enhancing understanding of the use and interpretation of statistical models and the assumptions behind them. The data simulation approach to learning about statistical models differs from the standard approach in most statistics textbooks, where the learner is presented with a step-by-step analysis of a sample of data from some population of interest. Such exercises usually culminate in inferences about characteristics of the population of interest from model estimates. Although this reflects the typical uncertain situation of the analyst, the learner cannot fully appreciate the performance of the model without knowing the ground truth. In a data simulation approach, the learner starts out knowing the ground truth about the population and writes code to simulate the process of taking and analyzing samples from that population. Giving learners knowledge of the underlying population parameters as well as the ability to explore how population parameters are reflected in model estimates can yield powerful insight into the appropriate specification of models and the interpretation of statistical output.
+
+Data simulation also has a wide variety of scientific uses, one of which is to estimate properties of statistical models in situations where algorithms for computing those properties are unknown or can only be applied with difficulty. For instance, @forster_dickinson_1976 used Monte Carlo simulation to explore the behavior of the quasi-$F$ statistics for ANOVA ($F'$ and min-$F'$) under various conditions. In a Monte Carlo simulation, the long run properties of a process are estimated by generating and analyzing many simulated datasets---usually, thousands or tens of thousands of them.
+
+One of the most important applications of Monte Carlo simulation is in the estimation of power for complex models. The notion of power appears most frequently in the context of study planning, where 
+a power analysis is used to determine the target $N$ for a study.  **[TODO: ELABORATE]**
+
+For most traditional statistical procedures such as $t$-test or ANOVA, there are analytical procedures for estimating power. But even where analytical solutions exist, simulation can still be useful to estimate power or false positive rates, because real psychological data nearly always deviates from the statistical assumptions behind traditional procedures. For instance, most statistical procedures used in psychology assume a continuous and unbounded dependent variable, but it is often the case that researchers use discrete (e.g., Likert) response scales.  When assumptions are not met, power simulations can provide a more reliable estimate than analytical procedures.
+
 To give an overview of the simulation task, we will simulate data from a design with crossed random factors of subjects and stimuli, fit a model to the simulated data, and then try to recover the parameter values we put in from the output. In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use their response time as the primary dependent variable. Let's imagine that the faces are of two intrinsic types: either from the subject's ingroup or from an outgroup. For simplicity, we further assume that each face appears only once in the stimulus set. The key question is whether there is any difference in classification speed across the type of face.
 
 ## Required software
@@ -142,8 +151,7 @@ The simulation will be presented in the R programming language [@R-base]. To run
 ```{r libraries}
 # load required packages
 library("lme4")        # model specification / estimation
-library("afex")        # anova and deriving p-values from lmer
-library("broom.mixed") # extracting data from model fits 
+library("lmerTest")    # provides p-values in the output
 library("tidyverse")   # data wrangling and visualisation
 ```
 
@@ -200,6 +208,8 @@ RT_{si} = \beta_0 + \beta_1 X_{i} + e_{si}.
 
 \noindent According to the formula, response $RT_{si}$ for subject $s$ and item $i$ is defined as sum of an intercept term $\beta_0$, which in this example is the grand mean reaction time for the population of stimuli, plus $\beta_1$, the mean RT difference between ingroup and outgroup stimuli, plus random noise $e_{si}$. To make $\beta_0$ equal the grand mean and $\beta_1$ equal the mean outgroup minus the mean ingroup RT, we will code the `category` variable as -.5 for the ingroup category and +.5 for the outgroup category.
 
+**TODO: describe use of Greek versus Roman alphabet in the model, and capital vs lowercase S and I**
+
 Although this model is incomplete, we can go ahead and choose parameters for $\beta_0$ and $\beta_1$.  For this example, we set a grand mean of 800 ms and a mean difference of 50 ms. You will need to use disciplinary expertise and/or pilot data to choose these parameters; by the end of this tutorial you will understand how to extract those parameters from an analysis.
 
 ```{r param-fixed}
@@ -220,31 +230,39 @@ RT_{si} = \beta_0 + S_{0s} + I_{0i} + \beta_1 X_i + e_{si}
 \end{equation}
 
 
-Now, the actual values for $S_{0s}$ and $I_{0i}$ in our sampled dataset will depend on the luck of the draw, i.e., on which subject and which stimuli we happened to have sampled from their respective populations. Unlike fixed effects, we assume these values will differ across different realizations of the experiment. Although the individual values will differ, we assume a fixed standard deviation for the random intercepts in the subject population. Below we assign the by-subject offsets a standard deviation of 100 ms (`S0s_sd`), and the by-item offsets a standard deviation of 80 ms (`I0i_sd`). We will discuss below how you can estimate these parameters for your own designs.
+Now, the actual values for $S_{0s}$ and $I_{0i}$ in our sampled dataset will depend on the luck of the draw, i.e., on which subject and which stimuli we happened to have sampled from their respective populations. Unlike fixed effects, we assume these values will differ across different realizations of the experiment. Although the individual values will differ, we assume a fixed standard deviation for the random intercepts in the subject population. Below we assign the by-subject offsets a standard deviation of 100 ms (`tau_{00}`), and the by-item offsets a standard deviation of 80 ms (`omega_{00}`). We will discuss below how you can estimate these parameters for your own designs.
 
 ```{r random-intercepts}
 # set random effect parameters
-S0s_sd <- 100 # by-subject random intercept sd
-I0i_sd <-  80 # by-item random intercept sd
+tau_00 <- 100 # by-subject random intercept sd
+omega_00 <-  80 # by-item random intercept sd
 ```
 
-There is still a deficiency in our data-generating model related to $\beta_1$, the fixed effect of category. Currently our model assumes that each and every subject is exactly `r I0i_sd` ms faster to categorize emotions on ingroup faces than on outgroup faces. Clearly, this assumption is totally unrealistic; some participants will be more sensitive to ingroup/outgroup differences than others. We can capture this in an analogous way to which we captured variation in the intercept, namely by including by-subject *random slopes* $S_{1s}$.
+There is still a deficiency in our data-generating model related to $\beta_1$, the fixed effect of category. Currently our model assumes that each and every subject is exactly `r omega_00` ms faster to categorize emotions on ingroup faces than on outgroup faces. Clearly, this assumption is totally unrealistic; some participants will be more sensitive to ingroup/outgroup differences than others. We can capture this in an analogous way to which we captured variation in the intercept, namely by including by-subject *random slopes* $S_{1s}$.
 
 \begin{equation}
 RT_{si} = \beta_0 + S_{0s} + I_{0i} + \left(\beta_1 + S_{1s}\right) X_i + e_{si}
 \end{equation}
 
-The random slope $S_{1s}$ is an estimate of how much faster or slower subject $s$ is in categorizing ingroup/outgroup faces than the population mean effect $\beta_1$, which we already set to `r b1` ms.  Given how we coded the $X_i$ variable, the mean effect for subject $s$ is given by the $\beta_1 + S_{1s}$ term. So, a participant who is 90 ms faster on average to categorize ingroup faces would have a random slope $S_{1s}$ of `r 90-b1` ($\beta_1 + S_{1s} = `r b1` + `r 90-b1` = 90$). Likewise, a participant who goes against the grain and shows an effect 15 ms *slower* than average (-15 ms) would have a random slope $S_{1s}$ of `r (-15-b1)` ($\beta_1 + S_{1s} = `r b1` + `r -15-b1` = -15$). As we did for the random intercepts, we assume that the $S_{1s}$ effects are the result of sampling, and so will differ across different realizations of the experiment. What remains fixed is their standard deviation `S1s_sd`, which we set to 40 ms.
+The random slope $S_{1s}$ is an estimate of how much faster or slower subject $s$ is in categorizing ingroup/outgroup faces than the population mean effect $\beta_1$, which we already set to `r b1` ms.  Given how we coded the $X_i$ variable, the mean effect for subject $s$ is given by the $\beta_1 + S_{1s}$ term. So, a participant who is 90 ms faster on average to categorize ingroup faces would have a random slope $S_{1s}$ of `r 90-b1` ($\beta_1 + S_{1s} = `r b1` + `r 90-b1` = 90$). Likewise, a participant who goes against the grain and shows an effect 15 ms *slower* than average (-15 ms) would have a random slope $S_{1s}$ of `r (-15-b1)` ($\beta_1 + S_{1s} = `r b1` + `r -15-b1` = -15$). As we did for the random intercepts, we assume that the $S_{1s}$ effects are the result of sampling, and so will differ across different realizations of the experiment. What remains fixed is their standard deviation `tau_11`, which we set to 40 ms.
 
-But note that we are sampling *two* random effects for each subject $s$, a random intercept $S_{0s}$ and a random slope $S_{1s}$.  It is possible for these values to be correlated, in which case we should not sample them independently. For instance, perhaps people who are faster than average overall (negative random intercept) also show a smaller than average of the ingroup/outgroup manipulation (negative random slope) due to allocating less attention to the task.  We can capture this by allowing for a small correlation between the two factors, `scor`, which we assign to be 0.2.
+**TODO: introduce covariance matrices here**
 
-Finally, we need to characterize the trial-level noise in the study ($e_{si}$) in terms of its standard deviation. Here we simply assign this parameter value `err_sd` to be twice the size of the by-subject random intercept SD.
+\begin{equation}
+\mathbf{\Sigma} = \left(\begin{array}{cc}{\tau_{00}}^2 & \rho\tau_{00}\tau_{11} \\
+         \rho\tau_{00}\tau_{11} & {\tau_{11}}^2 \\
+         \end{array}\right) 
+\end{equation}
+
+But note that we are sampling *two* random effects for each subject $s$, a random intercept $S_{0s}$ and a random slope $S_{1s}$.  It is possible for these values to be correlated, in which case we should not sample them independently. For instance, perhaps people who are faster than average overall (negative random intercept) also show a smaller than average of the ingroup/outgroup manipulation (negative random slope) due to allocating less attention to the task.  We can capture this by allowing for a small correlation between the two factors, `rho`, which we assign to be 0.2.
+
+Finally, we need to characterize the trial-level noise in the study ($e_{si}$) in terms of its standard deviation. Here we simply assign this parameter value `sigma` to be twice the size of the by-subject random intercept SD. 
 
 ```{r param-var}
 # set more random effect and error parameters
-S1s_sd <-  40 # by-subject random slope sd
-scor   <-  .2 # correlation between intercept and slope
-err_sd <- 200 # residual (error) sd
+tau_11 <-  40 # by-subject random slope sd
+rho   <-  .2 # correlation between intercept and slope
+sigma <- 200 # residual (error) sd
 ```
 
 To summarize, we established a reasonable statistical model underlying the data having the form:
@@ -253,17 +271,17 @@ To summarize, we established a reasonable statistical model underlying the data 
 RT_{si} = \beta_0 + S_{0s} + I_{0i} + \left(\beta_1 + S_{1s}\right) X_i + e_{si}
 \end{equation}
 
-\noindent The response time for subject $s$ on item $i$, $RT_{si}$, is decomposed into a population grand mean $\beta_0$, a by-subject random intercept $S_{0s}$, a by-item random intercept $I_{0i}$, a fixed slope $\beta_1$, a by-subject random slope $S_{1s}$, and a trial-level residual $e_{si}$. Our data-generating process is fully determined by seven parameters: two fixed effects (intercept `b0` and slope `b1`), four variance parameters governing the random effects (`S0s_sd`, `S1s_sd`, `scor`, and `I0i_sd`), and one parameter governing the trial level variance (`err_sd`).
+\noindent The response time for subject $s$ on item $i$, $RT_{si}$, is decomposed into a population grand mean $\beta_0$, a by-subject random intercept $S_{0s}$, a by-item random intercept $I_{0i}$, a fixed slope $\beta_1$, a by-subject random slope $S_{1s}$, and a trial-level residual $e_{si}$. Our data-generating process is fully determined by seven parameters: two fixed effects (intercept `b0` and slope `b1`), four variance parameters governing the random effects (`tau_00`, `S1s_sd`, `rho`, and `omega_00`), and one parameter governing the trial level variance (`sigma`).
 
 ```{r params-all}
 # set all data-generating parameters
 b0     <- 800 # intercept; i.e., the grand mean
 b1     <-  50 # slope; i.e, effect of category
-S0s_sd <- 100 # by-subject random intercept sd
-I0i_sd <-  80 # by-item random intercept sd
-S1s_sd <-  40 # by-subject random slope sd
-scor   <-  .2 # correlation between intercept and slope
-err_sd <- 200 # residual (error) sd
+tau_00 <- 100 # by-subject random intercept sd
+omega_00 <-  80 # by-item random intercept sd
+tau_11 <-  40 # by-subject random slope sd
+rho   <-  .2 # correlation between intercept and slope
+sigma <- 200 # residual (error) sd
 ```
 
 \noindent In the next section we will apply this data-generating process to simulate the sampling of subjects, items, and trials (encounters).
@@ -280,14 +298,14 @@ nitem  <- c(ingroup = 25, outgroup = 25)  # number of items
 
 ### Simulate the sampling of stimulus items
 
-We need to create a table listing each item, which category it is in, and simulated values for its random effects. We can do this with the code below, setting item ID to the numbers 1 through the total number of items (we'll use this later to join this information to the table of trials), category for the first `r nitem[["ingroup"]]` items to "ingroup" and the next `r nitem[["outgroup"]]` faces to "outgroup", and sampling `r sum(nitem)` numbers from a normal distribution with a mean of 0 and a standard deviation of `I0i_sd`.
+We need to create a table listing each item, which category it is in, and simulated values for its random effects. We can do this with the code below, setting item ID to the numbers 1 through the total number of items (we'll use this later to join this information to the table of trials), category for the first `r nitem[["ingroup"]]` items to "ingroup" and the next `r nitem[["outgroup"]]` faces to "outgroup", and sampling `r sum(nitem)` numbers from a normal distribution with a mean of 0 and a standard deviation of `omega_00`.
 
 ```{r}
 # simulate a sample of items
 items <- data.frame(
   item_id = 1:sum(nitem),
   category = rep(c("ingroup", "outgroup"), nitem),
-  I0i = rnorm(sum(nitem), 0, I0i_sd)
+  I0i = rnorm(sum(nitem), 0, omega_00)
 )
 ```
 
@@ -312,20 +330,20 @@ head(items) %>%
 
 Now we will simulate the sampling of individual subjects, resulting in a table listing each subject and their two correlated random effects.
 
-To create two correlated random effects, first specify the correlation matrix with 1s down the diagonal and using the value of `scor`, and a corresponding variance matrix (multiply the standard deviations `S0s_sd` and `S1s_sd`). Then use the `mvrnorm()` function from the `{MASS}` package to create a pair of correlated values for each subject, with means of 0 and `Sigma` equal to the product of the correlation and variance matrices. 
+To create two correlated random effects, first specify the correlation matrix with 1s down the diagonal and using the value of `rho`, and a corresponding variance matrix (multiply the standard deviations `tau_00` and `tau_11`). Then use the `mvrnorm()` function from the `{MASS}` package to create a pair of correlated values for each subject, with means of 0 and `sigma` equal to the product of the correlation and variance matrices. 
 
 ```{r sim-subjects}
 # simulate a sample of subjects
 
 # make the correlation matrix
-cormat <- matrix(c(   1, scor,
-                   scor,    1), 
+cormat <- matrix(c(   1, rho,
+                   rho,    1), 
              nrow = 2, byrow = TRUE) 
 
 # make a corresponding matrix of the variance 
 # (multiply the SDs for each cell)
-varmat <- matrix(c(S0s_sd * S0s_sd, S0s_sd * S1s_sd,
-                  S0s_sd * S1s_sd, S1s_sd * S1s_sd), 
+varmat <- matrix(c(tau_00 * tau_00, tau_00 * tau_11,
+                  tau_00 * tau_11, tau_11 * tau_11), 
              nrow = 2, byrow = TRUE) 
 
 # create correlated variables with the specified parameters
@@ -346,13 +364,13 @@ head(subjects) %>% apa_table(caption = "The resulting table of subject parameter
 
 ### Simulate trials (encounters)
 
-Since all subjects respond to all items, we can set up a table of trials by making every possible combination of the subject and item IDs using the function `crossing()` from tidyr [@R-tidyr]. Once we have a table of all trials, we can join the information in this table to the information in our `subjects` and `items` tables using `dplyr::inner_join()`. Each trial has random error associated; we simulate this from a normal distribution with a mean of 0 and SD of `err_sd`.
+Since all subjects respond to all items, we can set up a table of trials by making every possible combination of the subject and item IDs using the function `crossing()` from tidyr [@R-tidyr]. Once we have a table of all trials, we can join the information in this table to the information in our `subjects` and `items` tables using `dplyr::inner_join()`. Each trial has random error associated; we simulate this from a normal distribution with a mean of 0 and SD of `sigma`.
 
 ```{r}
 # cross subject and item IDs; add an error term
 trials <- crossing(subj_id = subjects$subj_id,
                    item_id = items$item_id)  %>%
-  mutate(err = rnorm(nrow(.), mean = 0, sd = err_sd))
+  mutate(err = rnorm(nrow(.), mean = 0, sd = sigma))
 
 # join subject and item tables
 joined <- trials %>%
@@ -411,17 +429,17 @@ my_sim_data <- function(
   nitem  = c(ingroup = 25, outgroup = 25),  # number of items
   b0     = 800, # grand mean
   b1     =  50, # effect of category
-  I0i_sd =  80, # by-item random intercept sd
-  S0s_sd = 100, # by-subject random intercept sd
-  S1s_sd =  40, # by-subject random slope sd
-  scor   = 0.2, # correlation between intercept and slope
-  err_sd = 200){  # residual (standard deviation)
+  omega_00 =  80, # by-item random intercept sd
+  tau_00 = 100, # by-subject random intercept sd
+  tau_11 =  40, # by-subject random slope sd
+  rho   = 0.2, # correlation between intercept and slope
+  sigma = 200){  # residual (standard deviation)
   
   # simulate items
   items <- data.frame(
     item_id = 1:sum(nitem),
     category = rep(c("ingroup", "outgroup"), nitem),
-    I0i = rnorm(sum(nitem), 0, I0i_sd)
+    I0i = rnorm(sum(nitem), 0, omega_00)
   )
 
   # effect code category
@@ -429,14 +447,14 @@ my_sim_data <- function(
   
   # simulate subjects
   # make the correlation matrix
-  cormat <- matrix(c(   1, scor,
-                     scor,    1), 
+  cormat <- matrix(c(   1, rho,
+                     rho,    1), 
                nrow = 2, byrow = TRUE) 
   
   # make a corresponding matrix of the variance 
   # (multiply the SDs for each cell)
-  varmat <- matrix(c(S0s_sd * S0s_sd, S0s_sd * S1s_sd,
-                    S0s_sd * S1s_sd, S1s_sd * S1s_sd), 
+  varmat <- matrix(c(tau_00 * tau_00, tau_00 * tau_11,
+                    tau_00 * tau_11, tau_11 * tau_11), 
                nrow = 2, byrow = TRUE) 
   
   # create correlated variables with the specified parameters
@@ -453,7 +471,7 @@ my_sim_data <- function(
                       item_id = items$item_id) %>%
     inner_join(subjects, "subj_id") %>%
     inner_join(items, "item_id") %>%
-    mutate(err = rnorm(nrow(.), mean = 0, sd = err_sd)) %>%
+    mutate(err = rnorm(nrow(.), mean = 0, sd = sigma)) %>%
     mutate(RT = b0 + I0i + S0s + (b1 + S1s) * cat + err) %>%
     select(subj_id, item_id, category, cat, RT)
   
@@ -482,7 +500,7 @@ RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id)
 
 The 'fixed' part of the formula, `RT ~ 1 + cat`, establishes the $RT_{si} + \beta_0 + \beta_1 X_i + e_{si}$ part of our linear model, with the role of $X_i$ being played by `cat`. Every model has an intercept ($\beta_0$) term and residual term ($e_{si}$) by default, so you could alternatively leave the `1` out and just write `RT ~ cat`.
 
-The terms in parentheses with the `|` separator define the random effects structure. For each of these bracketed terms, the left-hand side of the `|` names the effects you wish to allow to vary and the right hand side names the variable identifying the levels of the random factor over which the terms vary (e.g., subjects or items). The first term, `(1 | item_id)` allows the intercept (`1`) to vary over the random factor of items (`item_id`). This is an instruction to estimate the parameter underlying the `I0i` values, namely `I0i_sd`. The second term, `(1 + cat | subj_id)`, allows both the intercept and the effect of category (`cat`) to vary over the random factor of subjects (`subj_id`). It is an instruction to estimate the three parameters that underlie the `S0s` and `S1s` values, namely `S0s_sd`, `S1s_sd`, and `scor`.
+The terms in parentheses with the `|` separator define the random effects structure. For each of these bracketed terms, the left-hand side of the `|` names the effects you wish to allow to vary and the right hand side names the variable identifying the levels of the random factor over which the terms vary (e.g., subjects or items). The first term, `(1 | item_id)` allows the intercept (`1`) to vary over the random factor of items (`item_id`). This is an instruction to estimate the parameter underlying the `I0i` values, namely `omega_00`. The second term, `(1 + cat | subj_id)`, allows both the intercept and the effect of category (`cat`) to vary over the random factor of subjects (`subj_id`). It is an instruction to estimate the three parameters that underlie the `S0s` and `S1s` values, namely `tau_00`, `tau_11`, and `rho`.
 
 ## Interpreting the lmer summary
 
@@ -496,7 +514,7 @@ mod_sim <- lmer(RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id),
 summary(mod_sim, corr = FALSE)
 ```
 
-\noindent Let's break down the output step-by-step and try to find estimates of the seven parameters we used to generate the data: `b0`, `b1`, `S0s_sd`, `S1s_sd`, `scor`, `I0i_sd` and `err`. If you analyze existing data with a mixed effects model, you can use these estimates to help you set reasonable values for random effects in your own simulations. 
+\noindent Let's break down the output step-by-step and try to find estimates of the seven parameters we used to generate the data: `b0`, `b1`, `tau_00`, `tau_11`, `rho`, `omega_00` and `err`. If you analyze existing data with a mixed effects model, you can use these estimates to help you set reasonable values for random effects in your own simulations. 
 
 
 ```{r get-estimates-hidden, echo=FALSE}
@@ -533,9 +551,9 @@ The first subtable, where the value of `Groups` is `subj_id`, gives the estimate
 cat(.ltxt[(.ref + 1L):(.ref + 3L)], sep = "\n")
 ```
 
-\noindent We have estimates for the variance of the intercept and slope (`cat`) in the `Variance` column, which is just the square of the standard deviation in the `Std.Dev.` column. We obtain estimates for `S0s_sd` and `S1s_sd` of `r srfx[[1]]` and `r srfx[[2]]` respectively. The `Corr.` column gives us the estimated correlation between the by-subject random intercepts and slopes, estimated here as `r rc`.
+\noindent We have estimates for the variance of the intercept and slope (`cat`) in the `Variance` column, which is just the square of the standard deviation in the `Std.Dev.` column. We obtain estimates for `tau_00` and `tau_11` of `r srfx[[1]]` and `r srfx[[2]]` respectively. The `Corr.` column gives us the estimated correlation between the by-subject random intercepts and slopes, estimated here as `r rc`.
 
-The second subtable gives us the by-item random effect parameter estimates of which there is only one, `r irfx[[1]]`, corresponding to `I0i_sd`. Again, the `Variance` column is just this value squared.
+The second subtable gives us the by-item random effect parameter estimates of which there is only one, `r irfx[[1]]`, corresponding to `omega_00`. Again, the `Variance` column is just this value squared.
 
 ```{r rfx-sub2, echo=FALSE}
 cat(.ltxt[.ref + 1L], .ltxt[.ref + 4L], sep = "\n")
@@ -551,7 +569,7 @@ We have found all seven parameters in the output. Let's compare them to the valu
 
 ```{r param-compare, echo = FALSE, results = 'asis'}
 tibble(
-  variable = c("b0", "b1", "S0s_sd", "S1s_sd", "scor", "I0i_sd", "err_sd"),
+  variable = c("b0", "b1", "tau_00", "tau_11", "rho", "omega_00", "sigma"),
   explanation = c("intercept (grand mean)",
                   "fixed effect of category",
                   "by-subject random intercept SD",
@@ -559,7 +577,7 @@ tibble(
                   "cor between intercept and slope",
                   "by-item random intercept SD",
                   "residual (error) SD"),
-  `simulated value` = c(b0, b1, S0s_sd, S1s_sd, scor, I0i_sd, err_sd),
+  `simulated value` = c(b0, b1, tau_00, tau_11, rho, omega_00, sigma),
   `estimated by model` = broom.mixed::tidy(mod_sim)$estimate
 ) %>% apa_table(caption="The simulation parameters compared to the model estimations.", 
                 align = "llrr",
@@ -573,13 +591,13 @@ You can also use `broom.mixed::tidy()` to output fixed and/or random effects in 
 ```{r broom-tidy, eval = FALSE}
 # get a tidy table of results
 broom.mixed::tidy(mod_sim) %>% 
-  mutate(sim = c(b0, b1, S0s_sd, S1s_sd, scor, I0i_sd, err_sd)) %>%
+  mutate(sim = c(b0, b1, tau_00, tau_11, rho, omega_00, sigma)) %>%
   select(1:3, 9, 4:8)
 ```
 
 ```{r broom-tidy-table, echo = FALSE, results = 'asis'}
 broom.mixed::tidy(mod_sim) %>% 
-  mutate(sim = c(b0, b1, S0s_sd, S1s_sd, scor, I0i_sd, err_sd)) %>%
+  mutate(sim = c(b0, b1, tau_00, tau_11, rho, omega_00, sigma)) %>%
   select(1:3, 9, 4:8) %>%
   apa_table(caption="The output of the tidy function from broom.mixed.",
             digits = c(0,0,0,1,2,1,1,1,3),
