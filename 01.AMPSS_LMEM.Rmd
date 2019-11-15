@@ -33,11 +33,11 @@ draft             : no
 documentclass     : "apa6"
 classoption       : "doc"
 output            : 
+  papaja::apa6_pdf:
+    default
   rmarkdown::html_document:
     toc: true
     toc_depth: 4
-  papaja::apa6_pdf:
-    default
 header-includes   :
   - \usepackage{float}
   - \floatplacement{figure}{H}
