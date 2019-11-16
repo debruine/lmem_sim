@@ -1,0 +1,341 @@
+---
+title: 'Appendix 1c: Sensitivity Analysis'
+author: "Lisa M. DeBruine & Dale J. Barr"
+subtitle: Understanding mixed effects models through data simulation
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+  html_notebook:
+    toc: yes
+---
+
+### Required software
+
+```{r, message=FALSE}
+# load required packages
+library("lme4")        # model specification / estimation
+library("lmerTest")    # deriving p-values from lmer
+library("broom.mixed") # extracting data from model fits 
+library("tidyverse")   # data wrangling and visualisation
+library("progress")    # progress bar
+
+# ensure this script returns the same results on each run
+set.seed(8675309)
+```
+
+### Data simulation function
+
+```{r}
+# set up the custom data simulation function
+my_sim_data <- function(nsubj  = 100, # number of subjects
+                        nitem  = c(ingroup = 25, outgroup = 25),  # number of items
+                        b0     = 800, # grand mean
+                        b1     =  50, # effect of category
+                        I0i_sd =  80, # by-item random intercept sd
+                        S0s_sd = 100, # by-subject random intercept sd
+                        S1s_sd =  40, # by-subject random slope sd
+                        scor   = 0.2, # correlation between intercept and slope
+                        err_sd = 200  # residual (standard deviation)
+                        ) {
+  if (length(nitem) == 1) {
+    # set ingroup and outgroup to same n
+    nitem <- c(ingroup = nitem, outgroup = nitem)
+  }
+  
+  # simulate items
+  items <- data.frame(
+    item_id = 1:sum(nitem),
+    category = rep(c("ingroup", "outgroup"), nitem),
+    I0i = rnorm(sum(nitem), 0, I0i_sd)
+  )
+
+  # effect code category
+  items$cat <- recode(items$category, "ingroup" = -0.5, "outgroup" = 0.5)
+  
+  # simulate subjects
+  # make the correlation matrix
+  cormat <- matrix(c(   1, scor,
+                     scor,    1), 
+               nrow = 2, byrow = TRUE) 
+  
+  # make a corresponding matrix of the variance 
+  # (multiply the SDs for each cell)
+  varmat <- matrix(c(S0s_sd * S0s_sd, S0s_sd * S1s_sd,
+                    S0s_sd * S1s_sd, S1s_sd * S1s_sd), 
+               nrow = 2, byrow = TRUE) 
+  
+  # create correlated variables with the specified parameters
+  S <- MASS::mvrnorm(n = nsubj, mu = c(0, 0), Sigma = cormat * varmat)
+  
+  subjects <- data.frame(
+    subj_id = 1:nsubj,
+    S0s = S[, 1],
+    S1s = S[, 2]
+  )
+  
+  # simulate trials
+  dat_sim <- crossing(subj_id = subjects$subj_id,
+                      item_id = items$item_id) %>%
+    inner_join(subjects, "subj_id") %>%
+    inner_join(items, "item_id") %>%
+    mutate(err = rnorm(nrow(.), mean = 0, sd = err_sd)) %>%
+    mutate(RT = b0 + I0i + S0s + (b1 + S1s) * cat + err) %>%
+    select(subj_id, item_id, category, cat, RT)
+  
+  dat_sim
+}
+```
+
+
+## Power calculation function
+
+The power calculation function is slightly more complicated than the one for the basic example. Since sensitivity analyses usually push analyses into parameter spaces where the models produce warnings, we're capturing the warnings and adding them to the results table. We're also adding the parameters to the results table so you can group by the different parameter options when visualising the results.
+
+```{r}
+# set up the power function
+my_lmer_power <- function(...) {
+  # ... is a shortcut that forwards any arguments to my_sim_data()
+  dat_sim <- my_sim_data(...)
+
+  # run lmer and capture any warnings
+  ww <- ""
+  suppressMessages(suppressWarnings(
+    mod_sim <- withCallingHandlers({
+      lmer(RT ~ cat + (1 | item_id) + (1 + cat | subj_id),
+                  dat_sim, REML = FALSE)},
+      warning = function(w) { ww <<- w$message }
+    )
+  ))
+  
+  # get results table and add rep number and any warnings
+  res <- broom.mixed::tidy(mod_sim) %>%
+    mutate(warnings = ww)
+  
+  # add columns for the specified parameters
+  params <- list(...)
+  for (name in names(params)) {
+    res[name] <- params[name]
+  }
+
+  res
+}
+
+```
+
+### Example 1: Effect size
+
+Set up a data table with all of the parameter combinations you want to test. For example, the code below sets up 100 replications for effects of category ranging from 0 to 100 ms in steps of 10. All of the other parameters are default, but we're specifying them anyways so they are saved in the results table.
+
+```{r}
+filename <- "sims/sens1.csv"
+nreps <- 100 # number of replications per parameter combo
+
+params <- crossing(
+  rep  = 1:nreps,
+  nsubj  = 100, # number of subjects
+  nitem  =  25, # number of items
+  b0     = 800, # grand mean
+  b1     = seq(0, 100, by = 10), # effect of category
+  I0i_sd = 100, # by-item random intercept sd
+  S0s_sd =  80, # by-subject random intercept sd
+  S1s_sd =  40, # by-subject random slope sd
+  scor   = 0.2, # correlation between intercept and slope
+  err_sd = 200  # residual (standard deviation)
+) %>%
+  select(-rep) # remove rep column
+```
+
+This table has 1100 rows, so will run 1100 simulations below. The code below saves the results to a named file or appends them to the file if one exists already. Run a small number of replicates to start and add to it after you're sure your code works and you have an idea how long it takes. 
+
+```{r, eval = FALSE}
+# run simulations and save to a file
+
+# set up progress bar
+pb <- progress::progress_bar$new(total = nrow(params))
+sims <- purrr::pmap_df(params, function(...) { 
+  pb$tick()
+  my_lmer_power(...) 
+})
+
+# simpler code without the progress bar
+# sims <- purrr::pmap_df(params, my_lmer_power)
+
+# check if there are already simulations saved to file and add them
+if (file.exists(filename)) {
+  sims <- read_csv(filename, col_types = NULL) %>%
+    bind_rows(sims)
+}
+write_csv(sims, filename)
+```
+
+The chunk above is set to not evaluate when you knit this file; it just reads the saved data from the file. The code below calculates the mean estimates and power for each group. Make sure to set the `group_by` to the parameters you altered above.
+
+
+```{r, message=FALSE}
+# read saved simulation data
+sims <- read_csv(filename)
+
+# calculate mean estimates and power for specified alpha
+alpha <- 0.05
+
+power <- sims %>% 
+  filter(effect == "fixed", term == "cat") %>%
+  group_by(term, b1) %>%
+  summarise(
+    mean_estimate = mean(estimate),
+    mean_se = mean(std.error),
+    power = mean(p.value < alpha)
+  ) 
+
+power %>%
+  ggplot(aes(b1, power)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  ylim(0, 1) +
+  scale_x_continuous(name = "Effect of category in ms (b1)",
+                     breaks = seq(0, 100, 10))
+```
+
+### Example 2: Number of subjects and items
+
+The code below sets up 50 replications for each of 20 combinations of 10 to 50 subjects (by steps of 10) and 10 to 25 stimuli (by steps of 5).
+
+```{r}
+filename <- "sims/sens2.csv"
+nreps <- 50 # number of replications per parameter combo
+
+params <- crossing(
+  rep = 1:nreps, 
+  nsubj = seq(10, 50, by = 10),
+  nitem = seq(10, 25, by = 5),
+  b0     = 800, # grand mean
+  b1     = 100, # effect of category
+  I0i_sd = 100, # by-item random intercept sd
+  S0s_sd =  80, # by-subject random intercept sd
+  S1s_sd =  40, # by-subject random slope sd
+  scor   = 0.2, # correlation between intercept and slope
+  err_sd = 200  # residual (standard deviation)
+) %>%
+  select(-rep) # remove rep column
+```
+
+
+```{r, eval = FALSE}
+# run simulations and save to a file
+
+# set up progress bar
+pb <- progress::progress_bar$new(total = nrow(params))
+sims <- purrr::pmap_df(params, function(...) { 
+  pb$tick()
+  my_lmer_power(...) 
+})
+
+# simpler version without a progress bar
+# sims <- purrr::pmap_df(params, my_lmer_power)
+
+# check if there are already simulations saved to file and add them
+if (file.exists(filename)) {
+  sims <- read_csv(filename) %>%
+    bind_rows(sims)
+}
+write_csv(sims, filename)
+```
+
+```{r, message = FALSE}
+# read saved simulation data
+sims <- read_csv(filename)
+
+# calculate mean estimates and power for specified alpha
+alpha <- 0.05
+
+power <- sims %>% 
+  filter(effect == "fixed", term == "cat") %>%
+  group_by(term, nsubj, nitem) %>%
+  summarise(
+    mean_estimate = mean(estimate),
+    mean_se = mean(std.error),
+    power = mean(p.value < alpha)
+  ) 
+
+power %>%
+  ggplot(aes(nsubj, nitem, fill = power)) +
+  geom_tile(show.legend = FALSE) +
+  geom_text(aes(label = round(power, 2)), color = "white") +
+  scale_x_continuous(name = "Number of subjects (nsubj)",
+                     breaks = seq(10, 50, 10)) +
+  scale_y_continuous(name = "Number of items (nitem)",
+                     breaks = seq(5, 25, 5)) +
+  scale_fill_viridis_c(limits = c(0, 1))
+```
+
+
+### Example 3: Random intercept SDs
+
+The code below sets up 50 replications for designs with 50 subjects, 10 items, and by-item and by-subject random intercept SDs ranging from 20 to 100 in steps of 20.
+
+```{r}
+
+filename <- "sims/sens3.csv"
+nreps <- 50 # number of replications per parameter combo
+
+params <- crossing(
+  rep  = 1:nreps,
+  nsubj  =  50, # number of subjects
+  nitem  =  10, # number of items
+  b0     = 800, # grand mean
+  b1     =  50, # effect of category
+  I0i_sd = seq(20, 100, by = 20), # by-item random intercept sd
+  S0s_sd = seq(20, 100, by = 20), # by-subject random intercept sd
+  S1s_sd =  40, # by-subject random slope sd
+  scor   = 0.2, # correlation between intercept and slope
+  err_sd = 200  # residual (standard deviation)
+) %>%
+  select(-rep) # remove rep column
+```
+
+```{r, eval = FALSE}
+# run simulations and save to a file
+
+# set up progress bar
+pb <- progress::progress_bar$new(total = nrow(params))
+sims <- purrr::pmap_df(params, function(...) { 
+  pb$tick()
+  my_lmer_power(...) 
+})
+
+# check if there are already simulations saved to file and add them
+if (file.exists(filename)) {
+  sims <- read_csv(filename) %>%
+    bind_rows(sims)
+}
+write_csv(sims, filename)
+```
+
+```{r, message=FALSE}
+# read saved simulation data
+sims <- read_csv(filename)
+
+# calculate mean estimates and power for specified alpha
+alpha <- 0.05
+
+power <- sims %>% 
+  filter(effect == "fixed", term == "cat") %>%
+  group_by(term, I0i_sd, S0s_sd) %>%
+  summarise(
+    mean_estimate = mean(estimate),
+    mean_se = mean(std.error),
+    power = mean(p.value < alpha)
+  ) 
+
+power %>%
+  ggplot(aes(I0i_sd, S0s_sd, fill = power)) +
+  geom_tile(show.legend = FALSE) +
+  geom_text(aes(label = round(power, 2)), color = "white") +
+  scale_x_continuous(name = "By-item random intercept SD (I0i_sd)",
+                     breaks = seq(20, 100, 20)) +
+  scale_y_continuous(name = "By-subject random intercept SD (S0s_sd)",
+                     breaks = seq(20, 100, 20)) +
+  scale_fill_viridis_c(limits = c(0, 1))
+```
+
