@@ -14,7 +14,7 @@ library("afex")        # deriving p-values from lmer
 library("broom.mixed") # extracting data from model fits 
 library("faux")        # data simulation
 # NOTE: to install the 'faux' package, use:
-# devtools::install_github("debruine/faux")
+# devtools::install_github("debruine/faux", build_vignettes = TRUE)
 library("tidyverse")   # data wrangling and visualisation
 
 # set options for display in this R Markdown file
