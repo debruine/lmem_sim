@@ -1,0 +1,11 @@
+pandoc: 2.7.3
+pkgdown: 1.5.1
+pkgdown_sha: ~
+articles:
+  appendix1_example_code: appendix1_example_code.html
+  appendix1b_example_code: appendix1b_example_code.html
+  appendix1c_sensitivity: appendix1c_sensitivity.html
+  appendix2_extended_example: appendix2_extended_example.html
+  appendix3_binomial: appendix3_binomial.html
+last_built: 2020-08-17T16:50Z
+
