@@ -1,0 +1,14 @@
+citHeader("To cite lmem.sim in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "Understanding mixed effects models through data simulation",
+  author   = "DeBruine, Lisa M and Barr, Dale J",
+  doi      = "10.31234/osf.io/xp5cy",
+  journal = "PsyArXiv",
+  year     = "2020",
+  month    = "August",
+  note     = "preprint",
+  url      = "https://debruine.github.io/lmem_sim/",
+  textVersion = paste("DeBruine, L. M., & Barr, D. J. (2020). Understanding mixed effects models through data simulation. https://doi.org/10.31234/osf.io/xp5cy")
+)

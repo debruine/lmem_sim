@@ -8,13 +8,24 @@ This repository contains all materials needed to reproduce the manuscript, as we
 
 
 * [PsyArXiv preprint](https://psyarxiv.com/xp5cy)
-* [HTML version](https://debruine.github.io/lmem_sim/index.html) 
-* Example code: [Rmd](https://raw.githubusercontent.com/debruine/lmem_sim/master/appendix1_example_code.Rmd) / [html](https://debruine.github.io/lmem_sim/appendix1_example_code.nb.html)
-* Example code without tidyverse: [Rmd](https://raw.githubusercontent.com/debruine/lmem_sim/master/appendix1b_example_code.Rmd) / [html](https://debruine.github.io/lmem_sim/appendix1b_example_code.nb.html)
-* More complex example: [Rmd](https://raw.githubusercontent.com/debruine/lmem_sim/master/appendix2_extended_example.Rmd) / [html](https://debruine.github.io/lmem_sim/appendix2_extended_example.nb.html)
-* Sensitivity analysis example: [Rmd](https://raw.githubusercontent.com/debruine/lmem_sim/master/appendix1c_sensitivity.Rmd) / [html](https://debruine.github.io/lmem_sim/appendix1c_sensitivity.nb.html)
+* [Example code](https://debruine.github.io/lmem_sim/articles/)
 * Shiny App [Simulating LMEM](http://shiny.psy.gla.ac.uk/lmem_sim/)
 * Shiny App [Crossed Random Effects](http://shiny.psy.gla.ac.uk/crossed/)
 
+## Installation
 
+You can install the development version of a package that include all the packages you'll need for the examples, plus a local version of the shiny app, from [GitHub](https://github.com/debruine/lmem_sim) with:
+
+``` r
+devtools::install_github("debruine/lmem_sim")
+```
+
+Here are some functions included in the app:
+
+``` r
+lmem.sim::paper()       # open the pdf version of the paper
+lmem.sim::paper("html") # open the html version of the paper
+lmem.sim::app()         # start the app
+citation("lmem.sim")    # get the citation
+```
 

@@ -1,0 +1,42 @@
+Package: lmem.sim
+Title: Simulating for LMEM
+Version: 0.0.0.9000
+Authors@R: 
+  c(
+    person(
+        given = "Lisa", 
+        family = "DeBruine", 
+        role = c("aut", "cre"), 
+        email = "debruine@gmail.com", 
+        comment = c(ORCID = "0000-0002-7523-5539")
+    ),
+    person(
+        given = "Dale", 
+        family = "Barr", 
+        role = c("aut"), 
+        email = "dale.barr@glasgow.ac.uk", 
+        comment = c(ORCID = "0000-0002-1121-4608")
+    ))
+Description: Additional resources for Understanding mixed effects models through data simulation <doi:10.31234/osf.io/xp5cy>.
+License: CC BY 4.0
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports: 
+    dplyr,
+    tidyr,
+    purrr,
+    ggplot2,
+    afex,
+    lme4,
+    broom.mixed,
+    faux
+Suggests: 
+    knitr,
+    rmarkdown,
+    papaja
+Remotes: 
+    debruine/faux,
+    crsh/papaja
+VignetteBuilder: knitr
