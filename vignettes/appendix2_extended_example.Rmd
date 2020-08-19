@@ -9,22 +9,27 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width  = 8,
+  fig.height = 5,
+  out.width  = "100%"
+)
+```
+
 ```{r, message=FALSE}
 library("lme4")        # model specification / estimation
 library("afex")        # deriving p-values from lmer
 library("broom.mixed") # extracting data from model fits 
 library("faux")        # data simulation
-# NOTE: to install the 'faux' package, use:
-# devtools::install_github("debruine/faux", build_vignettes = TRUE)
 library("tidyverse")   # data wrangling and visualisation
 
-# set options for display in this R Markdown file
-knitr::opts_chunk$set(echo       = TRUE,
-                      fig.width  = 8,
-                      fig.height = 5,
-                      out.width  = "100%")
-
+# ensure this script returns the same results on each run
 set.seed(90210)
+faux_options(verbose = FALSE)
 ```
 
 This script uses the `sim_design()` function in [faux](https://debruine.github.io/faux/) to create data tables with correlated random effects with specified parameters without needing to set up the correlation and variance matrices manually.
@@ -38,6 +43,28 @@ We will set our grand intercept and the fixed effect of category the same as bef
 Therefore, you will need to set up more complicated random effect parameters. Items and subjects will need standard deviations assigned for their random intercepts and the random slopes for any within factors (and their interactions), plus the correlations among all these SDs.
 
 Since all subjects respond to all items, we can set up a table of trials by crossing the subject IDs with the item IDs and also any factors that are within-subject *and* within-item (i., `expression = c("happy", "angry")`). This is set up as a factor with the levels specified so they are displayed in the right order in plots.
+
+```{r, eval = FALSE, include = FALSE}
+  nsubj        = 100, # number of subjects/btwn-grp
+  nitem        =  25, # number of items/btwn-grp
+  b0           = 800, # grand mean
+  b1           =  50, # main effect of category
+  b2           =   0, # main effect of expression
+  b3           =  70, # interaction between category and expression
+  omega_0      =  80, # by-item random intercept sd
+  omega_1      =  60, # by-item random slope for exp
+  omega_r      = 0.2, # by-item random effect correlation
+  tau_0        = 100, # by-subject random intercept sd
+  tau_1        =  40, # by-subject random slope sd for category
+  tau_2        =  80, # by-subject random slope sd for exp
+  tau_3        =  80, # by-subject random slope sd for category*exp
+  # by-subject random effect correlations
+  tau_r        = c(.3, .3, .3,   # S0s  * cat, exp, tc
+                       .1, .1,   # cat  *      exp, tc
+                           .1),  # exp *            tc
+  sigma        = 200   # residual (error) sd
+```
+
 
 ```{r}
 

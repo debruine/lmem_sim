@@ -10,11 +10,27 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
 This script provides equivalent code to the version using pipes and functions from the tidyverse. While this code may be of interest to people who want to learn more about the computations that generate correlated data, it will be more difficult to extend to more complicated designs.
 
 ## Simulating data with crossed random factors
 
-To give an overview of the simulation task, we will simulate data from a design with crossed random factors of subjects and stimuli, fit a model to the simulated data, and then try to recover the parameter values we put in from the output. In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use their response time as the primary dependent variable. Let's imagine that the faces are of two intrinsic types: either from the subject's ingroup or from an outgroup. For simplicity, we further assume that each face appears only once in the stimulus set. The key question is whether there is any difference in classification speed across the type of face.
+In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use their response time as the primary dependent variable. Let's imagine that the faces are of two types: either from the subject's ingroup or from an outgroup. For simplicity, we further assume that each face appears only once in the stimulus set. The key question is whether there is any difference in classification speed across the type of face.
+
+The important parts of the design are:
+
+* Random factor 1: subjects (associated variables will be prefixed by T, $\tau$, or `tau`)
+* Random factor 2: faces (associated variables will be prefixed by O, $\omega$, or `omega`)
+* Fixed factor 1: category (level = ingroup, outgroup)
+    * within subject: subjects see both ingroup and outgroup faces
+    * between face: faces are either ingroup or outgroup
 
 ### Required software
 
@@ -23,6 +39,7 @@ To give an overview of the simulation task, we will simulate data from a design 
 library("lme4")        # model specification / estimation
 library("afex")        # anova and deriving p-values from lmer
 library("broom.mixed") # extracting data from model fits 
+library("MASS")        # generate correlated values
 
 # ensure this script returns the same results on each run
 set.seed(8675309)
@@ -32,13 +49,13 @@ set.seed(8675309)
 
 ```{r params-all}
 # set all data-generating parameters
-b0     <- 800 # intercept; i.e., the grand mean
-b1     <-  50 # slope; i.e, effect of category
-S0s_sd <- 100 # by-subject random intercept sd
-I0i_sd <-  80 # by-item random intercept sd
-S1s_sd <-  40 # by-subject random slope sd
-scor   <-  .2 # correlation between intercept and slope
-err_sd <- 200 # residual (error) sd
+b0      <- 800 # intercept; i.e., the grand mean
+b1      <-  50 # slope; i.e, effect of category
+tau_0   <- 100 # by-subject random intercept sd
+tau_1   <-  40 # by-subject random slope sd
+tau_r   <-  .2 # correlation between intercept and slope
+omega_0 <-  80 # by-item random intercept sd
+sigma   <- 200 # residual (error) sd
 ```
 
 
@@ -46,8 +63,8 @@ err_sd <- 200 # residual (error) sd
 
 ```{r params}
 # set number of subjects and items
-nsubj  <- 100 # number of subjects
-nitem  <- c(ingroup = 25, outgroup = 25)  # number of items
+tau_n   <- 100 # number of subjects
+omega_n <-  25  # number of items per category
 ```
 
 #### Simulate the sampling of stimulus items
@@ -55,13 +72,12 @@ nitem  <- c(ingroup = 25, outgroup = 25)  # number of items
 ```{r}
 # simulate a sample of items
 items <- data.frame(
-  item_id = 1:sum(nitem),
-  category = rep(c("ingroup", "outgroup"), nitem),
-  cat = rep(c(-0.5, +0.5), nitem), # effect-code category
-  I0i = rnorm(sum(nitem), 0, I0i_sd)
+  item_id = 1:(omega_n*2),
+  category = rep(c("ingroup", "outgroup"), omega_n),
+  cat = rep(c(-0.5, +0.5), omega_n), # effect-code category
+  O0i = rnorm(omega_n*2, 0, omega_0)
 )
 ```
-
 
 
 #### Simulate the sampling of subjects
@@ -70,28 +86,40 @@ items <- data.frame(
 # simulate a sample of subjects
 
 # make the correlation matrix
-cormat <- matrix(c(   1, scor,
-                   scor,    1), 
+cormat <- matrix(c(    1, tau_r,
+                   tau_r,     1), 
              nrow = 2, byrow = TRUE) 
 
 # make a corresponding matrix of the variance 
 # (multiply the SDs for each cell)
-varmat <- matrix(c(S0s_sd * S0s_sd, S0s_sd * S1s_sd,
-                  S0s_sd * S1s_sd, S1s_sd * S1s_sd), 
+varmat <- matrix(c(tau_0 * tau_0, tau_0 * tau_1,
+                   tau_0 * tau_1, tau_1 * tau_1), 
              nrow = 2, byrow = TRUE) 
 
 # create correlated variables with the specified parameters
-S <- MASS::mvrnorm(n = nsubj, mu = c(0, 0), Sigma = cormat * varmat)
+S <- MASS::mvrnorm(n = tau_n, mu = c(0, 0), 
+                   Sigma = cormat * varmat)
 
 subjects <- data.frame(
-  subj_id = 1:nsubj,
-  S0s = S[, 1],
-  S1s = S[, 2]
+  subj_id = 1:tau_n,
+  T0s = S[, 1],
+  T1s = S[, 2]
 )
+```
 
-cor(subjects$S0s, subjects$S1s) # should be near scor
-sd(subjects$S0s) # should be near S0s_sd
-sd(subjects$S1s) # should be near S1s_sd
+#### Check your values
+
+```{r}
+data.frame(
+  parameter = c("omega_0", "tau_0", "tau_1", "tau_r"),
+  value = c(omega_0, tau_0, tau_1, tau_r),
+  simulated = c(
+    sd(items$O0i),
+    sd(subjects$T0s),
+    sd(subjects$T1s), 
+    cor(subjects$T0s, subjects$T1s)
+  )
+)
 ```
 
 
@@ -102,7 +130,7 @@ sd(subjects$S1s) # should be near S1s_sd
 trials <- expand.grid(subj_id = subjects$subj_id,
                       item_id = items$item_id)
 
-trials$err = rnorm(nrow(trials), mean = 0, sd = err_sd)
+trials$sigma = rnorm(nrow(trials), mean = 0, sd = sigma)
 
 # join subject and item tables
 joined <- merge(trials, subjects, by = "subj_id")
@@ -114,58 +142,72 @@ dat_sim <- merge(joined, items, by = "item_id")
 
 ```{r}
 # calculate the response variable
-dat_sim$RT <- b0 + dat_sim$I0i + dat_sim$S0s + 
-  (b1 + dat_sim$S1s) * dat_sim$cat + dat_sim$err
+dat_sim$RT <- b0 + dat_sim$O0i + dat_sim$T0s + 
+  (b1 + dat_sim$T1s) * dat_sim$cat + dat_sim$sigma
 
 ```
 
+#### Plot the data
+
+```{r}
+par(mfrow=c(2, 1))
+ingroup <- dat_sim$RT[which(dat_sim$category == "ingroup")]
+hist(ingroup)
+outgroup <- dat_sim$RT[which(dat_sim$category == "outgroup")]
+hist(outgroup)
+```
 
 ### Data simulation function
 
+Once you've tested your data generating code above, put it into a function so you can run it repeatedly. We combined a few steps in calculating Sigma for the correlated values.
 
 ```{r}
 # set up the custom data simulation function
-my_sim_data <- function(nsubj  = 100, # number of subjects
-                        nitem  = c(ingroup = 25, outgroup = 25),  # number of items
-                        b0     = 800, # grand mean
-                        b1     =  50, # effect of category
-                        I0i_sd =  80, # by-item random intercept sd
-                        S0s_sd = 100, # by-subject random intercept sd
-                        S1s_sd =  40, # by-subject random slope sd
-                        scor   = 0.2, # correlation between intercept and slope
-                        err_sd = 200  # residual (standard deviation)
-                        ) {
+my_sim_data <- function(
+  tau_n   = 100, # number of subjects
+  omega_n =  25,  # number of items per category
+  b0      = 800, # grand mean
+  b1      =  50, # effect of category
+  omega_0 =  80, # by-item random intercept sd
+  tau_0   = 100, # by-subject random intercept sd
+  tau_1   =  40, # by-subject random slope sd
+  tau_r   = 0.2, # correlation between intercept and slope
+  sigma   = 200  # residual (standard deviation)
+  ) {
+  
   # simulate items
   items <- data.frame(
-    item_id = 1:sum(nitem),
-    category = rep(c("ingroup", "outgroup"), nitem),
-    cat = rep(c(-0.5, +0.5), nitem), # effect-code category
-    I0i = rnorm(sum(nitem), 0, I0i_sd)
+    item_id = 1:(omega_n*2),
+    category = rep(c("ingroup", "outgroup"), omega_n),
+    cat = rep(c(-0.5, +0.5), omega_n), # effect-code category
+    O0i = rnorm(omega_n*2, 0, omega_0)
   )
   
   # simulate subjects
-  Sigma <- matrix(c(S0s_sd^2, S0s_sd * S1s_sd * scor,
-                    S0s_sd * S1s_sd * scor, S1s_sd^2), 
+  Sigma <- matrix(c(tau_0^2, tau_0 * tau_1 * tau_r,
+                    tau_0 * tau_1 * tau_r, tau_1^2), 
                nrow = 2, byrow = TRUE) 
-  S <- MASS::mvrnorm(nsubj, c(0, 0), Sigma)
+  S <- MASS::mvrnorm(tau_n, c(0, 0), Sigma)
   
   subjects <- data.frame(
-    subj_id = 1:nsubj,
-    S0s = S[, 1],
-    S1s = S[, 2]
+    subj_id = 1:tau_n,
+    T0s = S[, 1],
+    T1s = S[, 2]
   )
   
-  # simulate trials
+  # cross subject and item IDs; add an error term
   trials <- expand.grid(subj_id = subjects$subj_id,
-                      item_id = items$item_id)
-
-  trials$err = rnorm(nrow(trials), mean = 0, sd = err_sd)
+                        item_id = items$item_id)
+  
+  trials$sigma = rnorm(nrow(trials), mean = 0, sd = sigma)
   
   # join subject and item tables
   joined <- merge(trials, subjects, by = "subj_id")
   dat_sim <- merge(joined, items, by = "item_id")
-  dat_sim$RT <- b0 + dat_sim$I0i + dat_sim$S0s + 
-    (b1 + dat_sim$S1s) * dat_sim$cat + dat_sim$err
+  
+  # calculate the response variable
+  dat_sim$RT <- b0 + dat_sim$O0i + dat_sim$T0s + 
+    (b1 + dat_sim$T1s) * dat_sim$cat + dat_sim$sigma
   
   dat_sim
 }
@@ -185,7 +227,7 @@ summary(mod_sim, corr = FALSE)
 ```{r}
 # get a tidy table of results
 tbl <- broom.mixed::tidy(mod_sim)
-tbl$sim <- c(b0, b1, S0s_sd, S1s_sd, scor, I0i_sd, err_sd)
+tbl$sim <- c(b0, b1, tau_0, tau_r, tau_1, omega_0, sigma)
 tbl[, c(1:3, 9, 4:8)]
 ```
 
@@ -194,13 +236,25 @@ tbl[, c(1:3, 9, 4:8)]
 
 ```{r}
 # set up the power function
-my_lmer_power <- function(...) {
+my_lmer_power <- function(filename = NULL, ...) {
   # ... is a shortcut that forwards any arguments to my_sim_data()
   dat_sim <- my_sim_data(...)
   mod_sim <- lmer(RT ~ cat + (1 | item_id) + (1 + cat | subj_id),
                 dat_sim, REML = FALSE)
   
-  broom.mixed::tidy(mod_sim)
+  sim_results <- broom.mixed::tidy(mod_sim)
+  
+  # append the results to a file if filename is set
+  if (!is.null(filename)) {
+    append <- file.exists(filename) # append if the file exists
+    write.table(sim_results, filename, sep = ",",
+                row.names = FALSE,
+                append = append, 
+                col.names = !append)
+  }
+  
+  # return the tidy table
+  sim_results
 }
 ```
 
@@ -213,17 +267,30 @@ my_lmer_power()
 
 ```{r}
 # run one model with new parameters
-my_lmer_power(nitem = c(ingroup = 50, outgroup = 50), b1 = 20)
+my_lmer_power(omega_n = c(ingroup = 50, outgroup = 50), b1 = 20)
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 # run simulations
-reps <- 10
+reps <- 100
 sims <- replicate(reps, my_lmer_power(), simplify = FALSE)
 sims <- lapply(sims, as.data.frame)
 sims <- do.call("rbind", sims)
 ```
+
+Alternatively, you can save the simulations to a file and read from that file in subsequent runs.
+```{r}
+filename <- "sims/sims_base.csv" # change for new analyses
+if (!file.exists(filename)) {
+  reps <- 100
+  trash <- replicate(reps, my_lmer_power(filename))
+}
+
+# read saved simulation data
+sims <- read.csv(filename)
+```
+
 
 ```{r}
 # calculate mean estimates and power for specified alpha
@@ -236,7 +303,11 @@ mean_estimate <- mean(fcat$estimate)
 mean_se <- mean(fcat$std.error)
 ```
 
+The power is `r power` with a mean estimate for the effect of category of `r mean_estimate` and a mean standard error of `r mean_se`.
+
 ## Comparison to ANOVA
+
+One way many researchers would normally analyse data like this is by averaging each subject's reaction times across the ingroup and outgroup stimuli and compare them using a paired-samples t-test or ANOVA (which is formally equivalent). Here, we use `afex::aov_ez` to analyse a version of our dataset that is aggregated by subject.
 
 ```{r}
 # aggregate by subject and analyze with ANOVA
@@ -251,6 +322,7 @@ afex::aov_ez(
 )
 ```
 
+Alternatively, you could aggregate by item, averaging all subjects' scores for each item.
 
 ```{r, message=FALSE}
 # aggregate by item and analyze with ANOVA
@@ -265,6 +337,7 @@ afex::aov_ez(
 )
 ```
 
+We can create a power analysis function that simulates data using our data-generating process from `my_sim_data()`, creates these two aggregated datasets, and analyses them with ANOVA. We'll just return the p-values for the effect of category as we can calculate power as the percentage of these simulations that reject the null hypothesis.
 
 ```{r}
 # power function for ANOVA
@@ -298,6 +371,7 @@ my_anova_power <- function(...) {
 }
 ```
 
+Run this function with the default parameters to determine the power each analysis has to detect an effect of category of `r b1` ms.
 
 ```{r}
 # run simulations and calculate power 
@@ -310,10 +384,11 @@ alpha <- 0.05
 power_subj <- mean(anova_sims$subj < alpha)
 power_item <- mean(anova_sims$item < alpha)
 
-power_subj 
-power_item
 ```
 
+The by-subjects ANOVA has power of `r power_subj`, while the by-items ANOVA has power of `r power_item`. This isn't simply a consequence of within versus between design or the number of subjects versus items, but rather a consequence of the inflated false positive rate of some aggregated analyses.
+
+Set the effect of category to 0 to calculate the false positive rate. This is the probability of concluding there is an effect when there is no actual effect in your population.
 
 ```{r}
 # run simulations and calculate the false positive rate 
@@ -328,3 +403,5 @@ false_pos_item <- mean(anova_fp$item < alpha)
 false_pos_subj
 false_pos_item
 ```
+
+Ideally, your false positive rate will be equal to alpha, which we set here at `r alpha`. The by-subject aggregated analysis has a massively inflated false positive rate of `r false_pos_subj`, while the by-item aggregated analysis has a closer-to-nominal false positive rate of `r false_pos_item`. This is not a mistake, but a consequence of averaging items and analysing a between-item factor. Indeed, this problem with false positives is one of the most compelling reasons to analyze cross-classified data using mixed effects models.

@@ -100,17 +100,11 @@
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">"afex"</span>)        <span class="co"># deriving p-values from lmer</span>
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">"broom.mixed"</span>) <span class="co"># extracting data from model fits </span>
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">"faux"</span>)        <span class="co"># data simulation</span>
-<span class="co"># NOTE: to install the 'faux' package, use:</span>
-<span class="co"># devtools::install_github("debruine/faux", build_vignettes = TRUE)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">"tidyverse"</span>)   <span class="co"># data wrangling and visualisation</span>
 
-<span class="co"># set options for display in this R Markdown file</span>
-<span class="kw pkg">knitr</span><span class="kw ns">::</span><span class="no"><a href="https://rdrr.io/pkg/knitr/man/opts_chunk.html">opts_chunk</a></span>$<span class="fu">set</span>(<span class="kw">echo</span>       <span class="kw">=</span> <span class="fl">TRUE</span>,
-                      <span class="kw">fig.width</span>  <span class="kw">=</span> <span class="fl">8</span>,
-                      <span class="kw">fig.height</span> <span class="kw">=</span> <span class="fl">5</span>,
-                      <span class="kw">out.width</span>  <span class="kw">=</span> <span class="st">"100%"</span>)
-
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="fl">90210</span>)</pre></body></html></div>
+<span class="co"># ensure this script returns the same results on each run</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="fl">90210</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/faux/man/faux_options.html">faux_options</a></span>(<span class="kw">verbose</span> <span class="kw">=</span> <span class="fl">FALSE</span>)</pre></body></html></div>
 <p>This script uses the <code><a href="https://rdrr.io/pkg/faux/man/sim_design.html">sim_design()</a></code> function in <a href="https://debruine.github.io/faux/">faux</a> to create data tables with correlated random effects with specified parameters without needing to set up the correlation and variance matrices manually.</p>
 <div id="set-study-parameters" class="section level3">
 <h3 class="hasAnchor">
@@ -192,7 +186,7 @@
 
 <span class="fu">ggplot</span>(<span class="no">dat_sim</span>, <span class="fu">aes</span>(<span class="no">expression</span>, <span class="no">RT</span>, <span class="kw">color</span> <span class="kw">=</span> <span class="no">category</span>)) +
   <span class="fu">geom_boxplot</span>(<span class="kw">width</span> <span class="kw">=</span> <span class="fl">0.25</span>, <span class="kw">position</span> <span class="kw">=</span> <span class="fu">position_dodge</span>(<span class="kw">width</span> <span class="kw">=</span> <span class="fl">0.9</span>))</pre></body></html></div>
-<p><img src="appendix2_extended_example_files/figure-html/unnamed-chunk-3-1.png" width="100%"></p>
+<p><img src="appendix2_extended_example_files/figure-html/unnamed-chunk-4-1.png" width="100%"></p>
 </div>
 <div id="analyse-data" class="section level3">
 <h3 class="hasAnchor">
@@ -297,7 +291,7 @@
   <span class="fu">facet_wrap</span>(~<span class="no">term</span>, <span class="kw">ncol</span> <span class="kw">=</span> <span class="fl">2</span>, <span class="kw">scales</span> <span class="kw">=</span> <span class="st">"free_x"</span>) +
   <span class="fu">theme_bw</span>()</pre></body></html></div>
 <div class="figure">
-<img src="appendix2_extended_example_files/figure-html/unnamed-chunk-9-1.png" alt="Distribution of fixed effects across simulations" width="100%"><p class="caption">
+<img src="appendix2_extended_example_files/figure-html/unnamed-chunk-10-1.png" alt="Distribution of fixed effects across simulations" width="100%"><p class="caption">
 Distribution of fixed effects across simulations
 </p>
 </div>
@@ -316,7 +310,7 @@ Distribution of fixed effects across simulations
   <span class="fu">facet_wrap</span>(~<span class="no">group</span>*<span class="no">term</span>, <span class="kw">ncol</span> <span class="kw">=</span> <span class="fl">3</span>, <span class="kw">scales</span> <span class="kw">=</span> <span class="st">"free"</span>) +
   <span class="fu">theme_bw</span>()</pre></body></html></div>
 <div class="figure">
-<img src="appendix2_extended_example_files/figure-html/unnamed-chunk-10-1.png" alt="Distribution of random effects across simulations" width="100%"><p class="caption">
+<img src="appendix2_extended_example_files/figure-html/unnamed-chunk-11-1.png" alt="Distribution of random effects across simulations" width="100%"><p class="caption">
 Distribution of random effects across simulations
 </p>
 </div>
