@@ -276,8 +276,8 @@ Let's first define parameters related to the number of observations. In this exa
 ```{r params}
 # set number of subjects and items
 n_subj  <- 100 # number of subjects
-n_ingroup <- 25L # 25 ingroup stimuli
-n_outgroup <- 25L # 25 outgroup stimuli
+n_ingroup <- 25 # number of ingroup stimuli
+n_outgroup <- 25 # number of outgroup stimuli
 ```
 
 ### Simulate the sampling of stimulus items
@@ -372,16 +372,33 @@ bind_rows(
 ```
 
 
+Alternatively, you can use the function `faux::rnorm_multi`, which generates a table of `n` simulated values from a multivariate normal distribution by specifying the means (`mu`) and standard deviations (`sd`) of each variable, plus the correlations (`r`), which can be either a single value (applied to all pairs), a correlation matrix, or a vector of the values in the upper right triangle of the correlation matrix.
+
+```{r, eval = FALSE}
+# simulate a sample of subjects
+
+# sample from a multivariate random distribution 
+subjects <- faux::rnorm_multi(
+  n = n_subj, 
+  mu = 0, # means for random effects are always 0
+  sd = c(tau_0, tau_1), # set SDs
+  r = rho, # set correlation, see ?rnorm_multi
+  varnames = c("T_0s", "T_1s")
+)
+
+# add subject IDs
+subjects$subj_id <- seq_len(n_subj)
+```
+
 ### Simulate trials (encounters)
 
 Since all subjects respond to all items, we can set up a table of trials by making a table with every possible combination of the rows in the subject and item tables using the tidyverse function `crossing()`. Each trial has random error associated; we simulate this from a normal distribution with a mean of 0 and SD of `sigma`.
 
 ```{r}
 # cross subject and item IDs; add an error term
-
+# nrow(.) is the number of rows in the table
 trials <- crossing(subjects, items)  %>%
-  mutate(e_si = rnorm(n_subj * (n_ingroup + n_outgroup), # N subj x N stimuli
-                     mean = 0, sd = sigma)) %>%
+  mutate(e_si = rnorm(nrow(.), mean = 0, sd = sigma)) %>%
   select(subj_id, item_id, category, X_i, everything())
 ```
 

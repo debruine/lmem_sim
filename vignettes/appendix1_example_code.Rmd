@@ -57,7 +57,7 @@ b0      <- 800 # intercept; i.e., the grand mean
 b1      <-  50 # slope; i.e, effect of category
 tau_0   <- 100 # by-subject random intercept sd
 tau_1   <-  40 # by-subject random slope sd
-tau_r   <-  .2 # correlation between intercept and slope
+rho     <-  .2 # correlation between intercept and slope
 omega_0 <-  80 # by-item random intercept sd
 sigma   <- 200 # residual (error) sd
 ```
@@ -86,6 +86,32 @@ items <- data.frame(
 
 #### Simulate the sampling of subjects
 
+You can use one of two methods. The first uses the function `MASS::mvrnorm`, but you have to calculate the variance-covariance matrix yourself. This gets more complicated as you have more variables (e.g., in a design with more than 1 fixed factor).
+
+```{r}
+# simulate a sample of subjects
+
+# calculate random intercept / random slope covariance
+covar <- rho * tau_0 * tau_1
+
+# put values into variance-covariance matrix
+cov_mx  <- matrix(
+  c(tau_0^2, covar,
+    covar,   tau_1^2),
+  nrow = 2, byrow = TRUE)
+
+# generate the by-subject random effects
+subject_rfx <- MASS::mvrnorm(n = n_subj,
+                             mu = c(T_0s = 0, T_1s = 0),
+                             Sigma = cov_mx)
+
+# combine with subject IDs
+subjects <- data.frame(subj_id = seq_len(n_subj),
+                       subject_rfx)
+```
+
+Alternatively, you can use the function `faux::rnorm_multi`, which generates a table of `n` simulated values from a multivariate normal distribution by specifying the means (`mu`) and standard deviations (`sd`) of each variable, plus the correlations (`r`), which can be either a single value (applied to all pairs), a correlation matrix, or a vector of the values in the upper right triangle of the correlation matrix.
+
 ```{r}
 # simulate a sample of subjects
 
@@ -94,20 +120,20 @@ subjects <- faux::rnorm_multi(
     n = n_subj, 
     mu = 0, # means for random effects are always 0
     sd = c(tau_0, tau_1), # set SDs
-    r = tau_r, # set correlation, see ?rnorm_multi
+    r = rho, # set correlation, see ?rnorm_multi
     varnames = c("T_0s", "T_1s")
   )
 
 # add subject IDs
-subjects$subj_id <- 1:n_subj
+subjects$subj_id <- seq_len(n_subj)
 ```
 
 #### Check your values
 
 ```{r}
 data.frame(
-  parameter = c("omega_0", "tau_0", "tau_1", "tau_r"),
-  value = c(omega_0, tau_0, tau_1, tau_r),
+  parameter = c("omega_0", "tau_0", "tau_1", "rho"),
+  value = c(omega_0, tau_0, tau_1, rho),
   simulated = c(
     sd(items$O_0i),
     sd(subjects$T_0s),
@@ -121,14 +147,18 @@ data.frame(
 #### Simulate trials (encounters)
 
 ```{r}
-# cross subject and item IDs 
-dat_sim <- crossing(subjects, items)  %>%
-  mutate(
-    # add an error term
-    e_si = rnorm(nrow(.), mean = 0, sd = sigma),
-    # calculate the response variable
-    RT = b0 + T_0s + O_0i + (b1 + T_1s) * X_i + e_si
-  ) %>%
+# cross subject and item IDs; add an error term
+# nrow(.) is the number of rows in the table
+trials <- crossing(subjects, items)  %>%
+  mutate(e_si = rnorm(nrow(.), mean = 0, sd = sigma)) %>%
+  select(subj_id, item_id, category, X_i, everything())
+```
+
+#### Calculate response values
+
+```{r}
+dat_sim <- trials %>%
+  mutate(RT = b0 + T_0s + O_0i + (b1 + T_1s) * X_i + e_si) %>%
   select(subj_id, item_id, category, X_i, RT)
 ```
 
@@ -155,17 +185,16 @@ Once you've tested your data generating code above, put it into a function so yo
 ```{r}
 # set up the custom data simulation function
 my_sim_data <- function(
-  n_subj     = 100, # number of subjects
-  n_ingroup  =  25, # number of items in ingroup
-  n_outgroup =  25, # number of items in outgroup
-  b0         = 800, # grand mean
-  b1         =  50, # effect of category
-  omega_0    =  80, # by-item random intercept sd
-  tau_0      = 100, # by-subject random intercept sd
-  tau_1      =  40, # by-subject random slope sd
-  tau_r      = 0.2, # correlation between intercept and slope
-  sigma      = 200  # residual (standard deviation)
-  ) {
+  nsubj      = 100,   # number of subjects
+  n_ingroup  =  25,   # number of ingroup stimuli
+  n_outgroup =  25,   # number of outgroup stimuli
+  b0         = 800,   # grand mean
+  b1         =  50,   # effect of category
+  omega_0    =  80,   # by-item random intercept sd
+  tau_0      = 100,   # by-subject random intercept sd
+  tau_1      =  40,   # by-subject random slope sd
+  rho        = 0.2,   # correlation between intercept and slope
+  sigma      = 200) { # residual (standard deviation)
   
   # simulate a sample of items
   items <- data.frame(
@@ -185,7 +214,7 @@ my_sim_data <- function(
     n = n_subj, 
     mu = 0, # means for random effects are always 0
     sd = c(tau_0, tau_1), # set SDs
-    r = tau_r, # set correlation, see ?rnorm_multi
+    r = rho, # set correlation, see ?rnorm_multi
     varnames = c("T_0s", "T_1s")
   )
   subjects$subj_id <- 1:n_subj
@@ -224,7 +253,7 @@ broom.mixed::tidy(mod_sim) %>%
     term == "cat" ~ "b1", 
     group == "subj_id" & term == "sd__(Intercept)" ~ "tau_0", 
     group == "subj_id" & term == "sd__cat" ~ "tau_1", 
-    group == "subj_id" & term == "cor__(Intercept).cat" ~ "tau_r", 
+    group == "subj_id" & term == "cor__(Intercept).cat" ~ "rho", 
     group == "item_id" & term == "sd__(Intercept)" ~ "omega_0", 
     group == "Residual" ~ "sigma")
   ) %>%
@@ -233,7 +262,7 @@ broom.mixed::tidy(mod_sim) %>%
     term == "cat" ~ b1, 
     group == "subj_id" & term == "sd__(Intercept)" ~ tau_0, 
     group == "subj_id" & term == "sd__cat" ~ tau_1, 
-    group == "subj_id" & term == "cor__(Intercept).cat" ~ tau_r, 
+    group == "subj_id" & term == "cor__(Intercept).cat" ~ rho, 
     group == "item_id" & term == "sd__(Intercept)" ~ omega_0, 
     group == "Residual" ~ sigma)
   ) %>%
