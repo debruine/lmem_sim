@@ -76,7 +76,7 @@ In this article, we walk through the simulation and analysis of multilevel data 
 
 # Generalizing to a population of encounters
 
-Many research questions in psychology and neuroscience are questions about certain types of *events*: What happens when people encounter particular types of stimuli? For example: Do people recognize abstract words faster than concrete words? What impressions do people form about a target person's personality based on their vocal qualities? Can people categorize emotional expressions more quickly on the faces of social ingroup members than on the faces of outgroup members? How do brains respond to threatening versus non-threatening stimuli? In all of these situations, researchers would like to be able to make general statements about phenomena that go beyond the particular participants and particular stimuli that they happen to have chosen for the specific study. Traditionally, people speak of such designs as having *crossed random factors* of participants and stimuli, and think of the goal of inference as being simultaneous generalization to both populations. However, it may be more intuitive to construe the goal as generalizing to a single population of events: in particular, to a population of *encounters* between the units from the sampled populations [@barr_2018].
+Many research questions in psychology and neuroscience are questions about certain types of *events*: What happens when people encounter particular types of stimuli? For example: Do people recognize abstract words faster than concrete words? What impressions do people form about a target person's personality based on their vocal qualities? Can people categorize emotional expressions more quickly on the faces of social ingroup members than on the faces of outgroup members? How do brains respond to threatening versus non-threatening stimuli? In all of these situations, researchers would like to be able to make general statements about phenomena that go beyond the particular participants and particular stimuli that they happen to have chosen for the specific study. Traditionally, people speak of such designs as having *crossed random factors* of participants and stimuli, and think of the goal of inference as being simultaneous generalization to both populations. However, it may be more intuitive to construe the goal as generalizing to a single population of *events* called *encounters*: we want to say something general about what happens when our two types of sampling units meet---when a typical subject encounters (and responds to) a typical stimulus [@barr_2018].
 
 Most analyses using conventional statistical techniques, such as analysis of variance and t-test, commit the fallacy of treating stimuli as fixed rather than random. For example, imagine a sample of participants are rating the trustworthiness of a sample of faces, with the goal being to determine whether the faces of people born on even numbered days look more trustworthy than those born on odd-numbered days. Obviously, they don't. At the extreme, imagine we only sample a single face from each category, but have 100 people rate each face. If our analysis treats the sample of faces as *fixed*, or a perfect representation of the larger population of faces on Earth, we will be almost guaranteed a significant difference in one direction or the other. We will have sufficient power to detect even tiny differences in apparent trustworthiness, so this result will be highly replicable with large samples of raters. As you increase the number of faces in the sample, the problem gets better, but if you increase the number of raters, it gets worse again. 
 
@@ -139,7 +139,7 @@ Data simulation can play a powerful role in statistics education, enhancing unde
 
 Data simulation also has a wide variety of scientific uses, one of which is to estimate properties of statistical models in situations where algorithms for computing those properties are unknown or can only be applied with difficulty. For instance, @forster_dickinson_1976 used Monte Carlo simulation to explore the behavior of the quasi-$F$ statistics for ANOVA ($F'$ and min-$F'$) under various conditions. In a Monte Carlo simulation, the long run properties of a process are estimated by generating and analyzing many simulated datasets---usually, thousands or tens of thousands of them.
 
-One of the most important applications of Monte Carlo simulation is in the estimation of power for complex models. The notion of power appears most frequently in the context of study planning, where a power analysis is used to determine the target $N$ for a study. Power is the proportion of time that a specified statistical test will generate a significant result for a sample of data of a specified size taken from a population with a specified effect. Therefore, as long as you can characterize the distributions of variables in the population, you can sample data from this simulated population and run your analysis. The proportion of times that this procedure produces a significant result is the power of your test. You can adjust any parameters in this simulation in order to estimate other parameters, such as the minimum effect size that your analysis can detect with 80% power and an $N$ of 200 per group. You can also set the population effect size to zero and calculate the proportion of significant results to check if your analysis procedure inflates *false positives*.
+One of the most important applications of Monte Carlo simulation is in the estimation of power for complex models. The notion of power appears most frequently in the context of study planning, where a power analysis is used to determine the target $N$ for a study. Power is the probability that a specified statistical test will generate a significant result for a sample of data of a specified size taken from a population with a specified effect. If you can characterize the population parameters, you can repeatedly simulate and analyze data from this population. The proportion of times that this procedure produces a significant result provides an estimate of the power of your test given your assumed sample size and effect size. You can adjust any parameters in this simulation in order to estimate other parameters. Instead of a estimating power, you can perform a *sensitivity analysis* by varying the effect size while holding the sample size and desired power constant---for instance, to determine the minimum effect size that your analysis can detect with 80% power and an $N$ of 200 per group. You can also set the population effect size to zero and calculate the proportion of significant results to check if your analysis procedure inflates *false positives*.
 
 For most traditional statistical procedures such as $t$-test or ANOVA, there are analytical procedures for estimating power. @westfall_2014 present analytic power curves for simple mixed effects designs such as the one described in this tutorial (with a corresponding app at <https://jakewestfall.shinyapps.io/crossedpower>). But even where analytical solutions exist, simulation can still be useful to estimate power or false positive rates, because real psychological data nearly always deviates from the statistical assumptions behind traditional procedures. For instance, most statistical procedures used in psychology assume a continuous and unbounded dependent variable, but it is often the case that researchers use discrete (e.g., Likert) response scales.  When assumptions are not met, power simulations can provide a more reliable estimate than analytical procedures.
 
@@ -209,7 +209,7 @@ RT_{si} = \beta_0 + \beta_1 X_{i} + e_{si}.
 
 \noindent According to the formula, response $RT_{si}$ for subject $s$ and item $i$ is defined as sum of an intercept term $\beta_0$, which in this example is the grand mean reaction time for the population of stimuli, plus $\beta_1$, the mean RT difference between ingroup and outgroup stimuli, plus random noise $e_{si}$. To make $\beta_0$ equal the grand mean and $\beta_1$ equal the mean outgroup minus the mean ingroup RT, we will code the `category` variable as -.5 for the ingroup category and +.5 for the outgroup category.
 
-In the model formula, we use Greek letters ($\beta_0$, $\beta_1$) to represent population parameters that are being directly estimated by the model. In contrast, Roman letters represent observed values (RT_{si}) or quantities derived from observed values along with model estimates, such as residual error ($e_{si}$).
+In the model formula, we use Greek letters ($\beta_0$, $\beta_1$) to represent population parameters that are being directly estimated by the model. In contrast, Roman letters represent observed values ($RT_{si}$) or quantities derived from observed values along with model estimates, such as residual error ($e_{si}$).
 
 Although this model is incomplete, we can go ahead and choose parameters for $\beta_0$ and $\beta_1$.  For this example, we set a grand mean of 800 ms and a mean difference of 50 ms. You will need to use disciplinary expertise and/or pilot data to choose these parameters; by the end of this tutorial you will understand how to extract those parameters from an analysis.
 
@@ -227,13 +227,13 @@ This model is completely unrealistic, however, because it doesn't allow for any 
 
 
 \begin{equation}
-RT_{si} = \beta_0 + T_{0s} + O_{0i} + \beta_1 X_i + e_{si}
+RT_{si} = \beta_0 + T_{0s} + O_{0i} + \beta_1 X_i + e_{si} .
 \end{equation}
 
 
 Now, whatever values of $T_{0s}$ and $O_{0i}$ we end up with in our sampled dataset will depend on the luck of the draw, i.e., on which subjects and stimuli we happened to have sampled from their respective populations. Unlike fixed effects, we assume these values will differ across different realizations of the experiment where subjects and/or stimuli are different. In practice, we often re-use the same stimuli across many studies, but we still need to treat the stimuli as sampled if we want to be able to generalise our findings to the whole population of stimuli.\footnote{To ensure a finding is generalizable, when attempting a replication it is useful to sample new items, just as one would typically sample new participants.}. 
 
-It is an important conceptual feature of mixed-effects models that they do not directly estimate the individual random effects ($T_{0s}$ and $O_{0i}$ values), but rather, they estimate the random effects parameters that characterize the distributions from which these effects are drawn. It is this feature that enables generalization beyond the particular subjects and stimuli in the experiment. We assume that each $T_{0s}$ comes from a normal distribution with a mean of zero and unknown standard deviation, $\tau_0$ (`tau_0` in the code). The mean of zero reflects the assumption that each random effect is a deflection from the grand mean. Similarly, for the by-item random intercepts, we assume the $O_{0i}$ values to be sampled from a normal distribution also with a mean of zero and with an unknown standard deviation, $\omega_0$ (`omega_0`). (The subscript $0$ reflects that these parameters are associated with $\beta_0$, the intercept).\footnote{You will sometimes see the assumption of random effects drawn from a normal distribution notated mathematically as, e.g.: $O_{0i} \sim N(0, {\omega_0}^2)$, which you can read as "the random intercept $O_{0i}$ for each subject $i$ is drawn from a normal distribution with mean of zero and variance of ${\omega_0}^2$". Variance is just the square of the standard deviation.} In our simulation, we will set the by-subject random intercept SD to 100, and the by-item random intercept SD to 80.
+It is an important conceptual feature of mixed-effects models that they do not directly estimate the individual random effects ($T_{0s}$ and $O_{0i}$ values), but rather, they estimate the random effects parameters that characterize the distributions from which these effects are drawn.\footnote{You will sometimes see the assumption of random effects drawn from a normal distribution notated mathematically as, e.g.: $O_{0i} \sim N(0, {\omega_0}^2)$, which you can read as ``the random intercept $O_{0i}$ for each subject $i$ is drawn from a normal distribution with mean of zero and variance of ${\omega_0}^2$.''} It is this feature that enables generalization beyond the particular subjects and stimuli in the experiment. We assume that each $T_{0s}$ comes from a normal distribution with a mean of zero and unknown standard deviation, $\tau_0$ (`tau_0` in the code). The mean of zero reflects the assumption that each random effect is a deflection from the grand mean. Similarly, for the by-item random intercepts, we assume the $O_{0i}$ values to be sampled from a normal distribution also with a mean of zero and with an unknown standard deviation, $\omega_0$ (`omega_0`). In our simulation, we will set the by-subject random intercept SD to 100, and the by-item random intercept SD to 80.
 
 
 ```{r random-intercepts}
@@ -252,7 +252,7 @@ The random slope $T_{1s}$ is an estimate of how much faster or slower subject $s
 
 But note that we are sampling *two* random effects for each subject $s$, a random intercept $T_{0s}$ and a random slope $T_{1s}$.  It is possible for these values to be correlated, in which case we should not sample them independently. For instance, perhaps people who are faster than average overall (negative random intercept) also show a smaller than average effect of the ingroup/outgroup manipulation (negative random slope) due to allocating less attention to the task.  We can capture this by allowing for a small correlation between the two factors, `rho`, which we assign to be 0.2.
 
-Finally, we need to characterize the trial-level noise in the study ($e_{si}$) in terms of its standard deviation. Here we simply assign this parameter value `sigma` to be twice the size of the by-subject random intercept SD. Later, we will 
+Finally, we need to characterize the trial-level noise in the study ($e_{si}$) in terms of its standard deviation. Here we simply assign this parameter value `sigma` to be twice the size of the by-subject random intercept SD.
 
 ```{r param-var}
 # set more random effect and error parameters
@@ -303,7 +303,7 @@ Let us introduce a numerical predictor to represent what category each stimulus 
 items$X_i <- recode(items$category, "ingroup" = -0.5, "outgroup" = +0.5)
 ```
 
-In R, most regression procedures can handle two-level factors like `category`. By default, the procedure will create a new numeric predictor that codes one level of the factor as zero and the other as one. Why not just use the defaults? The short explanation is that the default of 0, 1 coding is not well-suited to the kinds of factorial experimental designs often found in psychology and related fields. For the current example, using the default coding for the $X$ predictor would change the interpretation of $\beta_0$: instead of the grand mean, it would reflect the mean for the group coded as zero. One could change the default, but we feel it is better to be explicit in the code about what values are being used (see <https://talklab.psy.gla.ac.uk/tvw/catpred> for further discussion).
+In R, most regression procedures can handle two-level factors like `category` as predictor variables. By default, the procedure will create a new numeric predictor that codes one level of the factor as zero and the other as one. Why not just use the defaults? The short explanation is that the default of 0, 1 coding is not well-suited to the kinds of factorial experimental designs often found in psychology and related fields. For the current example, using the default coding for the $X$ predictor would change the interpretation of $\beta_0$: instead of the grand mean, it would reflect the mean for the group coded as zero. One could change the default, but we feel it is better to be explicit in the code about what values are being used (see <https://talklab.psy.gla.ac.uk/tvw/catpred> for further discussion; see also the R mixed modeling package `afex` [@R-afex], which provides better defaults for specifying categorical predictors in ANOVA-style designs.)
 
 ```{r items-table, echo = FALSE, results = 'asis'}
 .etc <- tibble(item_id = "...", category = "...", O_0i = "...",
@@ -329,7 +329,7 @@ bind_rows(
 
 Now we will simulate the sampling of individual subjects, resulting in a table listing each subject and their two correlated random effects. This will be slightly more complicated that what we just did, because we cannot simply sample the $T_{0s}$ values from a univariate distribution using `rnorm()` independently from the $T_{1s}$ values. Instead, we must sample $\left<T_{0s}, T_{1s}\right>$ *pairs*---one pair for each subject---from a bivariate normal distribution. To do this, we will use the `mvrnorm()` function, a multivariate version of `rnorm()` from the MASS package that comes pre-installed with R. We specify the three parameters describing this distribution---two variances and a correlation---by entering them into a 2x2 *variance-covariance* matrix using the `matrix()` function, and then passing this matrix to `mvrnorm()` using the `Sigma` argument. This requires converting the standard deviations into variances (by squaring them) and calculating the covariance, which is simply the product of the correlation and two standard deviations, i.e., $\rho \times \tau_0 \times \tau_1$.
 
-We only need this one function from MASS, so we can call it directly using the `package::function()` syntax instead of loading the library (specifically, `MASS::mvrnorm()` instead of `library(MASS)`).\footnote{Note that MASS package has a function we don't need named `select()`, but loading it using `library()` would overwrite the function of the same name from the `dplyr` package that we often do need, so in general it is a good idea to avoid loading MASS.}
+We only need this one function from MASS, so we can call it directly using the `package::function()` syntax instead of loading the library (specifically, `MASS::mvrnorm()` instead of `library(MASS)`).\footnote{Note that MASS package has a function we don't need named \texttt{select()}, but loading it using \texttt{library()} would overwrite the function of the same name from the \texttt{dplyr} package that we often do need, so in general it is a good idea to avoid loading MASS.}
 
 ```{r sim-subjects}
 # simulate a sample of subjects
@@ -372,7 +372,7 @@ bind_rows(
 ```
 
 
-Alternatively, you can use the function `faux::rnorm_multi`, which generates a table of `n` simulated values from a multivariate normal distribution by specifying the means (`mu`) and standard deviations (`sd`) of each variable, plus the correlations (`r`), which can be either a single value (applied to all pairs), a correlation matrix, or a vector of the values in the upper right triangle of the correlation matrix.
+An alternative way to sample from a bivariate distribution would be to use the function `rnorm_multi()` from the `faux` package [@R-faux], which generates a table of `n` simulated values from a multivariate normal distribution by specifying the means (`mu`) and standard deviations (`sd`) of each variable, plus the correlations (`r`), which can be either a single value (applied to all pairs), a correlation matrix, or a vector of the values in the upper right triangle of the correlation matrix.
 
 ```{r, eval = FALSE}
 # simulate a sample of subjects
@@ -382,7 +382,7 @@ subjects <- faux::rnorm_multi(
   n = n_subj, 
   mu = 0, # means for random effects are always 0
   sd = c(tau_0, tau_1), # set SDs
-  r = rho, # set correlation, see ?rnorm_multi
+  r = rho, # set correlation, see ?faux::rnorm_multi
   varnames = c("T_0s", "T_1s")
 )
 
@@ -532,12 +532,12 @@ The terms in parentheses with the `|` separator define the random effects struct
 
 ## Interpreting the lmer summary
 
-The other arguments to the `lme4` function are the name of the data frame where the values are found (`dat_sim`), and `REML = FALSE` which selects maximum-likelihood estimation, which is preferable to the default estimation technique when testing fixed effects. Use the `summary()` function to view the results. 
+The other arguments to the `lme4` function are the name of the data frame where the values are found (`dat_sim`). Because we loaded in `lmerTest` after `lme4`, the $p$-values are derived using the Satterthwaite approximation, for which the default estimation technique in `lmer()`---restricted likelihood estimation (`REML = TRUE`)---is the most appropriate [@luke-2017]. Use the `summary()` function to view the results. 
 
 ```{r run-lmer}
 # fit a linear mixed-effects model to data
 mod_sim <- lmer(RT ~ 1 + X_i + (1 | item_id) + (1 + X_i | subj_id),
-                data = dat_sim, REML = FALSE)
+                data = dat_sim)
 
 summary(mod_sim, corr = FALSE)
 ```
@@ -563,7 +563,7 @@ After providing general information about the model fit, the output is divided i
 cat(.ltxt[.fef:(.fef + 3L)], sep = "\n")
 ```
 
-\noindent The `Estimate` column gives us parameter estimates for the fixed effects in the model, i.e., $\hat{\beta_0}$ and $\hat{\beta_1}$, which are estimated at about `r ffx[[1]]` and `r ffx[[2]]`. The next columns give us the standard errors, estimated degrees of freedom (using the Satterthwaite approach), $t$ value, and finally, $p$ value.
+\noindent The `Estimate` column gives us parameter estimates for the fixed effects in the model, i.e., $\beta_0$ and $\beta_1$, which are estimated at about `r ffx[[1]]` and `r ffx[[2]]`. The next columns give us the standard errors, estimated degrees of freedom (using the Satterthwaite approach), $t$ value, and finally, $p$ value.
 
 The `Random effects` section is specific to mixed-effects models, and will be less familiar to the reader.
 
@@ -643,71 +643,54 @@ Now that you see where each parameter we used to generate the data appears in th
 
 Data simulation is useful not only for illuminating modeling approaches, but also for calculating power when planning a study. The basic idea of a power simulation is to generate a large number of datasets encoding your assumptions about likely parameter values, fit models to each dataset, and then calculate the proportion of models that reject the null hypothesis as a measure of power.
 
-First we create a function that analyses the simulated data and test it by running it once with default parameters. 
+First we create a function `single_run()` that generates data using `my_sim_data()`, analyzes it, and returns a table with the parameter estimates. This would correspond to a single 'run' for our power simulation.
 
-```{r my_lmer_power}
-# set up the power function
-my_lmer_power <- function(...) {
+```{r single-run}
+# simulate, analyze, and return a table of parameter estimates
+single_run <- function(...) {
   # ... is a shortcut that forwards any arguments to 
   # my_sim_data(), the function created above
   dat_sim <- my_sim_data(...)
   mod_sim <- lmer(RT ~ X_i + (1 | item_id) + (1 + X_i | subj_id),
-                dat_sim, REML = FALSE)
+                dat_sim)
   
   broom.mixed::tidy(mod_sim)
 }
 ```
 
-
-```{r my_lmer_power-default, eval = FALSE}
+```{r single-run-eval, eval = FALSE}
 # run one model with default parameters
-my_lmer_power()
+single_run()
 ```
 
-```{r lmer_power-default, echo = FALSE, results = 'asis'}
-my_lmer_power() %>% 
-  apa_table(digits = c(0,0,0,2,1,1,1,3),
-            align = "lllrrrrr",
-            caption="The output of lmer_power().",
-            placement = "H",
-            font_size = "small")
-```
+Running a power analysis with Monte Carlo simulation requires generating and analyzing many simulated datasets (typically, thousands) to estimate the long run properties of the test. You can use the `purrr::map_df` function to run the simulation repeatedly and save the results to a data table. This will take a while, so test it first using just a few runs (`n_runs`) to debug and check the output. Once you are satisified it is working properly, we suggest that you use at least 1,000 runs to obtain stable estimates. It will save you a lot of time if you save the full results to a CSV file so that you don't have to re-run it each time you execute your script; you can just comment out this code and load from the saved data for the rest of your script in the future.
 
-You can also change parameters. For example, what would happen if you increase the number of items to 50 in each group and decrease the effect of category to 20 ms?
-
-```{r, eval = FALSE}
-# run one model with new parameters
-my_lmer_power(n_ingroup = 50, n_outgroup = 50, b1 = 20)
-```
-
-```{r lmer_power-new, echo = FALSE, results = 'asis'}
-my_lmer_power(n_ingroup = 50, n_outgroup = 50, b1 = 20) %>%
-  apa_table(digits = c(0,0,0,2,1,1,1,3),
-            align = "lllrrrrr",
-            caption="The output of lmer_power() with 50 items per group and a category effect of 20 ms.",
-            placement = "H",
-            font_size = "small")
-```
-
-You can use the `purrr::map_df` function to run the simulation repeatedly and save the results to a data table. This will take a while, so test using just a few repetitions (`reps`) first, then make sure you save the full results to a CSV file so you can comment out this code and load from the saved data for the rest of your script in the future. You can use these data to calculate power for each fixed effect.
-
-```{r sim, eval = FALSE, cache = TRUE}
+```{r calc-power, eval = FALSE}
 # run simulations and save to a file
-reps <- 100
-sims <- purrr::map_df(1:reps, ~my_lmer_power())
+n_runs <- 100 # use at least 1000 to get stable estimates
+sims <- purrr::map_df(1:n_runs, ~ single_run())
 write_csv(sims, "sims.csv")
 ```
+Note that some runs may throw warnings about non-convergence or messages about `boundary (singular) fit`. The message about the singular fit can usually be ignored---see `?isSingular` for information about what this means. Non-convergence will be relatively rare with simulated data provided the sample is not unreasonably small relative to the number of estimated parameters; as long as there are not too many of these non-convergence warnings relative to the number of runs, you can probably ignore them because the won't affect the overall estimates. Alternatively, you can re-write your function to trap the warning; for more information on trapping errors and warnings, see the chapter on "Exceptions and Debugging" in the Advanced R textbook [@wickham-advr].
 
-```{r read-sim}
+Once our simulations are complete let's read the data back in and have a look at the estimates for our fixed effects.
+
+```{r sim}
 # read saved simulation data
 sims <- read_csv("sims.csv", col_types = cols(
   # makes sure plots display in this order
   group = col_factor(ordered = TRUE),
   term = col_factor(ordered = TRUE)
-))
+  ))
+
+sims %>%
+  filter(effect == "fixed") %>%
+  select(term, estimate, p.value)
 ```
 
-```{r calc-power, eval = FALSE}
+\noindent Each row in the table is an estimate of a fixed-effects parameter and associated $p$-value from a single run of the Monte Carlo simulation (`(Intercept)` = $\beta_0$ and `X_i` = $\beta_1$). We need to calculate the proportion of runs that are significant. To start, we compute `p.value < alpha`, where `alpha` is your false positive rate (e.g., .05). This will yield a logical vector of `TRUE` whereever the effect was significant and `FALSE` where it was non-significant. Because `TRUE` is represented internally as a `1` and `FALSE` as a `0`, you can take the mean of this logical vector and it will yield the proportion of significant runs.
+
+```{r read-sim}
 # calculate mean estimates and power for specified alpha
 alpha <- 0.05
 
@@ -738,6 +721,21 @@ sims %>%
             placement = "H")
 ```
 
+You can also change parameters. For example, what would happen if you increase the number of items to 50 in each group and decrease the effect of category to 20 ms?
+
+```{r, eval = FALSE}
+# run one model with new parameters
+single_run(n_ingroup = 50, n_outgroup = 50, b1 = 20)
+```
+
+```{r lmer_power-new, echo = FALSE, results = 'asis'}
+single_run(n_ingroup = 50, n_outgroup = 50, b1 = 20) %>%
+  apa_table(digits = c(0,0,0,2,1,1,1,3),
+            align = "lllrrrrr",
+            caption="The output of lmer_power() with 50 items per group and a category effect of 20 ms.",
+            placement = "H",
+            font_size = "small")
+```
 
 # Conclusion
 

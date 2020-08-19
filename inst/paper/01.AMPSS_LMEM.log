@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.5.27)  19 AUG 2020 17:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.5.27)  20 AUG 2020 00:40
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1009,11 +1009,10 @@ LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 1
 97.
 (/usr/share/texmf/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [2] [3] [4]
+) [2] [3] [4] [5]
 
 Package xcolor Warning: Incompatible color definition on input line 267.
 
-[5]
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10.95> not available
 (Font)              Font shape `T1/lmtt/b/n' tried instead on input line 270.
 
@@ -1093,15 +1092,6 @@ Package xcolor Warning: Incompatible color definition on input line 440.
 
 Package xcolor Warning: Incompatible color definition on input line 484.
 
-
-Package xcolor Warning: Incompatible color definition on input line 506.
-
-
-Package xcolor Warning: Incompatible color definition on input line 506.
-
-
-Package xcolor Warning: Incompatible color definition on input line 506.
-
 [11]
 
 Package xcolor Warning: Incompatible color definition on input line 506.
@@ -1109,172 +1099,177 @@ Package xcolor Warning: Incompatible color definition on input line 506.
 
 Package xcolor Warning: Incompatible color definition on input line 506.
 
-
-Package xcolor Warning: Incompatible color definition on input line 546.
-
-
-Package xcolor Warning: Incompatible color definition on input line 555.
-
-
-Package xcolor Warning: Incompatible color definition on input line 555.
-
 [12]
+
+Package xcolor Warning: Incompatible color definition on input line 543.
+
+
+Package xcolor Warning: Incompatible color definition on input line 559.
+
+
+Package xcolor Warning: Incompatible color definition on input line 559.
+
+
+Package xcolor Warning: Incompatible color definition on input line 566.
+
+
+Package xcolor Warning: Incompatible color definition on input line 574.
+
+
+Package xcolor Warning: Incompatible color definition on input line 574.
+
+[13]
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 6
-04.
+23.
 (/usr/share/texmf/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 
-Package xcolor Warning: Incompatible color definition on input line 617.
+Package xcolor Warning: Incompatible color definition on input line 636.
 
 
-Package xcolor Warning: Incompatible color definition on input line 624.
+Package xcolor Warning: Incompatible color definition on input line 643.
 
 
-Package xcolor Warning: Incompatible color definition on input line 624.
-
-[13]
-
-Package xcolor Warning: Incompatible color definition on input line 664.
-
-
-Package xcolor Warning: Incompatible color definition on input line 704.
-
-
-Package xcolor Warning: Incompatible color definition on input line 704.
-
-
-Package xcolor Warning: Incompatible color definition on input line 704.
+Package xcolor Warning: Incompatible color definition on input line 643.
 
 [14]
 
-Package xcolor Warning: Incompatible color definition on input line 704.
+Package xcolor Warning: Incompatible color definition on input line 683.
 
 
-Package xcolor Warning: Incompatible color definition on input line 704.
+Package xcolor Warning: Incompatible color definition on input line 723.
+
+
+Package xcolor Warning: Incompatible color definition on input line 723.
 
 [15]
 
-Package xcolor Warning: Incompatible color definition on input line 745.
+Package xcolor Warning: Incompatible color definition on input line 764.
 
 
-Package xcolor Warning: Incompatible color definition on input line 753.
+Package xcolor Warning: Incompatible color definition on input line 772.
 
 
-Package xcolor Warning: Incompatible color definition on input line 753.
+Package xcolor Warning: Incompatible color definition on input line 772.
 
 LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 
-756.
+775.
 (/usr/share/texmf/tex/latex/lm/ts1lmtt.fd
 File: ts1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
-Overfull \hbox (9.03249pt too wide) in paragraph at lines 756--756
-[]\T1/lmtt/m/n/10.95 ## Linear mixed model fit by maximum likelihood . t-tests 
-use Satterthwaite\TS1/lmtt/m/n/10.95 '\T1/lmtt/m/n/10.95 s 
- []
-
-[16] [17]
-Overfull \hbox (15.2403pt too wide) in paragraph at lines 840--858
- [] 
- []
-
-
-Package xcolor Warning: Incompatible color definition on input line 864.
-
-
-Package xcolor Warning: Incompatible color definition on input line 871.
-
-
-Package xcolor Warning: Incompatible color definition on input line 871.
-
-
-Overfull \hbox (6.43344pt too wide) in paragraph at lines 877--899
+) [16] [17]
+Overfull \hbox (15.2403pt too wide) in paragraph at lines 858--876
  [] 
  []
 
 [18]
 
-Package xcolor Warning: Incompatible color definition on input line 915.
+Package xcolor Warning: Incompatible color definition on input line 882.
 
 
-Package xcolor Warning: Incompatible color definition on input line 928.
+Package xcolor Warning: Incompatible color definition on input line 889.
 
 
-Package xcolor Warning: Incompatible color definition on input line 928.
+Package xcolor Warning: Incompatible color definition on input line 889.
 
 
-Package xcolor Warning: Incompatible color definition on input line 930.
-
-
-Package xcolor Warning: Incompatible color definition on input line 935.
-
-
-Package xcolor Warning: Incompatible color definition on input line 935.
-
-
-Package xcolor Warning: Incompatible color definition on input line 969.
+Overfull \hbox (6.43344pt too wide) in paragraph at lines 895--917
+ [] 
+ []
 
 [19]
 
-Package xcolor Warning: Incompatible color definition on input line 974.
+Package xcolor Warning: Incompatible color definition on input line 933.
 
 
-Package xcolor Warning: Incompatible color definition on input line 974.
+Package xcolor Warning: Incompatible color definition on input line 946.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1008.
+Package xcolor Warning: Incompatible color definition on input line 946.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1015.
+Package xcolor Warning: Incompatible color definition on input line 948.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1015.
+Package xcolor Warning: Incompatible color definition on input line 953.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1017.
+Package xcolor Warning: Incompatible color definition on input line 953.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1026.
+Package xcolor Warning: Incompatible color definition on input line 957.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1026.
+Package xcolor Warning: Incompatible color definition on input line 964.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1028.
+Package xcolor Warning: Incompatible color definition on input line 964.
+
+[20]
+
+Package xcolor Warning: Incompatible color definition on input line 970.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1042.
+Package xcolor Warning: Incompatible color definition on input line 983.
 
 
-Package xcolor Warning: Incompatible color definition on input line 1042.
+Package xcolor Warning: Incompatible color definition on input line 983.
 
-[20] [21]
+
+Package xcolor Warning: Incompatible color definition on input line 1004.
+
+
+Package xcolor Warning: Incompatible color definition on input line 1018.
+
+
+Package xcolor Warning: Incompatible color definition on input line 1018.
+
+
+Package xcolor Warning: Incompatible color definition on input line 1018.
+
+[21]
+
+Package xcolor Warning: Incompatible color definition on input line 1018.
+
+
+Package xcolor Warning: Incompatible color definition on input line 1018.
+
+
+Package xcolor Warning: Incompatible color definition on input line 1051.
+
+
+Package xcolor Warning: Incompatible color definition on input line 1056.
+
+
+Package xcolor Warning: Incompatible color definition on input line 1056.
+
+[22]
 
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 1084.
+(hyperref)                than one, level fixed on input line 1107.
 
-[22] [23] [24]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1154.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1154.
+[23] [24] [25]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1189.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1189.
 (./01.AMPSS_LMEM.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1154.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1154.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1189.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1189.
 
 Package rerunfilecheck Info: File `01.AMPSS_LMEM.out' has not changed.
-(rerunfilecheck)             Checksum: 573B575F49779CDAB84F2529835CF838;4870.
+(rerunfilecheck)             Checksum: 2A4C373CD950D5D9F16A2FBD3B152D93;4870.
  ) 
 Here is how much of TeX's memory you used:
- 26247 strings out of 483183
- 454751 string characters out of 5966292
- 738060 words of memory out of 5000000
- 40453 multiletter control sequences out of 15000+600000
- 634895 words of font info for 181 fonts, out of 8000000 for 9000
+ 26248 strings out of 483183
+ 454750 string characters out of 5966292
+ 733998 words of memory out of 5000000
+ 40454 multiletter control sequences out of 15000+600000
+ 635045 words of font info for 180 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 59i,12n,75p,3196b,566s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 59i,11n,75p,3196b,566s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc}{/usr/share/texmf/fonts/enc/d
-vips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/shar
-e/texmf/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/share/texmf/fonts/enc/dvips/lm/l
-m-ec.enc}</usr/share/texmf/fonts/type1/public/lm/lmbx10.pfb></usr/share/texmf/f
+vips/lm/lm-ec.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-rm.enc}{/usr/share/te
+xmf/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-ma
+thit.enc}</usr/share/texmf/fonts/type1/public/lm/lmbx10.pfb></usr/share/texmf/f
 onts/type1/public/lm/lmmi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi6.p
 fb></usr/share/texmf/fonts/type1/public/lm/lmmi8.pfb></usr/share/texmf/fonts/ty
 pe1/public/lm/lmmi9.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr
@@ -1286,11 +1281,11 @@ xmf/fonts/type1/public/lm/lmr8.pfb></usr/share/texmf/fonts/type1/public/lm/lmr9
 /usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/type1/
 public/lm/lmsy9.pfb></usr/share/texmf/fonts/type1/public/lm/lmtk10.pfb></usr/sh
 are/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texmf/fonts/type1/public
-/lm/lmtti10.pfb>
-Output written on 01.AMPSS_LMEM.pdf (24 pages, 407203 bytes).
+/lm/lmtt9.pfb></usr/share/texmf/fonts/type1/public/lm/lmtti10.pfb>
+Output written on 01.AMPSS_LMEM.pdf (25 pages, 432067 bytes).
 PDF statistics:
- 437 PDF objects out of 1000 (max. 8388607)
- 386 compressed objects within 4 object streams
- 123 named destinations out of 1000 (max. 500000)
+ 453 PDF objects out of 1000 (max. 8388607)
+ 400 compressed objects within 4 object streams
+ 126 named destinations out of 1000 (max. 500000)
  14562 words of extra memory for PDF output out of 17280 (max. 10000000)
 
