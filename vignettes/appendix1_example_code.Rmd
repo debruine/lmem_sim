@@ -67,8 +67,9 @@ sigma   <- 200 # residual (error) sd
 
 ```{r params}
 # set number of subjects and items
-tau_n   <- 100 # number of subjects
-omega_n <- 25  # number of items per category
+n_subj     <- 100 # number of subjects
+n_ingroup  <-  25 # number of items in ingroup
+n_outgroup <-  25 # number of items in ingroup
 ```
 
 #### Simulate the sampling of stimulus items
@@ -76,20 +77,12 @@ omega_n <- 25  # number of items per category
 ```{r}
 # simulate a sample of items
 items <- data.frame(
-  item_id = 1:(omega_n*2),
-  category = rep(c("ingroup", "outgroup"), omega_n),
-  O0i = rnorm(omega_n*2, 0, omega_0)
-)
+    item_id = seq_len(n_ingroup + n_outgroup),
+    category = rep(c("ingroup", "outgroup"), c(n_ingroup, n_outgroup)),
+    X_i = rep(c(-0.5, 0.5), c(n_ingroup, n_outgroup)),
+    O_0i = rnorm(n = n_ingroup + n_outgroup, mean = 0, sd = omega_0)
+  )
 ```
-
-
-```{r}
-# effect-code category
-items$cat <- recode(items$category, 
-                    "ingroup" = -0.5, 
-                    "outgroup" = +0.5)
-```
-
 
 #### Simulate the sampling of subjects
 
@@ -98,15 +91,15 @@ items$cat <- recode(items$category,
 
 # sample from a multivariate random distribution 
 subjects <- faux::rnorm_multi(
-    n = tau_n, 
+    n = n_subj, 
     mu = 0, # means for random effects are always 0
     sd = c(tau_0, tau_1), # set SDs
     r = tau_r, # set correlation, see ?rnorm_multi
-    varnames = c("T0s", "T1s")
+    varnames = c("T_0s", "T_1s")
   )
 
 # add subject IDs
-subjects$subj_id <- 1:tau_n
+subjects$subj_id <- 1:n_subj
 ```
 
 #### Check your values
@@ -116,10 +109,10 @@ data.frame(
   parameter = c("omega_0", "tau_0", "tau_1", "tau_r"),
   value = c(omega_0, tau_0, tau_1, tau_r),
   simulated = c(
-    sd(items$O0i),
-    sd(subjects$T0s),
-    sd(subjects$T1s), 
-    cor(subjects$T0s, subjects$T1s)
+    sd(items$O_0i),
+    sd(subjects$T_0s),
+    sd(subjects$T_1s), 
+    cor(subjects$T_0s, subjects$T_1s)
   )
 )
 ```
@@ -128,25 +121,17 @@ data.frame(
 #### Simulate trials (encounters)
 
 ```{r}
-# cross subject and item IDs; add an error term
-trials <- crossing(subj_id = subjects$subj_id,
-                   item_id = items$item_id)  %>%
-  mutate(sigma = rnorm(nrow(.), mean = 0, sd = sigma))
-
-# join subject and item tables
-joined <- trials %>%
-  inner_join(subjects, "subj_id") %>%
-  inner_join(items, "item_id")
+# cross subject and item IDs 
+dat_sim <- crossing(subjects, items)  %>%
+  mutate(
+    # add an error term
+    e_si = rnorm(nrow(.), mean = 0, sd = sigma),
+    # calculate the response variable
+    RT = b0 + T_0s + O_0i + (b1 + T_1s) * X_i + e_si
+  ) %>%
+  select(subj_id, item_id, category, X_i, RT)
 ```
 
-#### Calculate the response values
-
-```{r}
-# calculate the response variable
-dat_sim <- joined %>%
-  mutate(RT = b0 + O0i + T0s + (b1 + T1s) * cat + sigma) %>%
-  select(subj_id, item_id, category, cat, RT)
-```
 
 #### Plot the data
 
@@ -170,22 +155,24 @@ Once you've tested your data generating code above, put it into a function so yo
 ```{r}
 # set up the custom data simulation function
 my_sim_data <- function(
-  tau_n   = 100, # number of subjects
-  omega_n = 25,  # number of items per category
-  b0      = 800, # grand mean
-  b1      =  50, # effect of category
-  omega_0 =  80, # by-item random intercept sd
-  tau_0   = 100, # by-subject random intercept sd
-  tau_1   =  40, # by-subject random slope sd
-  tau_r   = 0.2, # correlation between intercept and slope
-  sigma   = 200  # residual (standard deviation)
+  n_subj     = 100, # number of subjects
+  n_ingroup  =  25, # number of items in ingroup
+  n_outgroup =  25, # number of items in outgroup
+  b0         = 800, # grand mean
+  b1         =  50, # effect of category
+  omega_0    =  80, # by-item random intercept sd
+  tau_0      = 100, # by-subject random intercept sd
+  tau_1      =  40, # by-subject random slope sd
+  tau_r      = 0.2, # correlation between intercept and slope
+  sigma      = 200  # residual (standard deviation)
   ) {
   
   # simulate a sample of items
   items <- data.frame(
-    item_id = 1:(omega_n*2),
-    category = rep(c("ingroup", "outgroup"), omega_n),
-    O0i = rnorm(omega_n*2, 0, omega_0)
+    item_id = seq_len(n_ingroup + n_outgroup),
+    category = rep(c("ingroup", "outgroup"), c(n_ingroup, n_outgroup)),
+    X_i = rep(c(-0.5, 0.5), c(n_ingroup, n_outgroup)),
+    O_0i = rnorm(n = n_ingroup + n_outgroup, mean = 0, sd = omega_0)
   )
 
   # effect code category
@@ -195,24 +182,23 @@ my_sim_data <- function(
   
   # simulate a sample of subjects
   subjects <- faux::rnorm_multi(
-    n = tau_n, 
-    mu = 0,
-    sd = c(tau_0, tau_1),
-    r = tau_r, 
-    varnames = c("T0s", "T1s")
+    n = n_subj, 
+    mu = 0, # means for random effects are always 0
+    sd = c(tau_0, tau_1), # set SDs
+    r = tau_r, # set correlation, see ?rnorm_multi
+    varnames = c("T_0s", "T_1s")
   )
-  subjects$subj_id <- 1:tau_n
+  subjects$subj_id <- 1:n_subj
   
-  # simulate trials
-  dat_sim <- crossing(subj_id = subjects$subj_id,
-                   item_id = items$item_id)  %>%
-    mutate(sigma = rnorm(nrow(.), mean = 0, sd = sigma)) %>%
-    inner_join(subjects, "subj_id") %>%
-    inner_join(items, "item_id") %>%
-    mutate(RT = b0 + O0i + T0s + (b1 + T1s) * cat + sigma) %>%
-    select(subj_id, item_id, category, cat, RT)
-  
-  dat_sim
+  # cross subject and item IDs 
+  crossing(subjects, items)  %>%
+    mutate(
+      # add an error term
+      e_si = rnorm(nrow(.), mean = 0, sd = sigma),
+      # calculate the response variable
+      RT = b0 + T_0s + O_0i + (b1 + T_1s) * X_i + e_si
+    ) %>%
+    select(subj_id, item_id, category, X_i, RT)
 }
 ```
 
@@ -290,7 +276,7 @@ my_lmer_power()
 
 ```{r}
 # run one model with new parameters
-my_lmer_power(omega_n = 50, b1 = 20)
+my_lmer_power(n_ingroup = 50, n_outgroup = 45, b1 = 20)
 ```
 
 To get an accurate estimation of power, you need to run the simulation many times. We use 100 here as an example, but your results are more accurate the more replications you run. This will depend on the specifics of your analysis, but we recommend at least 1000 replications.
