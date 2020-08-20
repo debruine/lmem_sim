@@ -1,49 +1,40 @@
-% Options for packages loaded elsewhere
-\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
 \PassOptionsToPackage{hyphens}{url}
 %
-\documentclass[
-  english,
-  doc,floatsintext]{apa6}
+\documentclass[english,doc,floatsintext]{apa6}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provide euro and other symbols
-\else % if luatex or xetex
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
   \usepackage{unicode-math}
-  \defaultfontfeatures{Scale=MatchLowercase}
-  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
 \fi
-% Use upquote if available, for straight quotes in verbatim environments
+% use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-\IfFileExists{microtype.sty}{% use microtype if available
-  \usepackage[]{microtype}
-  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage[]{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
-\makeatletter
-\@ifundefined{KOMAClassName}{% if non-KOMA class
-  \IfFileExists{parskip.sty}{%
-    \usepackage{parskip}
-  }{% else
-    \setlength{\parindent}{0pt}
-    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
-}{% if KOMA class
-  \KOMAoptions{parskip=half}}
-\makeatother
-\usepackage{xcolor}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\usepackage{hyperref}
 \hypersetup{
-  pdftitle={Understanding mixed effects models through data simulation},
-  pdfauthor={Lisa M. DeBruine1 \& Dale J. Barr1},
-  pdflang={en-EN},
-  pdfkeywords={simulation, mixed effects models, power, lme4, R},
-  hidelinks,
-  pdfcreator={LaTeX via pandoc}}
-\urlstyle{same} % disable monospaced font for URLs
+            pdftitle={Understanding mixed effects models through data simulation},
+            pdfauthor={Lisa M. DeBruine1 \& Dale J. Barr1},
+            pdfkeywords={simulation, mixed effects models, power, lme4, R},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
 \usepackage{color}
 \usepackage{fancyvrb}
 \newcommand{\VerbBar}{|}
@@ -93,23 +84,16 @@
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
 \setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-% Set default figure placement to htbp
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+
+% set default figure placement to htbp
 \makeatletter
 \def\fps@figure{htbp}
 \makeatother
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-% Make \paragraph and \subparagraph free-standing
-\ifx\paragraph\undefined\else
-  \let\oldparagraph\paragraph
-  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
-\fi
-\ifx\subparagraph\undefined\else
-  \let\oldsubparagraph\subparagraph
-  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
-\fi
+
 % Manuscript styling
 \usepackage{upgreek}
 \captionsetup{font=singlespacing,justification=justified}
@@ -161,12 +145,12 @@
 \floatplacement{figure}{H}
 \raggedbottom
 \usepackage{tcolorbox}
-\ifxetex
-  % Load polyglossia as late as possible: uses bidi with RTL langages (e.g. Hebrew, Arabic)
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[shorthands=off,main=english]{babel}
+\else
+  % load polyglossia as late as possible as it *could* call bidi if RTL lang (e.g. Hebrew or Arabic)
   \usepackage{polyglossia}
   \setmainlanguage[]{english}
-\else
-  \usepackage[shorthands=off,main=english]{babel}
 \fi
 
 \title{Understanding mixed effects models through data simulation}
@@ -214,7 +198,7 @@ Recently, psycholinguists have adopted linear mixed-effects modeling as the stan
 
 Despite mixed-effects modeling becoming the \emph{de facto} standard for analysis in psycholinguistics, the approach has yet to take hold in other areas where stimuli are routinely sampled, even in spite of repeated calls for improved analyses in social psychology (Judd, Westfall, \& Kenny, 2012) and neuroimaging (Bedny, Aguirre, \& Thompson-Schill, 2007; Westfall, Nichols, \& Yarkoni, 2016). One of the likely reasons for the limited uptake outside of psycholinguistics is because mixed-effects models expose the analyst to a level of statistical and technical complexity far beyond most researchers' training. While some of this complexity is specific to mixed-effects modeling, some of it is simply hidden away from users of traditional techniques by GUIs and function defaults. The novice mixed modeler is suddenly confronted with the need to make decisions about how to specify categorical predictors, which random effects to include or exclude, which of the statistics in the voluminous output to attend to, and whether and how to re-configure the optimizer function when a convergence error or singularity warning appears.
 
-We are optimistic that the increasing adoption of the mixed-effects approach will improve the generalizability and thus reproducibility of studies in psychology and related fields, but empathize with the frustration --- and sometimes, exasperation --- expressed by many novices when they attempt to grapple with these models in their research. A profitable way to build understanding and confidence is through data simulation. If you can create datasets by sampling from a population where you know the ground truth about the population parameters you are interested in (e.g., means and standard deviations of each group), you can check how often and under what circumstances a statistical model will give you the correct answer. Knowing the ground truth also allows you to experiment with various modeling choices and observe their impact on a model's performance.
+We are optimistic that the increasing adoption of the mixed-effects approach will improve the generalizability and thus reproducibility of studies in psychology and related fields. Models that account for subjects and stimuli (or other factors) as non-essential, exchangeable features of an experiment will better characterize the uncertainty in the resulting estimates and thus, improve the generality of inferences we draw from them (Yarkoni, 2019). That said, we empathize with the frustration --- and sometimes, exasperation --- expressed by many novices when they attempt to grapple with these models in their research. A profitable way to build understanding and confidence is through data simulation. If you can create datasets by sampling from a population where you know the ground truth about the population parameters you are interested in (e.g., means and standard deviations of each group), you can check how often and under what circumstances a statistical model will give you the correct answer. Knowing the ground truth also allows you to experiment with various modeling choices and observe their impact on a model's performance.
 
 \begin{tcolorbox}[colback=black!5!white,colframe=white!5!black,title=Box 1. Glossary of terms]
 \begin{longtable}[]{@{}ll@{}}
@@ -301,44 +285,14 @@ Because the code uses random number generation, if you want to reproduce the exa
 \hypertarget{establishing-the-data-generating-parameters}{%
 \subsection{Establishing the data-generating parameters}\label{establishing-the-data-generating-parameters}}
 
-The first thing to do is to set up the parameters that govern the process we assume to give rise to the data, the \emph{data-generating process} or DGP. In this hypothetical study, each of 100 subjects will respond to all 50 stimulus items (25 ingroup and 25 outgroup), for a total of 5000 observations.
-
-\begin{table}[H]
-
-\begin{center}
-\begin{threeparttable}
-
-\caption{\label{tab:param-def}Parameters used in the data-generating model and associated R code.}
-
-\begin{tabular}{lll}
-\toprule
-model & \multicolumn{1}{c}{code} & \multicolumn{1}{c}{description}\\
-\midrule
-\$RT\_\{si\}\$ & `RT` & reaction time for subject \$s\$ to item \$i\$\\
-\$X\_i\$ & `X\_i` & condition for item \$i\$ (-.5 = ingroup, .5 = outgroup)\\
-\$\textbackslash{}beta\_0\$ & `b0` & intercept; grand mean RT\\
-\$\textbackslash{}beta\_1\$ & `b1` & slope; mean effect of ingroup/outgroup\\
-\$\textbackslash{}tau\_0\$ & `tau\_0` & standard deviation of by-subject random intercepts\\
-\$\textbackslash{}tau\_1\$ & `tau\_1` & standard deviation of by-subject random slopes\\
-\$\textbackslash{}rho\$ & `rho` & correlation between by-subject random intercepts and slopes\\
-\$\textbackslash{}omega\_0\$ & `omega\_0` & standard deviation of by-item random intercepts\\
-\$\textbackslash{}sigma\$ & `sigma` & standard deviation of residuals\\
-\$T\_\{0s\}\$ & `T\_0s` & random intercept for subject \$s\$\\
-\$T\_\{1s\}\$ & `T\_1s` & random slope for subject \$s\$\\
-\$O\_\{0i\}\$ & `O\_0i` & random intercept for item \$i\$\\
-\$e\_\{si\}\$ & `e\_si` & residual for the trial involving subject \$s\$ and item \$i\$\\
-\bottomrule
-\end{tabular}
-
-\end{threeparttable}
-\end{center}
-
-\end{table}
+The first thing to do is to set up the parameters that govern the process we assume to give rise to the data, the \emph{data-generating process} or DGP. Let's start by defining the sample size: In this hypothetical study, each of 100 subjects will respond to all 50 stimulus items (25 ingroup and 25 outgroup), for a total of 5000 observations.
 
 \hypertarget{specify-the-data-structure}{%
 \subsubsection{Specify the data structure}\label{specify-the-data-structure}}
 
-We want the resulting data to be in long format, with the structure shown below, where each row is a single observation for each trial. The variable \texttt{subj\_id} runs from \texttt{1} to \texttt{100} and indexes the subject number; \texttt{item\_id} runs from \texttt{1} to \texttt{50} and indexes the item number; \texttt{category} is whether the face is ingroup or outgroup, with items 1-25 always ingroup and items 26-50 always outgroup; and \texttt{RT} is the participant's response time for that trial. Note that a trial is uniquely identified by the combination of the \texttt{subj\_id} and \texttt{item\_id} labels.
+\setcounter{table}{0} \renewcommand{\thetable}{\arabic{table}}
+
+We want the resulting data to be in long format, with the structure shown in Table~\ref{tab:data-example}, where each row is a single observation for each trial. The variable \texttt{subj\_id} runs from \texttt{1} to \texttt{100} and indexes the subject number; \texttt{item\_id} runs from \texttt{1} to \texttt{50} and indexes the item number; \texttt{category} is whether the face is ingroup or outgroup, with items 1-25 always ingroup and items 26-50 always outgroup; and \texttt{RT} is the participant's response time for that trial. Note that a trial is uniquely identified by the combination of the \texttt{subj\_id} and \texttt{item\_id} labels.
 
 \begin{table}[H]
 
@@ -373,7 +327,41 @@ Note that for independent variables in designs where subjects and stimuli are cr
 \hypertarget{specify-the-fixed-effects}{%
 \subsubsection{Specify the fixed effects}\label{specify-the-fixed-effects}}
 
-Getting an appropriately structured dataset is the easy part. The difficult part is generating the RT values. For this, we need to establish an underlying statistical model. Let us start with a basic model and build up from there. We want a model of RT for subject \(s\) and item \(i\) that looks something like:
+\begin{table}[H]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:paramdef}Variables in the data-generating model and associated R code.}
+
+\begin{tabular}{lll}
+\toprule
+model & \multicolumn{1}{c}{code} & \multicolumn{1}{c}{description}\\
+\midrule
+$RT_{si}$ & \texttt{RT} & reaction time for subject $s$ to item $i$\\
+$X_i$ & \texttt{X\_i} & condition for item $i$ (-.5 = ingroup, .5 = outgroup)\\
+$\beta_0$ & \texttt{beta\_0} & intercept; grand mean RT\\
+$\beta_1$ & \texttt{beta\_1} & slope; mean effect of ingroup/outgroup\\
+$\tau_0$ & \texttt{tau\_0} & standard deviation of by-subject random intercepts\\
+$\tau_1$ & \texttt{tau\_1} & standard deviation of by-subject random slopes\\
+$\rho$ & \texttt{rho} & correlation between by-subject random intercepts and slopes\\
+$\omega_0$ & \texttt{omega\_0} & standard deviation of by-item random intercepts\\
+$\sigma$ & \texttt{sigma} & standard deviation of residuals\\
+$T_{0s}$ & \texttt{T\_0s} & random intercept for subject $s$\\
+$T_{1s}$ & \texttt{T\_1s} & random slope for subject $s$\\
+$O_{0i}$ & \texttt{O\_0i} & random intercept for item $i$\\
+$e_{si}$ & \texttt{e\_si} & residual for the trial involving subject $s$ and item $i$\\
+\bottomrule
+\end{tabular}
+
+\end{threeparttable}
+\end{center}
+
+\end{table}
+
+Getting an appropriately structured dataset is the easy part. The difficult part is generating the RT values. For this, we need to establish an underlying statistical model. In this and the next section, we will build up a statistical model step by step, defining variables in the code as we go along that reflect our choices for parameters. For convenience, Table~\ref{tab:paramdef} lists all of the variables in the statistical model and their associated variable names in the code.
+
+Let us start with a basic model and build up from there. We want a model of RT for subject \(s\) and item \(i\) that looks something like:
 
 \begin{equation}
 RT_{si} = \beta_0 + \beta_1 X_{i} + e_{si}.
@@ -388,8 +376,8 @@ Although this model is incomplete, we can go ahead and choose parameters for \(\
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{# set fixed effect parameters}
-\NormalTok{b0 <-}\StringTok{ }\DecValTok{800} \CommentTok{# intercept; i.e., the grand mean}
-\NormalTok{b1 <-}\StringTok{  }\DecValTok{50} \CommentTok{# slope; i.e, effect of category}
+\NormalTok{beta_}\DecValTok{0}\NormalTok{ <-}\StringTok{ }\DecValTok{800} \CommentTok{# intercept; i.e., the grand mean}
+\NormalTok{beta_}\DecValTok{1}\NormalTok{ <-}\StringTok{  }\DecValTok{50} \CommentTok{# slope; i.e, effect of category}
 \end{Highlighting}
 \end{Shaded}
 
@@ -443,7 +431,7 @@ To summarize, we established a reasonable statistical model underlying the data 
 RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
 \end{equation}
 
-\noindent The response time for subject \(s\) on item \(i\), \(RT_{si}\), is decomposed into a population grand mean \(\beta_0\), a by-subject random intercept \(T_{0s}\), a by-item random intercept \(O_{0i}\), a fixed slope \(\beta_1\), a by-subject random slope \(T_{1s}\), and a trial-level residual \(e_{si}\). Our data-generating process is fully determined by seven parameters. There are two fixed effects parameters, the fixed intercept \(\beta_0\) (\texttt{b0}) and fixed slope \(\beta_1\) (\texttt{b1}). There are four variance parameters governing the random effects: the standard deviation of the by-subject random intercepts, \(\tau_0\) (\texttt{tau\_0}); the standard deviation of by-subject random slopes, \(\tau_1\) (\texttt{tau\_1}), the correlation between the by-subject random intercepts and random slopes, \(\rho\) (\texttt{rho}); and the standard deviation of the by-item random intercepts, \(\omega_0\) (\texttt{omega\_0}). Finally, the seventh parameter \(\sigma\) (\texttt{sigma}) reflects any remaining trial-by-trial variation not already captured by the model. In the next section we will apply this data-generating process to simulate the sampling of subjects, items, and trials (encounters).
+\noindent The response time for subject \(s\) on item \(i\), \(RT_{si}\), is decomposed into a population grand mean \(\beta_0\), a by-subject random intercept \(T_{0s}\), a by-item random intercept \(O_{0i}\), a fixed slope \(\beta_1\), a by-subject random slope \(T_{1s}\), and a trial-level residual \(e_{si}\). Our data-generating process is fully determined by seven parameters. There are two fixed effects parameters, the fixed intercept \(\beta_0\) (\texttt{beta\_0}) and fixed slope \(\beta_1\) (\texttt{beta\_1}). There are four random effects parameters governing by-subject and by-item variance components: the standard deviation of the by-subject random intercepts, \(\tau_0\) (\texttt{tau\_0}); the standard deviation of by-subject random slopes, \(\tau_1\) (\texttt{tau\_1}), the correlation between the by-subject random intercepts and random slopes, \(\rho\) (\texttt{rho}); and the standard deviation of the by-item random intercepts, \(\omega_0\) (\texttt{omega\_0}). Finally, the seventh parameter \(\sigma\) (\texttt{sigma}) reflects any remaining trial-by-trial variation not already captured by the model. In the next section we will apply this data-generating process to simulate the sampling of subjects, items, and trials (encounters).
 
 \hypertarget{simulating-the-sampling-process}{%
 \subsection{Simulating the sampling process}\label{simulating-the-sampling-process}}
@@ -478,7 +466,7 @@ We need to create a table listing each item, which category it is in, and simula
 
 For the first variable in the dataset, \texttt{item\_id}, we have used \texttt{seq\_len()} to assign a unique integer to each of the 50 stimulus faces; these IDs function like names. The \texttt{category} variable designates whether the face is ingroup or outgroup, with the first 25 items being ingroup and the last 25 being outgroup. Finally, we sample the values of \(O_{0i}\) from a normal distribution using the \texttt{rnorm()} function, with a mean of 0 and SD of \(\omega_0\).
 
-Let us introduce a numerical predictor to represent what category each stimulus item \(i\) appears in (i.e., for the \(X_i\) in our model). Since we predict that responses to ingroup faces will be faster than outgroup faces, we set ingroup to -0.5 and outgroup to +0.5. We will later multiply this \emph{effect coded} factor by the fixed effect of category (\texttt{b1} = 50) to simulate data where the ingroup faces are on average -25 ms different from the grand mean, while the outgroup faces are on average 25 ms different from the grand mean.
+Let us introduce a numeric predictor to represent what category each stimulus item \(i\) appears in (i.e., for the \(X_i\) in our model). Since we predict that responses to ingroup faces will be faster than outgroup faces, we set ingroup to -0.5 and outgroup to +0.5. We will later multiply this \emph{effect coded} factor by the fixed effect of category (\texttt{beta\_1} = 50) to simulate data where the ingroup faces are on average -25 ms different from the grand mean, while the outgroup faces are on average 25 ms different from the grand mean. After adding this variable, the resulting table \texttt{items} should look like Table~\ref{tab:items-table}, although the specific values you obtain for \(O_{0i}\) may differ, depending on whether you set the random seed.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -494,11 +482,11 @@ In R, most regression procedures can handle two-level factors like \texttt{categ
 \begin{center}
 \begin{threeparttable}
 
-\caption{\label{tab:items-table}The resulting table of item parameters.}
+\caption{\label{tab:items-table}The resulting sample of items.}
 
 \begin{tabular}{llrr}
 \toprule
-item\_id & \multicolumn{1}{c}{category} & \multicolumn{1}{c}{O\_0i} & \multicolumn{1}{c}{X\_i}\\
+\texttt{item\_id} & \multicolumn{1}{c}{\texttt{category}} & \multicolumn{1}{c}{\texttt{O\_0i}} & \multicolumn{1}{c}{\texttt{X\_i}}\\
 \midrule
 1 & ingroup & -79.7 & -0.5\\
 2 & ingroup & 57.7 & -0.5\\
@@ -527,7 +515,7 @@ item\_id & \multicolumn{1}{c}{category} & \multicolumn{1}{c}{O\_0i} & \multicolu
 
 Now we will simulate the sampling of individual subjects, resulting in a table listing each subject and their two correlated random effects. This will be slightly more complicated that what we just did, because we cannot simply sample the \(T_{0s}\) values from a univariate distribution using \texttt{rnorm()} independently from the \(T_{1s}\) values. Instead, we must sample \(\left<T_{0s}, T_{1s}\right>\) \emph{pairs}---one pair for each subject---from a bivariate normal distribution. To do this, we will use the \texttt{mvrnorm()} function, a multivariate version of \texttt{rnorm()} from the MASS package that comes pre-installed with R. We specify the three parameters describing this distribution---two variances and a correlation---by entering them into a 2x2 \emph{variance-covariance} matrix using the \texttt{matrix()} function, and then passing this matrix to \texttt{mvrnorm()} using the \texttt{Sigma} argument. This requires converting the standard deviations into variances (by squaring them) and calculating the covariance, which is the product of the correlation and two standard deviations, i.e., \(\rho \times \tau_0 \times \tau_1\).
 
-We only need this one function from MASS, so we can call it directly using the \texttt{package::function()} syntax instead of loading the library (specifically, \texttt{MASS::mvrnorm()} instead of \texttt{library(MASS)}).\footnote{Note that MASS package has a function we don't need named \texttt{select()}, but loading it using \texttt{library()} would overwrite the function of the same name from the \texttt{dplyr} package that we often do need, so in general it is a good idea to avoid loading MASS.}
+We only need this one function from MASS, so we can call it directly using the \texttt{package::function()} syntax instead of loading the library (specifically, \texttt{MASS::mvrnorm()} instead of \texttt{library(MASS)}).\footnote{Note that MASS package has a function we don't need named \texttt{select()}, but loading it using \texttt{library()} would overwrite the function of the same name from the \texttt{dplyr} package that we often do need, so in general it is a good idea to avoid loading MASS.} The resulting table \texttt{subjects} should have the structure as shown in Table~\ref{tab:subj-table}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -558,11 +546,11 @@ We only need this one function from MASS, so we can call it directly using the \
 \begin{center}
 \begin{threeparttable}
 
-\caption{\label{tab:subj-table}The resulting table of subject parameters.}
+\caption{\label{tab:subj-table}The resulting sample of subjects.}
 
 \begin{tabular}{lrr}
 \toprule
-subj\_id & \multicolumn{1}{c}{T\_0s} & \multicolumn{1}{c}{T\_1s}\\
+\texttt{subj\_id} & \multicolumn{1}{c}{\texttt{T\_0s}} & \multicolumn{1}{c}{\texttt{T\_1s}}\\
 \midrule
 1 & -14.7 & 11.1\\
 2 & -8.4 & -36.7\\
@@ -609,7 +597,7 @@ An alternative way to sample from a bivariate distribution would be to use the f
 \hypertarget{simulate-trials-encounters}{%
 \subsubsection{Simulate trials (encounters)}\label{simulate-trials-encounters}}
 
-Since all subjects respond to all items, we can set up a table of trials by making a table with every possible combination of the rows in the subject and item tables using the tidyverse function \texttt{crossing()}. Each trial has random error associated; we simulate this from a normal distribution with a mean of 0 and SD of \texttt{sigma}.
+Since all subjects respond to all items, we can set up a table of trials by making a table with every possible combination of the rows in the subject and item tables using the tidyverse function \texttt{crossing()}. Each trial has random error associated; we simulate this from a normal distribution with a mean of 0 and SD of \texttt{sigma}. The resulting table should correspond to Table~\ref{tab:trials-table}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -630,7 +618,7 @@ Since all subjects respond to all items, we can set up a table of trials by maki
 
 \begin{tabular}{lllrrrrr}
 \toprule
-subj\_id & \multicolumn{1}{c}{item\_id} & \multicolumn{1}{c}{category} & \multicolumn{1}{c}{X\_i} & \multicolumn{1}{c}{T\_0s} & \multicolumn{1}{c}{T\_1s} & \multicolumn{1}{c}{O\_0i} & \multicolumn{1}{c}{e\_si}\\
+\texttt{subj\_id} & \multicolumn{1}{c}{\texttt{item\_id}} & \multicolumn{1}{c}{\texttt{category}} & \multicolumn{1}{c}{\texttt{X\_i}} & \multicolumn{1}{c}{\texttt{T\_0s}} & \multicolumn{1}{c}{\texttt{T\_1s}} & \multicolumn{1}{c}{\texttt{O\_0i}} & \multicolumn{1}{c}{\texttt{e\_si}}\\
 \midrule
 1 & 1 & ingroup & -0.50 & -14.65 & 11.13 & -79.73 & -66.54\\
 1 & 2 & ingroup & -0.50 & -14.65 & 11.13 & 57.75 & -34.74\\
@@ -663,29 +651,29 @@ Note how this resulting table contains the full decomposition of effects that we
 RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
 \end{equation}
 
-Thus, we will calculate the response variable \texttt{RT} by adding together:
+\noindent Thus, we will calculate the response variable \texttt{RT} by adding together:
 
 \begin{itemize}
 \tightlist
 \item
-  the grand intercept (\texttt{b0}),
+  the grand intercept (\texttt{beta\_0}),
 \item
   each subject-specific random intercept (\texttt{T\_0s}),
 \item
   each item-specific random intercept (\texttt{O\_0i}),
 \item
-  each sum of the category effect (\texttt{b1}) and the random slope (\texttt{T\_1s}), multiplied by the numerical predictor (\texttt{X\_i}), and
+  each sum of the category effect (\texttt{beta\_1}) and the random slope (\texttt{T\_1s}), multiplied by the numeric predictor (\texttt{X\_i}), and
 \item
   each residual error (\texttt{e\_si}).
 \end{itemize}
 
-After this we will use \texttt{dplyr::select()} to keep the columns we need. Note that the resulting table has the structure that we set as our goal at the start of this exercise, with the additional column \texttt{X\_i}, which we will keep to use in the estimation process, described in the next section.
+\noindent After this we will use \texttt{dplyr::select()} to keep the columns we need. Note that the resulting table (Table~\ref{tab:dat-sim-table}) has the structure that we set as our goal at the start of this exercise, with the additional column \texttt{X\_i}, which we will keep to use in the estimation process, described in the next section.
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{# calculate the response variable}
 \NormalTok{dat_sim <-}\StringTok{ }\NormalTok{trials }\OperatorTok{%>%}
-\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{RT =}\NormalTok{ b0 }\OperatorTok{+}\StringTok{ }\NormalTok{T_0s }\OperatorTok{+}\StringTok{ }\NormalTok{O_0i }\OperatorTok{+}\StringTok{ }\NormalTok{(b1 }\OperatorTok{+}\StringTok{ }\NormalTok{T_1s) }\OperatorTok{*}\StringTok{ }\NormalTok{X_i }\OperatorTok{+}\StringTok{ }\NormalTok{e_si) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{RT =}\NormalTok{ beta_}\DecValTok{0} \OperatorTok{+}\StringTok{ }\NormalTok{T_0s }\OperatorTok{+}\StringTok{ }\NormalTok{O_0i }\OperatorTok{+}\StringTok{ }\NormalTok{(beta_}\DecValTok{1} \OperatorTok{+}\StringTok{ }\NormalTok{T_1s) }\OperatorTok{*}\StringTok{ }\NormalTok{X_i }\OperatorTok{+}\StringTok{ }\NormalTok{e_si) }\OperatorTok{%>%}
 \StringTok{  }\KeywordTok{select}\NormalTok{(subj_id, item_id, category, X_i, RT)}
 \end{Highlighting}
 \end{Shaded}
@@ -699,7 +687,7 @@ After this we will use \texttt{dplyr::select()} to keep the columns we need. Not
 
 \begin{tabular}{lllrr}
 \toprule
-subj\_id & \multicolumn{1}{c}{item\_id} & \multicolumn{1}{c}{category} & \multicolumn{1}{c}{X\_i} & \multicolumn{1}{c}{RT}\\
+\texttt{subj\_id} & \multicolumn{1}{c}{\texttt{item\_id}} & \multicolumn{1}{c}{\texttt{category}} & \multicolumn{1}{c}{\texttt{X\_i}} & \multicolumn{1}{c}{\texttt{RT}}\\
 \midrule
 1 & 1 & ingroup & -0.5 & 609\\
 1 & 2 & ingroup & -0.5 & 778\\
@@ -732,11 +720,11 @@ To make it easier to try out different parameters or to generate many datasets f
 \begin{Highlighting}[]
 \CommentTok{# set up the custom data simulation function}
 \NormalTok{my_sim_data <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(}
-  \DataTypeTok{n_subj      =} \DecValTok{100}\NormalTok{,   }\CommentTok{# number of subjects}
+  \DataTypeTok{n_subj     =} \DecValTok{100}\NormalTok{,   }\CommentTok{# number of subjects}
   \DataTypeTok{n_ingroup  =}  \DecValTok{25}\NormalTok{,   }\CommentTok{# number of ingroup stimuli}
   \DataTypeTok{n_outgroup =}  \DecValTok{25}\NormalTok{,   }\CommentTok{# number of outgroup stimuli}
-  \DataTypeTok{b0         =} \DecValTok{800}\NormalTok{,   }\CommentTok{# grand mean}
-  \DataTypeTok{b1         =}  \DecValTok{50}\NormalTok{,   }\CommentTok{# effect of category}
+  \DataTypeTok{beta_0     =} \DecValTok{800}\NormalTok{,   }\CommentTok{# grand mean}
+  \DataTypeTok{beta_1     =}  \DecValTok{50}\NormalTok{,   }\CommentTok{# effect of category}
   \DataTypeTok{omega_0    =}  \DecValTok{80}\NormalTok{,   }\CommentTok{# by-item random intercept sd}
   \DataTypeTok{tau_0      =} \DecValTok{100}\NormalTok{,   }\CommentTok{# by-subject random intercept sd}
   \DataTypeTok{tau_1      =}  \DecValTok{40}\NormalTok{,   }\CommentTok{# by-subject random slope sd}
@@ -762,13 +750,13 @@ To make it easier to try out different parameters or to generate many datasets f
 
   \KeywordTok{crossing}\NormalTok{(subjects, items)  }\OperatorTok{%>%}
 \StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{e_si =} \KeywordTok{rnorm}\NormalTok{(}\KeywordTok{nrow}\NormalTok{(.), }\DataTypeTok{mean =} \DecValTok{0}\NormalTok{, }\DataTypeTok{sd =}\NormalTok{ sigma),}
-           \DataTypeTok{RT =}\NormalTok{ b0 }\OperatorTok{+}\StringTok{ }\NormalTok{T_0s }\OperatorTok{+}\StringTok{ }\NormalTok{O_0i }\OperatorTok{+}\StringTok{ }\NormalTok{(b1 }\OperatorTok{+}\StringTok{ }\NormalTok{T_1s) }\OperatorTok{*}\StringTok{ }\NormalTok{X_i }\OperatorTok{+}\StringTok{ }\NormalTok{e_si) }\OperatorTok{%>%}
+           \DataTypeTok{RT =}\NormalTok{ beta_}\DecValTok{0} \OperatorTok{+}\StringTok{ }\NormalTok{T_0s }\OperatorTok{+}\StringTok{ }\NormalTok{O_0i }\OperatorTok{+}\StringTok{ }\NormalTok{(beta_}\DecValTok{1} \OperatorTok{+}\StringTok{ }\NormalTok{T_1s) }\OperatorTok{*}\StringTok{ }\NormalTok{X_i }\OperatorTok{+}\StringTok{ }\NormalTok{e_si) }\OperatorTok{%>%}
 \StringTok{    }\KeywordTok{select}\NormalTok{(subj_id, item_id, category, X_i, RT)}
 \NormalTok{\}}
 \end{Highlighting}
 \end{Shaded}
 
-Now you can generate a dataset with the default parameters using \texttt{my\_sim\_data()} or, for example, a dataset with 500 subjects and no effect of category using \texttt{my\_sim\_data(n\_subj\ =\ 500,\ b1\ =\ 0)}.
+Now you can generate a dataset with the default parameters using \texttt{my\_sim\_data()} or, for example, a dataset with 500 subjects and no effect of category using \texttt{my\_sim\_data(n\_subj\ =\ 500,\ beta\_1\ =\ 0)}.
 
 \hypertarget{analyzing-the-simulated-data}{%
 \section{Analyzing the simulated data}\label{analyzing-the-simulated-data}}
@@ -787,7 +775,7 @@ RT ~ 1 + X_i + (1 | item_id) + (1 + X_i | subj_id)
 \item
   \texttt{RT} is the response
 \item
-  \texttt{1} corresponds to the grand intercept (\texttt{b0}),
+  \texttt{1} corresponds to the grand intercept (\texttt{beta\_0}),
 \item
   \texttt{X\_i} is the predictor for the ingroup/outgroup manipulation for item i;
 \item
@@ -845,7 +833,7 @@ The other arguments to the \texttt{lme4} function are the name of the data frame
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 \end{verbatim}
 
-\noindent Let's break down the output step-by-step and try to find estimates of the seven parameters we used to generate the data: \texttt{b0}, \texttt{b1}, \texttt{tau\_0}, \texttt{tau\_1}, \texttt{rho}, \texttt{omega\_0} and \texttt{sigma}. If you analyze existing data with a mixed effects model, you can use these estimates to help you set reasonable values for random effects in your own simulations.
+\noindent Let's break down the output step-by-step and try to find estimates of the seven parameters we used to generate the data: \texttt{beta\_0}, \texttt{beta\_1}, \texttt{tau\_0}, \texttt{tau\_1}, \texttt{rho}, \texttt{omega\_0} and \texttt{sigma}. If you analyze existing data with a mixed effects model, you can use these estimates to help you set reasonable values for random effects in your own simulations.
 
 After providing general information about the model fit, the output is divided into a \texttt{Random\ effects} and a \texttt{Fixed\ effects} section. The fixed effects section should be familiar from other types of linear models.
 
@@ -869,9 +857,9 @@ The \texttt{Random\ effects} section is specific to mixed-effects models, and wi
 ##  Residual             41283    203.18
 \end{verbatim}
 
-\noindent These are the estimates for the \emph{variance components} in the model. Note that there are no p-values associated with these effects. If you wish to determine whether a random effect is significant, you need to run the model with and without the random effect term and compare the log-likelihoods of the models. To avoid confusion, it is best to think of the information in this table as coming from three separate tables divided up by the values in the \texttt{Groups} column.
+\noindent These are the estimates for the \emph{variance components} in the model. Note that there are no p-values associated with these effects. If you wish to determine whether a random effect is significant, you need to run the model with and without the random effect term and compare the log-likelihoods of the models. But usually the random effects parameters are not the target of statistical tests because they reflect the existence of individual variation, which can be trivially assumed to exist for any manipulation that has a non-zero effect.
 
-The first subtable, where the value of \texttt{Groups} is \texttt{subj\_id}, gives the estimates for the variance parameters defining the by-subject random effects.
+To avoid confusion, it is best to think of the information in the \texttt{Random\ effects} section as coming from three separate tables divided up by the values in the \texttt{Groups} column. The first subtable, where the value of \texttt{Groups} is \texttt{subj\_id}, gives the estimates for the random effects parameters defining the by-subject random effects.
 
 \begin{verbatim}
 ##  Groups   Name        Variance Std.Dev. Corr
@@ -895,7 +883,7 @@ The last subtable gives us the estimate of the residual term, 203.18.
 ##  Residual             41283    203.18
 \end{verbatim}
 
-We have found all seven parameters in the output. Let's compare them to the values that we put in.
+We have found all seven parameter estimates in the output. Let's compare them to the actual parameter values that we specified (Table~\ref{tab:param-compare}).
 
 \begin{table}[H]
 
@@ -908,13 +896,13 @@ We have found all seven parameters in the output. Let's compare them to the valu
 \toprule
 variable & \multicolumn{1}{c}{explanation} & \multicolumn{1}{c}{simulated value} & \multicolumn{1}{c}{estimated by model}\\
 \midrule
-b0 & intercept (grand mean) & 800.0 & 807.72\\
-b1 & fixed effect of category & 50.0 & 39.47\\
-tau\_0 & by-subject random intercept SD & 100.0 & 91.74\\
-rho & correlation between intercept and slope & 0.2 & 0.12\\
-tau\_1 & by-subject random slope SD & 40.0 & 57.43\\
-omega\_0 & by-item random intercept SD & 80.0 & 63.81\\
-sigma & residual (error) SD & 200.0 & 203.18\\
+\texttt{beta\_0} & intercept (grand mean) & 800.0 & 807.72\\
+\texttt{beta\_1} & fixed effect of category & 50.0 & 39.47\\
+\texttt{tau\_0} & by-subject random intercept SD & 100.0 & 91.74\\
+\texttt{rho} & correlation between intercept and slope & 0.2 & 0.12\\
+\texttt{tau\_1} & by-subject random slope SD & 40.0 & 57.43\\
+\texttt{omega\_0} & by-item random intercept SD & 80.0 & 63.81\\
+\texttt{sigma} & residual (error) SD & 200.0 & 203.18\\
 \bottomrule
 \end{tabular}
 
@@ -923,13 +911,13 @@ sigma & residual (error) SD & 200.0 & 203.18\\
 
 \end{table}
 
-You can also use \texttt{broom.mixed::tidy()} to output fixed and/or random effects in a tidy table. This is especially useful when you need to combine the output from hundreds of simulations to calculate power. The code below adds a column with the simulated parameters we set above so you can compare them to the estimated parameters from this simulated dataset.
+You can also use \texttt{broom.mixed::tidy()} to output fixed and/or random effects in a tidy table. This is especially useful when you need to combine the output from hundreds of simulations to calculate power. The code below adds a column with the simulated parameters we set above so you can compare them to the estimated parameters from this simulated dataset (Table~\ref{tab:broom-tidy-table}).
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{# get a tidy table of results}
 \NormalTok{broom.mixed}\OperatorTok{::}\KeywordTok{tidy}\NormalTok{(mod_sim) }\OperatorTok{%>%}\StringTok{ }
-\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{sim =} \KeywordTok{c}\NormalTok{(b0, b1, tau_}\DecValTok{0}\NormalTok{, rho, tau_}\DecValTok{1}\NormalTok{, omega_}\DecValTok{0}\NormalTok{, sigma)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{sim =} \KeywordTok{c}\NormalTok{(beta_}\DecValTok{0}\NormalTok{, beta_}\DecValTok{1}\NormalTok{, tau_}\DecValTok{0}\NormalTok{, rho, tau_}\DecValTok{1}\NormalTok{, omega_}\DecValTok{0}\NormalTok{, sigma)) }\OperatorTok{%>%}
 \StringTok{  }\KeywordTok{select}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\DecValTok{3}\NormalTok{, }\DecValTok{9}\NormalTok{, }\DecValTok{4}\OperatorTok{:}\DecValTok{8}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -967,7 +955,7 @@ ran\_pars & Residual & sd\_\_Observation & 200.0 & 203.18 & NA & NA & NA & NA\\
 \hypertarget{setting-parameters}{%
 \subsection{Setting Parameters}\label{setting-parameters}}
 
-Now that you see where each parameter we used to generate the data appears in the analysis output, you can use the analysis of pilot data to get estimates for these parameters for further simulation. For example, if you have pilot data from 10 participants on this task, you can analyse their data using the same code as above, and estimate values for \texttt{b0}, \texttt{b1}, \texttt{tau\_0}, \texttt{tau\_1}, \texttt{rho}, \texttt{omega\_0}, and \texttt{sigma} for use in a power calculation or a sensitivity analysis (see appendix 1C).
+Now that you see where each parameter we used to generate the data appears in the analysis output, you can use the analysis of pilot data to get estimates for these parameters for further simulation. For example, if you have pilot data from 10 participants on this task, you can analyse their data using the same code as above, and estimate values for \texttt{beta\_0}, \texttt{beta\_1}, \texttt{tau\_0}, \texttt{tau\_1}, \texttt{rho}, \texttt{omega\_0}, and \texttt{sigma} for use in a power calculation or a sensitivity analysis (see appendix 1C). If you lack any pilot data to work with, you can start with the general rule of thumb setting the residual variance to about twice the size of the by-subject or by-item variance components (see supplementary materials from Barr et al., 2013 at \url{https://talklab.psy.gla.ac.uk/simgen/realdata.html} for results from an informal convenience sample).
 
 \hypertarget{calculate-power}{%
 \section{Calculate Power}\label{calculate-power}}
@@ -997,6 +985,45 @@ First we create a function \texttt{single\_run()} that generates data using \tex
 \KeywordTok{single_run}\NormalTok{()}
 \end{Highlighting}
 \end{Shaded}
+
+You can also change parameters. For example, what would happen if you increase the number of items to 50 in each group and decrease the effect of category to 20 ms? Example results of a single run with these parameters are shown in Table~\ref{tab:singrun-new}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# run one model with new parameters}
+\KeywordTok{single_run}\NormalTok{(}\DataTypeTok{n_ingroup =} \DecValTok{50}\NormalTok{, }\DataTypeTok{n_outgroup =} \DecValTok{50}\NormalTok{, }\DataTypeTok{beta_1 =} \DecValTok{20}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:singrun-new}The output of single\_run() with 50 items per group and a category effect of 20 ms.}
+
+\small{
+
+\begin{tabular}{lllrrrrr}
+\toprule
+effect & \multicolumn{1}{c}{group} & \multicolumn{1}{c}{term} & \multicolumn{1}{c}{estimate} & \multicolumn{1}{c}{std.error} & \multicolumn{1}{c}{statistic} & \multicolumn{1}{c}{df} & \multicolumn{1}{c}{p.value}\\
+\midrule
+fixed & NA & (Intercept) & 832.38 & 12.6 & 66.1 & 174.0 & 0.000\\
+fixed & NA & X\_i & 24.95 & 16.0 & 1.6 & 114.9 & 0.121\\
+ran\_pars & item\_id & sd\_\_(Intercept) & 73.66 & NA & NA & NA & NA\\
+ran\_pars & subj\_id & sd\_\_(Intercept) & 100.27 & NA & NA & NA & NA\\
+ran\_pars & subj\_id & cor\_\_(Intercept).X\_i & 0.00 & NA & NA & NA & NA\\
+ran\_pars & subj\_id & sd\_\_X\_i & 47.57 & NA & NA & NA & NA\\
+ran\_pars & Residual & sd\_\_Observation & 199.15 & NA & NA & NA & NA\\
+\bottomrule
+\end{tabular}
+
+}
+
+\end{threeparttable}
+\end{center}
+
+\end{table}
 
 Running a power analysis with Monte Carlo simulation requires generating and analyzing many simulated datasets (typically, thousands) to estimate the long run properties of the test. You can use the \texttt{purrr::map\_df} function to run the simulation repeatedly and save the results to a data table. This will take a while, so test it first using just a few runs (\texttt{n\_runs}) to debug and check the output. Once you are satisfied it is working properly, we suggest that you use at least 1,000 runs to obtain stable estimates. It will save you a lot of time if you save the full results to a CSV file so that you don't have to re-run it each time you execute your script; you can just comment out this code and load from the saved data for the rest of your script in the future.
 
@@ -1085,44 +1112,7 @@ X\_i & 48.4 & 23.4 & 0.54\\
 
 \end{table}
 
-You can also change parameters. For example, what would happen if you increase the number of items to 50 in each group and decrease the effect of category to 20 ms?
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{# run one model with new parameters}
-\KeywordTok{single_run}\NormalTok{(}\DataTypeTok{n_ingroup =} \DecValTok{50}\NormalTok{, }\DataTypeTok{n_outgroup =} \DecValTok{50}\NormalTok{, }\DataTypeTok{b1 =} \DecValTok{20}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{table}[H]
-
-\begin{center}
-\begin{threeparttable}
-
-\caption{\label{tab:lmer_power-new}The output of lmer\_power() with 50 items per group and a category effect of 20 ms.}
-
-\small{
-
-\begin{tabular}{lllrrrrr}
-\toprule
-effect & \multicolumn{1}{c}{group} & \multicolumn{1}{c}{term} & \multicolumn{1}{c}{estimate} & \multicolumn{1}{c}{std.error} & \multicolumn{1}{c}{statistic} & \multicolumn{1}{c}{df} & \multicolumn{1}{c}{p.value}\\
-\midrule
-fixed & NA & (Intercept) & 832.38 & 12.6 & 66.1 & 174.0 & 0.000\\
-fixed & NA & X\_i & 24.95 & 16.0 & 1.6 & 114.9 & 0.121\\
-ran\_pars & item\_id & sd\_\_(Intercept) & 73.66 & NA & NA & NA & NA\\
-ran\_pars & subj\_id & sd\_\_(Intercept) & 100.27 & NA & NA & NA & NA\\
-ran\_pars & subj\_id & cor\_\_(Intercept).X\_i & 0.00 & NA & NA & NA & NA\\
-ran\_pars & subj\_id & sd\_\_X\_i & 47.57 & NA & NA & NA & NA\\
-ran\_pars & Residual & sd\_\_Observation & 199.15 & NA & NA & NA & NA\\
-\bottomrule
-\end{tabular}
-
-}
-
-\end{threeparttable}
-\end{center}
-
-\end{table}
+The results of our power analysis appear in Table~\ref{tab:calc-power-table}. The attained power of 0.54 in the second row is the estimated probability of finding a significant effect of category (as represented by \(X_i\)) given our starting parameters. In other words, it is the probability of rejecting the null hypothesis for \(\beta_1\), which is the coefficient associated with \(X_i\) in the model (\(H_0: \beta_1 = 0\)). If we wanted to see how power changes with different parameter settings, we would need to re-run the simulations with different values passed to \texttt{single\_run()}.
 
 \hypertarget{conclusion}{%
 \section{Conclusion}\label{conclusion}}
@@ -1221,6 +1211,9 @@ Westfall, J., Nichols, T. E., \& Yarkoni, T. (2016). Fixing the stimulus-as-fixe
 
 \leavevmode\hypertarget{ref-wickham-advr}{}%
 Wickham, H. (2019). \emph{Advanced R}. CRC press. Retrieved from \url{http://adv-r.had.co.nz/}
+
+\leavevmode\hypertarget{ref-yarkoni-GC}{}%
+Yarkoni, T. (2019). The generalizability crisis. Retrieved from \url{https://psyarxiv.com/jqw35}
 
 \endgroup
 
