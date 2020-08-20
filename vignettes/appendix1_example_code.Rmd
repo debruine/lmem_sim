@@ -14,12 +14,15 @@ vignette: >
 knitr::opts_chunk$set(
   echo = TRUE,
   warning = FALSE,
-  message = FALSE
+  message = FALSE,
+  fig.width = 8,
+  fig.height = 5,
+  out.width = "100%"
 )
 ```
 
 
-## Simulating data with crossed random factors
+## Simulate data with crossed random factors
 
 To give an overview of the simulation task, we will simulate data from a design with crossed random factors of subjects and stimuli, fit a model to the simulated data, and then recover the parameter values we put in from the model output. 
 
@@ -27,12 +30,11 @@ In this hypothetical study, subjects classify the emotional expressions of faces
 
 The important parts of the design are:
 
-* Random factor 1: subjects (associated variables will be prefixed by T, $\tau$, or `tau`)
-* Random factor 2: faces (associated variables will be prefixed by O, $\omega$, or `omega`)
+* Random factor 1: subjects (associated variables will be prefixed by `T` or `tau`)
+* Random factor 2: faces (associated variables will be prefixed by `O` or `omega`)
 * Fixed factor 1: category (level = ingroup, outgroup)
     * within subject: subjects see both ingroup and outgroup faces
-    * between face: faces are either ingroup or outgroup
-
+    * between face: each face is either ingroup or outgroup
 
 ### Required software
 
@@ -49,39 +51,41 @@ set.seed(8675309)
 faux_options(verbose = FALSE)
 ```
 
-### Establishing the data-generating parameters
+### Establish the data-generating parameters
 
 ```{r params-all}
 # set all data-generating parameters
-b0      <- 800 # intercept; i.e., the grand mean
-b1      <-  50 # slope; i.e, effect of category
+beta_0  <- 800 # intercept; i.e., the grand mean
+beta_1  <-  50 # slope; i.e, effect of category
+omega_0 <-  80 # by-item random intercept sd
 tau_0   <- 100 # by-subject random intercept sd
 tau_1   <-  40 # by-subject random slope sd
 rho     <-  .2 # correlation between intercept and slope
-omega_0 <-  80 # by-item random intercept sd
 sigma   <- 200 # residual (error) sd
 ```
 
 
-### Simulating the sampling process
+### Simulate the sampling process
 
 ```{r params}
 # set number of subjects and items
 n_subj     <- 100 # number of subjects
 n_ingroup  <-  25 # number of items in ingroup
-n_outgroup <-  25 # number of items in ingroup
+n_outgroup <-  25 # number of items in outgroup
 ```
 
 #### Simulate the sampling of stimulus items
 
 ```{r}
 # simulate a sample of items
+n_items <- n_ingroup + n_outgroup
+
 items <- data.frame(
-    item_id = seq_len(n_ingroup + n_outgroup),
-    category = rep(c("ingroup", "outgroup"), c(n_ingroup, n_outgroup)),
-    X_i = rep(c(-0.5, 0.5), c(n_ingroup, n_outgroup)),
-    O_0i = rnorm(n = n_ingroup + n_outgroup, mean = 0, sd = omega_0)
-  )
+  item_id = seq_len(n_items),
+  category = rep(c("ingroup", "outgroup"), c(n_ingroup, n_outgroup)),
+  X_i = rep(c(-0.5, 0.5), c(n_ingroup, n_outgroup)),
+  O_0i = rnorm(n = n_items, mean = 0, sd = omega_0)
+)
 ```
 
 #### Simulate the sampling of subjects
@@ -150,15 +154,14 @@ data.frame(
 # cross subject and item IDs; add an error term
 # nrow(.) is the number of rows in the table
 trials <- crossing(subjects, items)  %>%
-  mutate(e_si = rnorm(nrow(.), mean = 0, sd = sigma)) %>%
-  select(subj_id, item_id, category, X_i, everything())
+  mutate(e_si = rnorm(nrow(.), mean = 0, sd = sigma))
 ```
 
 #### Calculate response values
 
 ```{r}
 dat_sim <- trials %>%
-  mutate(RT = b0 + T_0s + O_0i + (b1 + T_1s) * X_i + e_si) %>%
+  mutate(RT = beta_0 + T_0s + O_0i + (beta_1 + T_1s) * X_i + e_si) %>%
   select(subj_id, item_id, category, X_i, RT)
 ```
 
@@ -168,8 +171,8 @@ dat_sim <- trials %>%
 ```{r}
 ggplot(dat_sim, aes(category, RT, color = category)) +
   # predicted means
-  geom_hline(yintercept = (b0 - 0.5*b1), color = "orange") +
-  geom_hline(yintercept = (b0 + 0.5*b1), color = "dodgerblue") +
+  geom_hline(yintercept = (beta_0 - 0.5*beta_1), color = "orange") +
+  geom_hline(yintercept = (beta_0 + 0.5*beta_1), color = "dodgerblue") +
   # actual data
   geom_violin(alpha = 0, show.legend = FALSE) +
   stat_summary(fun = mean,geom="crossbar", show.legend = FALSE) +
@@ -185,11 +188,11 @@ Once you've tested your data generating code above, put it into a function so yo
 ```{r}
 # set up the custom data simulation function
 my_sim_data <- function(
-  nsubj      = 100,   # number of subjects
+  n_subj      = 100,   # number of subjects
   n_ingroup  =  25,   # number of ingroup stimuli
   n_outgroup =  25,   # number of outgroup stimuli
-  b0         = 800,   # grand mean
-  b1         =  50,   # effect of category
+  beta_0     = 800,   # grand mean
+  beta_1     =  50,   # effect of category
   omega_0    =  80,   # by-item random intercept sd
   tau_0      = 100,   # by-subject random intercept sd
   tau_1      =  40,   # by-subject random slope sd
@@ -204,17 +207,9 @@ my_sim_data <- function(
     O_0i = rnorm(n = n_ingroup + n_outgroup, mean = 0, sd = omega_0)
   )
 
-  # effect code category
-  items$cat <- recode(items$category, 
-                      "ingroup" = -0.5, 
-                      "outgroup" = 0.5)
-  
   # simulate a sample of subjects
   subjects <- faux::rnorm_multi(
-    n = n_subj, 
-    mu = 0, # means for random effects are always 0
-    sd = c(tau_0, tau_1), # set SDs
-    r = rho, # set correlation, see ?rnorm_multi
+    n = n_subj, mu = 0, sd = c(tau_0, tau_1), r = rho, 
     varnames = c("T_0s", "T_1s")
   )
   subjects$subj_id <- 1:n_subj
@@ -222,22 +217,20 @@ my_sim_data <- function(
   # cross subject and item IDs 
   crossing(subjects, items)  %>%
     mutate(
-      # add an error term
       e_si = rnorm(nrow(.), mean = 0, sd = sigma),
-      # calculate the response variable
-      RT = b0 + T_0s + O_0i + (b1 + T_1s) * X_i + e_si
+      RT = beta_0 + T_0s + O_0i + (beta_1 + T_1s) * X_i + e_si
     ) %>%
     select(subj_id, item_id, category, X_i, RT)
 }
 ```
 
 
-## Analyzing the simulated data
+## Analyze the simulated data
 
 ```{r}
 # fit a linear mixed-effects model to data
-mod_sim <- lmer(RT ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id),
-                data = dat_sim, REML = TRUE)
+mod_sim <- lmer(RT ~ 1 + X_i + (1 | item_id) + (1 + X_i | subj_id),
+                data = dat_sim)
 
 summary(mod_sim, corr = FALSE)
 ```
@@ -248,40 +241,26 @@ Use `broom.mixed::tidy(mod_sim)` to get a tidy table of the results. Below, we a
 # get a tidy table of results
 broom.mixed::tidy(mod_sim) %>% 
   mutate_if(is.numeric, round, 3) %>%
-  mutate(parameter = case_when(
-    term == "(Intercept)" ~ "b0", 
-    term == "cat" ~ "b1", 
-    group == "subj_id" & term == "sd__(Intercept)" ~ "tau_0", 
-    group == "subj_id" & term == "sd__cat" ~ "tau_1", 
-    group == "subj_id" & term == "cor__(Intercept).cat" ~ "rho", 
-    group == "item_id" & term == "sd__(Intercept)" ~ "omega_0", 
-    group == "Residual" ~ "sigma")
+  mutate(
+    parameter = c("beta_0", "beta_1", "omega_0", "tau_0", "tau_1", "rho", "sigma"),
+    value = c(beta_0, beta_1, omega_0, tau_0, tau_1, rho, sigma),
   ) %>%
-  mutate(value = case_when(
-    term == "(Intercept)" ~ b0, 
-    term == "cat" ~ b1, 
-    group == "subj_id" & term == "sd__(Intercept)" ~ tau_0, 
-    group == "subj_id" & term == "sd__cat" ~ tau_1, 
-    group == "subj_id" & term == "cor__(Intercept).cat" ~ rho, 
-    group == "item_id" & term == "sd__(Intercept)" ~ omega_0, 
-    group == "Residual" ~ sigma)
-  ) %>%
-  select(1:3, 9, 10, 4) %>%
+  select(1:3, 9, 10, 4:8) %>%
   knitr::kable()
 ```
 
 
 ## Calculate Power
 
-You can wrap up the data generating function and the analysis code in a new function (`my_lmer_power`) that returns a tidy table of the analysis results, and optionally saves this info to a file if you set a filename.
+You can wrap up the data generating function and the analysis code in a new function (`single_run`) that returns a tidy table of the analysis results, and optionally saves this info to a file if you set a filename.
 
 ```{r}
 # set up the power function
-my_lmer_power <- function(filename = NULL, ...) {
+single_run <- function(filename = NULL, ...) {
   # ... is a shortcut that forwards any additional arguments to my_sim_data()
   dat_sim <- my_sim_data(...)
-  mod_sim <- lmer(RT ~ cat + (1 | item_id) + (1 + cat | subj_id),
-                dat_sim, REML = FALSE)
+  mod_sim <- lmer(RT ~ X_i + (1 | item_id) + (1 + X_i | subj_id),
+                dat_sim)
   
   sim_results <- broom.mixed::tidy(mod_sim)
   
@@ -299,13 +278,13 @@ my_lmer_power <- function(filename = NULL, ...) {
 
 ```{r}
 # run one model with default parameters
-my_lmer_power()
+single_run()
 ```
 
 
 ```{r}
 # run one model with new parameters
-my_lmer_power(n_ingroup = 50, n_outgroup = 45, b1 = 20)
+single_run(n_ingroup = 50, n_outgroup = 45, beta_1 = 20)
 ```
 
 To get an accurate estimation of power, you need to run the simulation many times. We use 100 here as an example, but your results are more accurate the more replications you run. This will depend on the specifics of your analysis, but we recommend at least 1000 replications.
@@ -315,7 +294,7 @@ filename <- "sims/sims.csv" # change for new analyses
 if (!file.exists(filename)) {
   # run simulations and save to a file
   reps <- 100
-  sims <- purrr::map_df(1:reps, ~my_lmer_power(filename))
+  sims <- purrr::map_df(1:reps, ~single_run(filename))
 }
 
 # read saved simulation data
@@ -338,14 +317,14 @@ sims %>%
 ```
 
 
-# Comparison to ANOVA
+## Compare to ANOVA
 
 One way many researchers would normally analyse data like this is by averaging each subject's reaction times across the ingroup and outgroup stimuli and compare them using a paired-samples t-test or ANOVA (which is formally equivalent). Here, we use `afex::aov_ez` to analyse a version of our dataset that is aggregated by subject.
 
 ```{r}
 # aggregate by subject and analyze with ANOVA
 dat_subj <- dat_sim %>%
-  group_by(subj_id, category, cat) %>%
+  group_by(subj_id, category, X_i) %>%
   summarise(RT = mean(RT), .groups = "drop")
 
 afex::aov_ez(
@@ -361,7 +340,7 @@ Alternatively, you could aggregate by item, averaging all subjects' scores for e
 ```{r}
 # aggregate by item and analyze with ANOVA
 dat_item <-  dat_sim %>%
-  group_by(item_id, category, cat) %>%
+  group_by(item_id, category, X_i) %>%
   summarise(RT = mean(RT), .groups = "drop")
 
 afex::aov_ez(
@@ -381,11 +360,11 @@ my_anova_power <- function(...) {
   dat_sim <- my_sim_data(...)
   
   dat_subj <-  dat_sim %>%
-    group_by(subj_id, category, cat) %>%
+    group_by(subj_id, category, X_i) %>%
     summarise(RT = mean(RT), .groups = "drop")
   
   dat_item <-  dat_sim %>%
-    group_by(item_id, category, cat) %>%
+    group_by(item_id, category, X_i) %>%
     summarise(RT = mean(RT), .groups = "drop")
 
   a_subj <- afex::aov_ez(id = "subj_id",
@@ -409,7 +388,7 @@ my_anova_power <- function(...) {
 }
 ```
 
-Run this function with the default parameters to determine the power each analysis has to detect an effect of category of `r b1` ms.
+Run this function with the default parameters to determine the power each analysis has to detect an effect of category of `r beta_1` ms.
 
 ```{r anova-power}
 # run simulations and calculate power 
@@ -428,7 +407,7 @@ Set the effect of category to 0 to calculate the false positive rate. This is th
 ```{r}
 # run simulations and calculate the false positive rate 
 reps <- 100
-anova_fp <- purrr::map_df(1:reps, ~my_anova_power(b1 = 0))
+anova_fp <- purrr::map_df(1:reps, ~my_anova_power(beta_1 = 0))
 
 false_pos_subj <- mean(anova_fp$subj < alpha)
 false_pos_item <- mean(anova_fp$item < alpha)

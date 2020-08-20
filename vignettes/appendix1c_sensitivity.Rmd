@@ -13,7 +13,10 @@ vignette: >
 knitr::opts_chunk$set(
   echo = TRUE,
   warning = FALSE,
-  message = FALSE
+  message = FALSE,
+  fig.width = 8,
+  fig.height = 5,
+  out.width = "100%"
 )
 ```
 
@@ -34,52 +37,44 @@ faux_options(verbose = FALSE)
 
 ### Data simulation function
 
+The custom simulation function for the example in Appendix 1A is copied below.
+
 ```{r}
 # set up the custom data simulation function
 my_sim_data <- function(
-  tau_n   = 100, # number of subjects
-  omega_n =  25,  # number of items per category
-  b0      = 800, # grand mean
-  b1      =  50, # effect of category
-  omega_0 =  80, # by-item random intercept sd
-  tau_0   = 100, # by-subject random intercept sd
-  tau_1   =  40, # by-subject random slope sd
-  tau_r   = 0.2, # correlation between intercept and slope
-  sigma   = 200  # residual (standard deviation)
-  ) {
+  n_subj      = 100,   # number of subjects
+  n_ingroup  =  25,   # number of ingroup stimuli
+  n_outgroup =  25,   # number of outgroup stimuli
+  beta_0     = 800,   # grand mean
+  beta_1     =  50,   # effect of category
+  omega_0    =  80,   # by-item random intercept sd
+  tau_0      = 100,   # by-subject random intercept sd
+  tau_1      =  40,   # by-subject random slope sd
+  rho        = 0.2,   # correlation between intercept and slope
+  sigma      = 200) { # residual (standard deviation)
   
   # simulate a sample of items
   items <- data.frame(
-    item_id = 1:(omega_n*2),
-    category = rep(c("ingroup", "outgroup"), omega_n),
-    O0i = rnorm(omega_n*2, 0, omega_0)
+    item_id = seq_len(n_ingroup + n_outgroup),
+    category = rep(c("ingroup", "outgroup"), c(n_ingroup, n_outgroup)),
+    X_i = rep(c(-0.5, 0.5), c(n_ingroup, n_outgroup)),
+    O_0i = rnorm(n = n_ingroup + n_outgroup, mean = 0, sd = omega_0)
   )
 
-  # effect code category
-  items$cat <- recode(items$category, 
-                      "ingroup" = -0.5, 
-                      "outgroup" = 0.5)
-  
   # simulate a sample of subjects
   subjects <- faux::rnorm_multi(
-    n = tau_n, 
-    mu = 0,
-    sd = c(tau_0, tau_1),
-    r = tau_r, 
-    varnames = c("T0s", "T1s")
+    n = n_subj, mu = 0, sd = c(tau_0, tau_1), r = rho, 
+    varnames = c("T_0s", "T_1s")
   )
-  subjects$subj_id <- 1:tau_n
+  subjects$subj_id <- 1:n_subj
   
-  # simulate trials
-  dat_sim <- crossing(subj_id = subjects$subj_id,
-                   item_id = items$item_id)  %>%
-    mutate(sigma = rnorm(nrow(.), mean = 0, sd = sigma)) %>%
-    inner_join(subjects, "subj_id") %>%
-    inner_join(items, "item_id") %>%
-    mutate(RT = b0 + O0i + T0s + (b1 + T1s) * cat + sigma) %>%
-    select(subj_id, item_id, category, cat, RT)
-  
-  dat_sim
+  # cross subject and item IDs 
+  crossing(subjects, items)  %>%
+    mutate(
+      e_si = rnorm(nrow(.), mean = 0, sd = sigma),
+      RT = beta_0 + T_0s + O_0i + (beta_1 + T_1s) * X_i + e_si
+    ) %>%
+    select(subj_id, item_id, category, X_i, RT)
 }
 ```
 
@@ -90,7 +85,7 @@ The power calculation function is slightly more complicated than the one for the
 
 ```{r}
 # set up the power function
-my_lmer_power <- function(filename = NULL, ...) {
+single_run <- function(filename = NULL, ...) {
   # ... is a shortcut that forwards any arguments to my_sim_data()
   dat_sim <- my_sim_data(...)
 
@@ -98,7 +93,7 @@ my_lmer_power <- function(filename = NULL, ...) {
   ww <- ""
   suppressMessages(suppressWarnings(
     mod_sim <- withCallingHandlers({
-      lmer(RT ~ cat + (1 | item_id) + (1 + cat | subj_id),
+      lmer(RT ~ X_i + (1 | item_id) + (1 + X_i | subj_id),
                   dat_sim, REML = FALSE)},
       warning = function(w) { ww <<- w$message }
     )
@@ -134,16 +129,17 @@ filename1 <- "sims/sens1.csv"
 nreps <- 100 # number of replications per parameter combo
 
 params <- crossing(
-  rep    = 1:nreps,
-  tau_n  = 100, # number of subjects
-  omega_n =  25, # number of items
-  b0      = 800, # grand mean
-  b1      = seq(0, 100, by = 10), # effect of category
-  omega_0 = 100, # by-item random intercept sd
-  tau_0   =  80, # by-subject random intercept sd
-  tau_1   =  40, # by-subject random slope sd
-  tau_r   = 0.2, # correlation between intercept and slope
-  sigma   = 200  # residual (standard deviation)
+  rep        = 1:nreps, # repeats each combo nreps times
+  n_subj     = 100, # number of subjects
+  n_ingroup  =  25, # number of ingroup stimuli
+  n_outgroup =  25, # number of outgroup stimuli
+  beta_0     = 800, # grand mean
+  beta_1     = seq(0, 100, by = 10), # effect of category
+  omega_0    = 100, # by-item random intercept sd
+  tau_0      =  80, # by-subject random intercept sd
+  tau_1      =  40, # by-subject random slope sd
+  rho        = 0.2, # correlation between intercept and slope
+  sigma      = 200  # residual (standard deviation)
 ) %>%
   select(-rep) # remove rep column
 ```
@@ -154,13 +150,16 @@ This table has 1100 rows, so will run 1100 simulations below. The code below sav
 if (!file.exists(filename1)) {
   # run a simulation for each row of params
   # and save to a file on each rep
-  sims1 <- purrr::pmap_df(params, my_lmer_power, filename = filename1)
+  sims1 <- purrr::pmap_df(params, single_run, filename = filename1)
 }
 
 # read saved simulation data
 # NB: col_types is set for warnings in case 
 #     the first 1000 rows don't have any
-ct <- cols(warnings = col_character())
+ct <- cols(warnings = col_character(),
+           # makes sure plots display in this order
+           group = col_factor(ordered = TRUE),
+           term = col_factor(ordered = TRUE))
 sims1 <- read_csv(filename1, col_types = ct)
 ```
 
@@ -172,8 +171,8 @@ The chunk above will just read the saved data from the named file, if it exists.
 alpha <- 0.05
 
 power1 <- sims1 %>% 
-  filter(effect == "fixed", term == "cat") %>%
-  group_by(term, b1) %>%
+  filter(effect == "fixed", term == "X_i") %>%
+  group_by(term, beta_1) %>%
   summarise(
     mean_estimate = mean(estimate),
     mean_se = mean(std.error),
@@ -182,12 +181,13 @@ power1 <- sims1 %>%
   ) 
 
 power1 %>%
-  ggplot(aes(b1, power)) +
+  ggplot(aes(beta_1, power)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   ylim(0, 1) +
-  scale_x_continuous(name = "Effect of category in ms (b1)",
-                     breaks = seq(0, 100, 10))
+  scale_x_continuous(name = "Effect of category in ms (beta_1)",
+                     breaks = seq(0, 100, 10)) +
+  ggtitle("Power for designs varying in effect size")
 ```
 
 ### Example 2: Number of subjects and items
@@ -199,17 +199,18 @@ filename2 <- "sims/sens2.csv"
 nreps <- 50 # number of replications per parameter combo
 
 params <- crossing(
-  rep     = 1:nreps, 
-  tau_n   = seq(10, 50, by = 10),
-  omega_n = seq(10, 25, by = 5),
-  b0      = 800, # grand mean
-  b1      = 100, # effect of category
-  omega_0 = 100, # by-item random intercept sd
-  tau_0   =  80, # by-subject random intercept sd
-  tau_1   =  40, # by-subject random slope sd
-  tau_r   = 0.2, # correlation between intercept and slope
-  sigma   = 200  # residual (standard deviation)
+  rep       = 1:nreps, 
+  n_subj    = seq(10, 50, by = 10),
+  n_ingroup = seq(10, 25, by = 5),
+  beta_0    = 800, # grand mean
+  beta_1    = 100, # effect of category
+  omega_0   = 100, # by-item random intercept sd
+  tau_0     =  80, # by-subject random intercept sd
+  tau_1     =  40, # by-subject random slope sd
+  rho       = 0.2, # correlation between intercept and slope
+  sigma     = 200  # residual (standard deviation)
 ) %>%
+  mutate(n_outgroup = n_ingroup) %>%
   select(-rep) # remove rep column
 ```
 
@@ -218,11 +219,10 @@ params <- crossing(
 if (!file.exists(filename2)) {
   # run a simulation for each row of params
   # and save to a file on each rep
-  sims2 <- purrr::pmap_df(params, my_lmer_power, filename = filename2)
+  sims2 <- purrr::pmap_df(params, single_run, filename = filename2)
 }
 
 # read saved simulation data
-ct <- cols(warnings = col_character())
 sims2 <- read_csv(filename2, col_types = ct)
 ```
 
@@ -231,8 +231,8 @@ sims2 <- read_csv(filename2, col_types = ct)
 alpha <- 0.05
 
 power2 <- sims2 %>% 
-  filter(effect == "fixed", term == "cat") %>%
-  group_by(term, tau_n, omega_n) %>%
+  filter(effect == "fixed", term == "X_i") %>%
+  group_by(term, n_subj, n_ingroup) %>%
   summarise(
     mean_estimate = mean(estimate),
     mean_se = mean(std.error),
@@ -241,14 +241,16 @@ power2 <- sims2 %>%
   ) 
 
 power2 %>%
-  ggplot(aes(tau_n, omega_n, fill = power)) +
+  ggplot(aes(n_subj, n_ingroup, fill = power)) +
   geom_tile(show.legend = FALSE) +
-  geom_text(aes(label = round(power, 2)), color = "white") +
-  scale_x_continuous(name = "Number of subjects (nsubj)",
+  geom_text(aes(label = round(power, 2)), 
+            color = "black", size = 6) +
+  scale_x_continuous(name = "Number of subjects",
                      breaks = seq(10, 50, 10)) +
-  scale_y_continuous(name = "Number of items (nitem)",
+  scale_y_continuous(name = "Number of items/group",
                      breaks = seq(5, 25, 5)) +
-  scale_fill_viridis_c(limits = c(0, 1))
+  scale_fill_viridis_c(limits = c(0, 1)) +
+  ggtitle("Power for designs varying in number of subjects and items")
 ```
 
 
@@ -262,16 +264,17 @@ filename3 <- "sims/sens3.csv"
 nreps <- 50 # number of replications per parameter combo
 
 params <- crossing(
-  rep     = 1:nreps,
-  tau_n   =  50, # number of subjects
-  omega_n =  10, # number of items
-  b0      = 800, # grand mean
-  b1      =  50, # effect of category
-  omega_0 = seq(20, 100, by = 20), # by-item random intercept sd
-  tau_0   = seq(20, 100, by = 20), # by-subject random intercept sd
-  tau_1   =  40, # by-subject random slope sd
-  tau_r   = 0.2, # correlation between intercept and slope
-  sigma   = 200  # residual (standard deviation)
+  rep        = 1:nreps,
+  n_subj     =  50, # number of subjects
+  n_ingroup  =  10, # number of ingroup items
+  n_outgroup =  10, # number of outgroup items
+  beta_0     = 800, # grand mean
+  beta_1     =  50, # effect of category
+  omega_0    = seq(20, 100, by = 20), # by-item random intercept sd
+  tau_0      = seq(20, 100, by = 20), # by-subject random intercept sd
+  tau_1      =  40, # by-subject random slope sd
+  rho        = 0.2, # correlation between intercept and slope
+  sigma      = 200  # residual (standard deviation)
 ) %>%
   select(-rep) # remove rep column
 ```
@@ -280,11 +283,10 @@ params <- crossing(
 if (!file.exists(filename3)) {
   # run a simulation for each row of params
   # and save to a file on each rep
-  sims3 <- purrr::pmap_df(params, my_lmer_power, filename = filename3)
+  sims3 <- purrr::pmap_df(params, single_run, filename = filename3)
 }
 
 # read saved simulation data
-ct <- cols(warnings = col_character())
 sims3 <- read_csv(filename3, col_types = ct)
 ```
 
@@ -293,7 +295,7 @@ sims3 <- read_csv(filename3, col_types = ct)
 alpha <- 0.05
 
 power3 <- sims3 %>% 
-  filter(effect == "fixed", term == "cat") %>%
+  filter(effect == "fixed", term == "X_i") %>%
   group_by(term, omega_0, tau_0) %>%
   summarise(
     mean_estimate = mean(estimate),
@@ -305,11 +307,13 @@ power3 <- sims3 %>%
 power3 %>%
   ggplot(aes(omega_0, tau_0, fill = power)) +
   geom_tile(show.legend = FALSE) +
-  geom_text(aes(label = round(power, 2)), color = "white") +
+  geom_text(aes(label = round(power, 2)), 
+            color = "white", size = 6) +
   scale_x_continuous(name = "By-item random intercept SD (omega_0)",
                      breaks = seq(20, 100, 20)) +
   scale_y_continuous(name = "By-subject random intercept SD (tau_0)",
                      breaks = seq(20, 100, 20)) +
-  scale_fill_viridis_c(limits = c(0, 1))
+  scale_fill_viridis_c(limits = c(0, 1)) +
+  ggtitle("Power for designs varying in random intercept SDs")
 ```
 
