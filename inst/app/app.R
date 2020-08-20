@@ -8,7 +8,6 @@ library(purrr)
 library(ggplot2)
 library(lme4)
 library(afex)
-#library(faux)
 #library(broom.mixed)
 options("scipen"=10, "digits"=4)
 
@@ -43,11 +42,11 @@ ui <- dashboardPage(
         title = "Fixed Effects",
         solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("b0", "intercept (b0)", 
+        sliderInput("beta_0", "intercept (beta_0)", 
                     min = 600, max = 1000, value = 800, step = 100),
-        sliderInput("b1", "effect of category (b1)", 
+        sliderInput("beta_1", "effect of category (beta_1)", 
                     min = -200, max = 200, value = 50, step = 10)
-        # selectInput("x1", "category coding (X)", 
+        # selectInput("x1", "category coding (X_i)", 
         #             c("Deviation (ingroup = -0.5, outgroup = +0.5)" = "deviation",
         #               "Sum (ingroup = -1, outgroup = +1)" = "sum",
         #               "Treatment (ingroup = 0, outgroup = 1)" = "treatment"))
@@ -59,15 +58,15 @@ ui <- dashboardPage(
         title = "Random Effects",
         solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("S0s_sd", "subject intercept SD (S0s_sd)", 
+        sliderInput("tau_0", "subject intercept SD (tau_0)", 
                     min = 0, max = 200, value = 100, step = 10),
-        sliderInput("S1s_sd", "subject slope SD (S1s_sd)", 
+        sliderInput("tau_1", "subject slope SD (tau_1)", 
                     min = 0, max = 200, value =  40, step = 10),
-        sliderInput("scor", "subject intercept*slope correlation (Scor)", 
+        sliderInput("rho", "subject intercept*slope correlation (rho)", 
                     min = -0.9, max = 0.9, value = 0.2, step = 0.1),
-        sliderInput("I0i_sd", "item intercept SD (I0i_sd)", 
+        sliderInput("omega_0", "item intercept SD (omega_0)", 
                     min = 0, max = 200, value =  80, step = 10),
-        sliderInput("err_sd", "residual SD (err_sd)", 
+        sliderInput("sigma", "residual SD (sigma)", 
                     min = 0, max = 400, value = 200, step = 10)
       ),
       # sample size input ----
@@ -75,9 +74,11 @@ ui <- dashboardPage(
         title = "Sample Size",
         solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
         width = NULL,
-        sliderInput("nsubj", "number of subjects (nsubj)", 
+        sliderInput("n_subj", "number of subjects (n_subj)", 
                     min = 10, max = 200, value = 100, step = 10),
-        sliderInput("nitem", "faces per group (nitem)", 
+        sliderInput("n_ingroup", "faces in the ingroup (n_ingroup)", 
+                    min = 5, max = 50, value = 25, step = 5),
+        sliderInput("n_outgroup", "faces in the outgroup (n_outgroup)", 
                     min = 5, max = 50, value = 25, step = 5)
       )
     )
@@ -100,99 +101,108 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
   ggplot2::theme_set(ggplot2::theme_bw())
   
-  # b0 link
-  observeEvent(input$b0, {if (input$b0 != input$b0_) {
-    updateSliderInput(session, "b0_", value = input$b0)
+  # beta_0 link
+  observeEvent(input$beta_0, {if (input$beta_0 != input$beta_0_) {
+    updateSliderInput(session, "beta_0_", value = input$beta_0)
   }})
   
-  observeEvent(input$b0_, {if (input$b0 != input$b0_) {
-    updateSliderInput(session, "b0", value = input$b0_)
+  observeEvent(input$beta_0_, {if (input$beta_0 != input$beta_0_) {
+    updateSliderInput(session, "beta_0", value = input$beta_0_)
   }})
   
-  # b1 link
-  observeEvent(input$b1, {if (input$b1 != input$b1_) {
-    updateSliderInput(session, "b1_", value = input$b1)
+  # beta_1 link
+  observeEvent(input$beta_1, {if (input$beta_1 != input$beta_1_) {
+    updateSliderInput(session, "beta_1_", value = input$beta_1)
   }})
   
-  observeEvent(input$b1_, {if (input$b1 != input$b1_) {
-    updateSliderInput(session, "b1", value = input$b1_)
+  observeEvent(input$beta_1_, {if (input$beta_1 != input$beta_1_) {
+    updateSliderInput(session, "beta_1", value = input$beta_1_)
   }})
   
-  # S0s_sd link
-  observeEvent(input$S0s_sd, {if (input$S0s_sd != input$S0s_sd_) {
-    updateSliderInput(session, "S0s_sd_", value = input$S0s_sd)
+  # tau_0 link
+  observeEvent(input$tau_0, {if (input$tau_0 != input$tau_0_) {
+    updateSliderInput(session, "tau_0_", value = input$tau_0)
   }})
   
-  observeEvent(input$S0s_sd_, {if (input$S0s_sd != input$S0s_sd_) {
-    updateSliderInput(session, "S0s_sd", value = input$S0s_sd_)
+  observeEvent(input$tau_0_, {if (input$tau_0 != input$tau_0_) {
+    updateSliderInput(session, "tau_0", value = input$tau_0_)
   }})
   
-  # S1s_sd link
-  observeEvent(input$S1s_sd, {if (input$S1s_sd != input$S1s_sd_) {
-    updateSliderInput(session, "S1s_sd_", value = input$S1s_sd)
+  # tau_1 link
+  observeEvent(input$tau_1, {if (input$tau_1 != input$tau_1_) {
+    updateSliderInput(session, "tau_1_", value = input$tau_1)
   }})
   
-  observeEvent(input$S1s_sd_, {if (input$S1s_sd != input$S1s_sd_) {
-    updateSliderInput(session, "S1s_sd", value = input$S1s_sd_)
+  observeEvent(input$tau_1_, {if (input$tau_1 != input$tau_1_) {
+    updateSliderInput(session, "tau_1", value = input$tau_1_)
   }})
   
-  # scor link
-  observeEvent(input$scor, {if (input$scor != input$scor_) {
-    updateSliderInput(session, "scor_", value = input$scor)
+  # rho link
+  observeEvent(input$rho, {if (input$rho != input$rho_) {
+    updateSliderInput(session, "rho_", value = input$rho)
   }})
   
-  observeEvent(input$scor_, {if (input$scor != input$scor_) {
-    updateSliderInput(session, "scor", value = input$scor_)
+  observeEvent(input$rho_, {if (input$rho != input$rho_) {
+    updateSliderInput(session, "rho", value = input$rho_)
   }})
   
-  # I0i_sd link
-  observeEvent(input$I0i_sd, {if (input$I0i_sd != input$I0i_sd_) {
-    updateSliderInput(session, "I0i_sd_", value = input$I0i_sd)
+  # omega_0 link
+  observeEvent(input$omega_0, {if (input$omega_0 != input$omega_0_) {
+    updateSliderInput(session, "omega_0_", value = input$omega_0)
   }})
   
-  observeEvent(input$I0i_sd_, {if (input$I0i_sd != input$I0i_sd_) {
-    updateSliderInput(session, "I0i_sd", value = input$I0i_sd_)
+  observeEvent(input$omega_0_, {if (input$omega_0 != input$omega_0_) {
+    updateSliderInput(session, "omega_0", value = input$omega_0_)
   }})
   
-  # err_sd link
-  observeEvent(input$err_sd, {if (input$err_sd != input$err_sd_) {
-    updateSliderInput(session, "err_sd_", value = input$err_sd)
+  # sigma link
+  observeEvent(input$sigma, {if (input$sigma != input$sigma_) {
+    updateSliderInput(session, "sigma_", value = input$sigma)
   }})
   
-  observeEvent(input$err_sd_, {if (input$err_sd != input$err_sd_) {
-    updateSliderInput(session, "err_sd", value = input$err_sd_)
+  observeEvent(input$sigma_, {if (input$sigma != input$sigma_) {
+    updateSliderInput(session, "sigma", value = input$sigma_)
   }})
   
-  # nsubj link
-  observeEvent(input$nsubj, {if (input$nsubj != input$nsubj_) {
-    updateSliderInput(session, "nsubj_", value = input$nsubj)
+  # n_subj link
+  observeEvent(input$n_subj, {if (input$n_subj != input$n_subj_) {
+    updateSliderInput(session, "n_subj_", value = input$n_subj)
   }})
   
-  observeEvent(input$nsubj_, {if (input$nsubj != input$nsubj_) {
-    updateSliderInput(session, "nsubj", value = input$nsubj_)
+  observeEvent(input$n_subj_, {if (input$n_subj != input$n_subj_) {
+    updateSliderInput(session, "n_subj", value = input$n_subj_)
   }})
   
-  # nitem link
-  observeEvent(input$nitem, {if (input$nitem != input$nitem_) {
-    updateSliderInput(session, "nitem_", value = input$nitem)
+  # n_ingroup link
+  observeEvent(input$n_ingroup, {if (input$n_ingroup != input$n_ingroup_) {
+    updateSliderInput(session, "n_ingroup_", value = input$n_ingroup)
   }})
   
-  observeEvent(input$nitem_, {if (input$nitem != input$nitem_) {
-    updateSliderInput(session, "nitem", value = input$nitem_)
+  observeEvent(input$n_ingroup_, {if (input$n_ingroup != input$n_ingroup_) {
+    updateSliderInput(session, "n_ingroup", value = input$n_ingroup_)
+  }})
+  
+  # n_outgroup link
+  observeEvent(input$n_outgroup, {if (input$n_outgroup != input$n_outgroup_) {
+    updateSliderInput(session, "n_outgroup_", value = input$n_outgroup)
+  }})
+  
+  observeEvent(input$n_outgroup_, {if (input$n_outgroup != input$n_outgroup_) {
+    updateSliderInput(session, "n_outgroup", value = input$n_outgroup_)
   }})
   
   # reset all inputs ---- 
   observeEvent(input$reset, {
-    updateSliderInput(session, "b0",     value = 800)
-    updateSliderInput(session, "b1",     value = 50)
-    # updateSliderInput(session, "x1",     value = "deviation")
-    updateSliderInput(session, "nsubj",  value = 100)
-    updateSliderInput(session, "nitem",  value = 25)
-    updateSliderInput(session, "I0i_sd", value = 80)
-    updateSliderInput(session, "S0s_sd", value = 100)
-    updateSliderInput(session, "S1s_sd", value = 40)
-    updateSliderInput(session, "scor",   value = 0.20)
-    updateSliderInput(session, "err_sd", value = 200)
+    updateSliderInput(session, "beta_0",     value = 800)
+    updateSliderInput(session, "beta_1",     value = 50)
+    updateSliderInput(session, "n_subj",  value = 100)
+    updateSliderInput(session, "n_ingroup",  value = 25)
+    updateSliderInput(session, "n_outgroup",  value = 25)
+    updateSliderInput(session, "omega_0", value = 80)
+    updateSliderInput(session, "tau_0", value = 100)
+    updateSliderInput(session, "tau_1", value = 40)
+    updateSliderInput(session, "rho",   value = 0.20)
+    updateSliderInput(session, "sigma", value = 200)
   })
   
   # simulate data ----
@@ -201,13 +211,14 @@ server <- function(input, output, session) {
     resim <- input$resim
     
     # simulate each trial
-    sim_trials(nsubj  = input$nsubj,
-               nitem  = input$nitem,
-               I0i_sd = input$I0i_sd,
-               S0s_sd = input$S0s_sd,
-               S1s_sd = input$S1s_sd,
-               scor   = input$scor,
-               err_sd = input$err_sd)
+    sim_trials(n_subj  = input$n_subj,
+               n_ingroup  = input$n_ingroup,
+               n_outgroup = input$n_outgroup,
+               omega_0 = input$omega_0,
+               tau_0 = input$tau_0,
+               tau_1 = input$tau_1,
+               rho   = input$rho,
+               sigma = input$sigma)
   })
   
   dat <- reactive({
@@ -216,7 +227,7 @@ server <- function(input, output, session) {
     output$power_table <- renderTable({ tibble() })
 
     # calculate DV using current effect sizes and coding
-    dat_code(trials(), b0 = input$b0, b1 = input$b1) #, x1 = input$x1)
+    dat_code(trials(), beta_0 = input$beta_0, beta_1 = input$beta_1)
   })
   
   # run LMER ----
@@ -243,21 +254,21 @@ server <- function(input, output, session) {
   
   ## dat_plot ----
   output$dat_plot <- renderPlot({
-    plot_dat(dat(), input$b0, input$dat_plot_view)
+    plot_dat(dat(), input$beta_0, input$dat_plot_view)
   }, height = function() {
     session$clientData$output_dat_plot_width*2/3
   })
   
   ## dat_subj_plot ----
   output$dat_subj_plot <- renderPlot({
-    plot_dat(dat(), input$b0, input$dat_plot_view, "subj")
+    plot_dat(dat(), input$beta_0, input$dat_plot_view, "subj")
   }, height = function() {
     session$clientData$output_dat_subj_plot_width*2/3
   })
   
   ## dat_item_plot ----
   output$dat_item_plot <- renderPlot({
-    plot_dat(dat(), input$b0, input$dat_plot_view, "item")
+    plot_dat(dat(), input$beta_0, input$dat_plot_view, "item")
   }, height = function() {
     session$clientData$output_dat_item_plot_width*2/3
   })
@@ -297,22 +308,22 @@ server <- function(input, output, session) {
       capture.output() %>%
       paste(collapse = "<br>") %>%
       #S0s
-      gsub("(subj_id\\s+\\(Intercept\\)\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)" , "\\1<span class='S0s'>\\2</span>", .) %>%
-      # S1s and scor
-      gsub("(\\s+\\cat\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)(\\s+)((?:\\d|\\.)+)" , "\\1<span class='S1s'>\\2</span>\\3<span class='scor'>\\4</span>", .) %>%
+      gsub("(subj_id\\s+\\(Intercept\\)\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)" , "\\1<span class='T0s'>\\2</span>", .) %>%
+      # S1s and rho
+      gsub("(\\s+\\X_i\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)(\\s+)((?:\\d|\\.)+)" , "\\1<span class='T1s'>\\2</span>\\3<span class='rho'>\\4</span>", .) %>%
       # I0i
-      gsub("(item_id\\s+\\(Intercept\\)\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)" , "\\1<span class='I0i'>\\2</span>", .) %>%
+      gsub("(item_id\\s+\\(Intercept\\)\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)" , "\\1<span class='O0i'>\\2</span>", .) %>%
       # err
       gsub("(Residual\\s+(?:\\d|\\.)+\\s+)((?:\\d|\\.)+)" , "\\1<span class='err'>\\2</span>", .) %>%
       
-      # nsubj, nitem
+      # n_subj, n_item
       gsub("subj_id,(\\s+)(\\d+); item_id,(\\s+)(\\d+)", 
-           "subj_id,\\1<span class='nsubj'>\\2</span>; item_id,\\3<span class='nitem'>\\4</span>", .) %>%
+           "subj_id,\\1<span class='n_subj'>\\2</span>; item_id,\\3<span class='n_item'>\\4</span>", .) %>%
       
-      #b0
-      gsub("(<br>\\(Intercept\\)\\s+)((?:\\d|\\.)+)" , "\\1<span class='b0'>\\2</span>", .) %>%
-      #b1
-      gsub("(<br>cat\\s+)((?:\\d|\\.)+)" , "\\1<span class='b1'>\\2</span>", .) %>%
+      #beta_0
+      gsub("(<br>\\(Intercept\\)\\s+)((?:\\d|\\.)+)" , "\\1<span class='beta_0'>\\2</span>", .) %>%
+      #beta_1
+      gsub("(<br>X_i\\s+)((?:\\d|\\.)+)" , "\\1<span class='beta_1'>\\2</span>", .) %>%
       gsub(" ", "&nbsp;", .) %>%
       gsub("<span&nbsp;class", "<span class", .)
       
@@ -336,20 +347,20 @@ server <- function(input, output, session) {
                  "subject intercept*slope cor",
                  "item intercept SD",
                  "residual (error) SD"),
-      "variable" = c("b0", 
-                 "b1", 
-                 "S0s_sd", 
-                 "S1s_sd", 
-                 "Scor", 
-                 "I0i_sd", 
-                 "err_sd"),
-      "parameter" = c(input$b0,
-                      input$b1,
-                      input$S0s_sd,
-                      input$S1s_sd,
-                      input$scor,
-                      input$I0i_sd,
-                      input$err_sd),
+      "parameter" = c("beta_0", 
+                 "beta_1", 
+                 "tau_0", 
+                 "tau_1", 
+                 "rho", 
+                 "omega_0", 
+                 "sigma"),
+      "value" = c(input$beta_0,
+                  input$beta_1,
+                  input$tau_0,
+                  input$tau_1,
+                  input$rho,
+                  input$omega_0,
+                  input$sigma),
       "estimate" = c(ffx, srfx, rc, irfx, res)
     )
   }, digits = 2, width = "100%")
@@ -366,22 +377,23 @@ server <- function(input, output, session) {
       progress$set(value = r/n_reps, detail = paste(r, "of ", n_reps))
       if (r == n_reps) progress$close()
       sim_power(r, 
-                nsubj = input$nsubj,
-                S0s_sd = input$S0s_sd,
-                nitem = input$nitem,
-                I0i_sd = input$I0i_sd,
-                S1s_sd = input$S1s_sd,
-                scor = input$scor,
-                err_sd = input$err_sd,
-                b0 = input$b0,
-                b1 = input$b1)
+                n_subj = input$n_subj,
+                n_ingroup = input$n_ingroup,
+                n_outgroup = input$n_outgroup,
+                omega_0 = input$omega_0,
+                tau_0 = input$tau_0,
+                tau_1 = input$tau_1,
+                rho = input$rho,
+                sigma = input$sigma,
+                beta_0 = input$beta_0,
+                beta_1 = input$beta_1)
     })
     
     output$power_table <- renderTable({
       message("power_table()")
       
       dp %>% 
-        filter(effect == "cat") %>%
+        filter(effect == "X_i") %>%
         mutate(
           analysis = recode(analysis, 
                             "lmer" = "LMER",

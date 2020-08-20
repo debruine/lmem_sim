@@ -19,8 +19,9 @@ p { font-size: 120%; }
 #broom_output table tbody tr td:nth-child(3) { color: white; }
 ul.sidebar-menu label { width: 100%; padding: 1px 5px; }
 
-label[for="nsubj"] { background-color: inherit; }
-label[for="nitem"] { background-color: inherit; }
+label[for="n_subj"] { background-color: inherit; }
+label[for="n_ingroup"] { background-color: inherit; }
+label[for="n_outgroup"] { background-color: inherit; }
 #broom_output table tbody tr:nth-child(1) td:nth-child(3) { background-color: #E50F45; }
 #broom_output table tbody tr:nth-child(2) td:nth-child(3) { background-color: #E76839; }
 #broom_output table tbody tr:nth-child(3) td:nth-child(3) { background-color: #B29700; }
@@ -29,79 +30,83 @@ label[for="nitem"] { background-color: inherit; }
 #broom_output table tbody tr:nth-child(6) td:nth-child(3) { background-color: #702981; }
 #broom_output table tbody tr:nth-child(7) td:nth-child(3) { background-color: #C20FA7; }
 
-label[for="b0"] + span.irs span.irs-bar,
-label[for="b0"] + span.irs span.irs-bar-edge,
-label[for="b0_"] + span.irs span.irs-bar,
-label[for="b0_"] + span.irs span.irs-bar-edge
+label[for="beta_0"] + span.irs span.irs-bar,
+label[for="beta_0"] + span.irs span.irs-bar-edge,
+label[for="beta_0_"] + span.irs span.irs-bar,
+label[for="beta_0_"] + span.irs span.irs-bar-edge
 { 
   background-color: #E50F45;
   border-color: #E50F45;
 }
 
-label[for="b1"] + span.irs span.irs-bar,
-label[for="b1"] + span.irs span.irs-bar-edge,
-label[for="b1_"] + span.irs span.irs-bar,
-label[for="b1_"] + span.irs span.irs-bar-edge 
+label[for="beta_1"] + span.irs span.irs-bar,
+label[for="beta_1"] + span.irs span.irs-bar-edge,
+label[for="beta_1_"] + span.irs span.irs-bar,
+label[for="beta_1_"] + span.irs span.irs-bar-edge 
 { 
   background-color: #E76839;
   border-color: #E76839;
 }
 
-label[for="S0s_sd"] + span.irs span.irs-bar,
-label[for="S0s_sd"] + span.irs span.irs-bar-edge,
-label[for="S0s_sd_"] + span.irs span.irs-bar,
-label[for="S0s_sd_"] + span.irs span.irs-bar-edge 
+label[for="tau_0"] + span.irs span.irs-bar,
+label[for="tau_0"] + span.irs span.irs-bar-edge,
+label[for="tau_0_"] + span.irs span.irs-bar,
+label[for="tau_0_"] + span.irs span.irs-bar-edge 
 { 
   background-color: #B29700;
   border-color: #B29700;
 }
 
-label[for="S1s_sd"] + span.irs span.irs-bar,
-label[for="S1s_sd"] + span.irs span.irs-bar-edge,
-label[for="S1s_sd_"] + span.irs span.irs-bar,
-label[for="S1s_sd_"] + span.irs span.irs-bar-edge 
+label[for="tau_1"] + span.irs span.irs-bar,
+label[for="tau_1"] + span.irs span.irs-bar-edge,
+label[for="tau_1_"] + span.irs span.irs-bar,
+label[for="tau_1_"] + span.irs span.irs-bar-edge 
 { 
   background-color: #086F50;
   border-color: #086F50;
 }
 
-label[for="scor"] + span.irs span.irs-bar,
-label[for="scor"] + span.irs span.irs-bar-edge,
-label[for="scor_"] + span.irs span.irs-bar,
-label[for="scor_"] + span.irs span.irs-bar-edge 
+label[for="rho"] + span.irs span.irs-bar,
+label[for="rho"] + span.irs span.irs-bar-edge,
+label[for="rho_"] + span.irs span.irs-bar,
+label[for="rho_"] + span.irs span.irs-bar-edge 
 { 
   background-color: #015FA1;
   border-color: #015FA1;
 }
 
-label[for="I0i_sd"] + span.irs span.irs-bar,
-label[for="I0i_sd"] + span.irs span.irs-bar-edge,
-label[for="I0i_sd_"] + span.irs span.irs-bar,
-label[for="I0i_sd_"] + span.irs span.irs-bar-edge { 
+label[for="omega_0"] + span.irs span.irs-bar,
+label[for="omega_0"] + span.irs span.irs-bar-edge,
+label[for="omega_0_"] + span.irs span.irs-bar,
+label[for="omega_0_"] + span.irs span.irs-bar-edge { 
   background-color: #702981;
   border-color: #702981;
 }
 
-label[for="err_sd"] + span.irs span.irs-bar,
-label[for="err_sd"] + span.irs span.irs-bar-edge,
-label[for="err_sd_"] + span.irs span.irs-bar,
-label[for="err_sd_"] + span.irs span.irs-bar-edge { 
+label[for="sigma"] + span.irs span.irs-bar,
+label[for="sigma"] + span.irs span.irs-bar-edge,
+label[for="sigma_"] + span.irs span.irs-bar,
+label[for="sigma_"] + span.irs span.irs-bar-edge { 
   background-color: #C20FA7;
   border-color: #C20FA7;
 }
 
-label[for="nsubj"] + span.irs span.irs-bar,
-label[for="nsubj"] + span.irs span.irs-bar-edge,
-label[for="nsubj_"] + span.irs span.irs-bar,
-label[for="nsubj_"] + span.irs span.irs-bar-edge { 
+label[for="n_subj"] + span.irs span.irs-bar,
+label[for="n_subj"] + span.irs span.irs-bar-edge,
+label[for="n_subj_"] + span.irs span.irs-bar,
+label[for="n_subj_"] + span.irs span.irs-bar-edge { 
   background-color: #F5AABF;
   border-color: #F5AABF;
 }
 
-label[for="nitem"] + span.irs span.irs-bar,
-label[for="nitem"] + span.irs span.irs-bar-edge,
-label[for="nitem_"] + span.irs span.irs-bar,
-label[for="nitem_"] + span.irs span.irs-bar-edge { 
+label[for="n_ingroup"] + span.irs span.irs-bar,
+label[for="n_ingroup"] + span.irs span.irs-bar-edge,
+label[for="n_ingroup_"] + span.irs span.irs-bar,
+label[for="n_ingroup_"] + span.irs span.irs-bar-edge,
+label[for="n_outgroup"] + span.irs span.irs-bar,
+label[for="n_outgroup"] + span.irs span.irs-bar-edge,
+label[for="n_outgroup_"] + span.irs span.irs-bar,
+label[for="n_outgroup_"] + span.irs span.irs-bar-edge{ 
   background-color: #64D2E0;
   border-color: #64D2E0;
 }
@@ -109,21 +114,21 @@ label[for="nitem_"] + span.irs span.irs-bar-edge {
 #resim, #reset { display: inline-block; width: 40%;}
 
 
-.RT, .b0, .b1, .S0s, .S1s, .scor, .I0i, .err, .X1, .nsubj, .nitem { 
+.RT, .beta_0, .beta_1, .T0s, .T1s, .rho, .O0i, .err, .X1, .n_subj, .n_item { 
   background-color: transparent; 
   color: black; 
   border-bottom: 2px solid transparent; 
   border-radius: 0;
 }
-.b0   { border-color: #E50F45; }
-.b1   { border-color: #E76839; }
-.S0s  { border-color: #B29700; }
-.S1s  { border-color: #086F50; }
-.scor { border-color: #3B5CA7; }
-.I0i  { border-color: #702981; }
+.beta_0   { border-color: #E50F45; }
+.beta_1   { border-color: #E76839; }
+.T0s  { border-color: #B29700; }
+.T1s  { border-color: #086F50; }
+.rho { border-color: #3B5CA7; }
+.O0i  { border-color: #702981; }
 .err  { border-color: #C20FA7; }
-.nsubj{ border-color: #F5AABF; }
-.nitem{ border-color: #64D2E0; }
+.n_subj { border-color: #F5AABF; }
+.n_item { border-color: #64D2E0; }
 
 #lmer_output {
   font-family: Courier, sans-serif;

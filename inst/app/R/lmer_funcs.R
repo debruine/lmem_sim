@@ -1,5 +1,5 @@
 sim_lmer <- function(dat_sim) {
-  mod_sim <- lmer(RT ~ cat + (1 | item_id) + (1 + cat | subj_id),
+  mod_sim <- lmer(RT ~ X_i + (1 | item_id) + (1 + X_i | subj_id),
                   dat_sim, REML = TRUE)
   
   return(mod_sim)
@@ -7,10 +7,10 @@ sim_lmer <- function(dat_sim) {
 
 sim_subj_anova <- function(dat) {
   dat_sub <- dat %>%
-    group_by(subj_id, category, cat) %>%
+    group_by(subj_id, category, X_i) %>%
     summarise(RT = mean(RT))
   
-  mod <- afex::aov_4(RT ~ (cat | subj_id),
+  mod <- afex::aov_4(RT ~ (X_i | subj_id),
                      factorize = FALSE,
                      data = dat_sub)
   
@@ -26,10 +26,10 @@ sim_subj_anova <- function(dat) {
 
 sim_item_anova <- function(dat) {
   dat_item <- dat %>%
-    group_by(item_id, category, cat) %>%
+    group_by(item_id, category, X_i) %>%
     summarise(RT = mean(RT))
   
-  mod <- afex::aov_4(RT ~ cat + (1 | item_id),
+  mod <- afex::aov_4(RT ~ X_i + (1 | item_id),
                      factorize = FALSE, 
                      data = dat_item)
   
@@ -52,7 +52,7 @@ sim_power <- function(rep = 0, ...) {
   mod.subj <- sim_subj_anova(dat)
   mod.item<- sim_item_anova(dat)
   
-  if (dots$b1 != 0) {
+  if (dots$beta_1 != 0) {
     # run models for null effect to calculate false positives
     dat$RT <- dat$RT_null
     
@@ -78,7 +78,7 @@ sim_power <- function(rep = 0, ...) {
     select(effect, es = d, p = 7) %>%
     mutate(analysis = "anova_item", type = "power")
   
-  if (dots$b1 == 0) {
+  if (dots$beta_1 == 0) {
     # avoid duplicate models if effect is null
     table.lmer.null <- mutate(table.lmer, type = "false positive")
     table.subj.null <- mutate(table.subj, type = "false positive")

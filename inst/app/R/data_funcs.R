@@ -3,53 +3,41 @@ sim_dat <- function(...) {
   dat_code(trials, ...)
 }
 
-sim_trials  <- function(nsubj, nitem, I0i_sd, S0s_sd, S1s_sd, scor, err_sd, ...) {
-  # simulate items
-  items <- sim_design(
-    between = list(category = c("ingroup", "outgroup")),
-    n = nitem,
-    sd = I0i_sd,
-    dv = "I0i",
-    id = "item_id",
-    plot = FALSE
+sim_trials <- function(
+  n_subj      = 100,   # number of subjects
+  n_ingroup  =  25,   # number of ingroup stimuli
+  n_outgroup =  25,   # number of outgroup stimuli
+  omega_0    =  80,   # by-item random intercept sd
+  tau_0      = 100,   # by-subject random intercept sd
+  tau_1      =  40,   # by-subject random slope sd
+  rho        = 0.2,   # correlation between intercept and slope
+  sigma      = 200, ...) { # residual (standard deviation)
+  
+  # simulate a sample of items
+  items <- data.frame(
+    item_id = seq_len(n_ingroup + n_outgroup),
+    category = rep(c("ingroup", "outgroup"), c(n_ingroup, n_outgroup)),
+    X_i = rep(c(-0.5, 0.5), c(n_ingroup, n_outgroup)),
+    O_0i = rnorm(n = n_ingroup + n_outgroup, mean = 0, sd = omega_0)
   )
   
-  # effect code category
-  items$cat <- recode(items$category, "ingroup" = -0.5, "outgroup" = 0.5)
-  
-  # simulate subjects
-  subjects <- sim_design(
-    within = list(effect = c(S0s = "By-subject random intercepts", 
-                             S1s = "By-subject random slopes")), 
-    n = nsubj,
-    sd = c(S0s_sd, S1s_sd), 
-    r = scor,
-    id = "subj_id",
-    plot = FALSE
+  # simulate a sample of subjects
+  subjects <- rnorm_multi(
+    n = n_subj, mu = 0, sd = c(tau_0, tau_1), r = rho, 
+    varnames = c("T_0s", "T_1s")
   )
+  subjects$subj_id <- 1:n_subj
   
-  # simulate trials
-  trials <- crossing(subj_id = subjects$subj_id,
-                      item_id = items$item_id) %>%
-    inner_join(subjects, "subj_id") %>%
-    inner_join(items, "item_id") %>%
-    mutate(err = rnorm(nrow(.), mean = 0, sd = err_sd))
-  
-  return(trials)
+  # cross subject and item IDs 
+  crossing(subjects, items)  %>%
+    mutate(e_si = rnorm(nrow(.), mean = 0, sd = sigma))
 }
 
-dat_code <- function(trials, b0, b1 = 0, x1 = "deviation", ...) {
-  # cat_code <- switch(x1,
-  #                "deviation" = c(ingroup = -0.5, outgroup = +0.5),
-  #                "sum" = c(ingroup = -1, outgroup = +1),
-  #                "treatment" = c(ingroup = 0, outgroup = 1))
-  
+
+dat_code <- function(trials, beta_0, beta_1 = 0, ...) {
   mutate(trials,
-         # cat = recode(category, 
-         #             "ingroup"  = cat_code[["ingroup"]], 
-         #             "outgroup" = cat_code[["outgroup"]]),
-         RT = b0 + I0i + S0s + (b1 + S1s) * cat + err,
-         RT_null = b0 + I0i + S0s + ( 0 + S1s) * cat + err
+         RT = beta_0 + O_0i + T_0s + (beta_1 + T_1s) * X_i + e_si,
+         RT_null = beta_0 + O_0i + T_0s + ( 0 + T_1s) * X_i + e_si
   )
 } 
 
