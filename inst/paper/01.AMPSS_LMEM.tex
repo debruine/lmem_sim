@@ -1,40 +1,49 @@
-\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 %
-\documentclass[english,doc,floatsintext]{apa6}
+\documentclass[
+  english,
+  doc,floatsintext]{apa6}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e} % provides \textsubscript
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provides euro and other symbols
-\else % if luatex or xelatex
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
   \usepackage{unicode-math}
-  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
-% use upquote if available, for straight quotes in verbatim environments
+% Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-% use microtype if available
-\IfFileExists{microtype.sty}{%
-\usepackage[]{microtype}
-\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
-\IfFileExists{parskip.sty}{%
-\usepackage{parskip}
-}{% else
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-}
-\usepackage{hyperref}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \hypersetup{
-            pdftitle={Understanding mixed effects models through data simulation},
-            pdfauthor={Lisa M. DeBruine1 \& Dale J. Barr1},
-            pdfkeywords={simulation, mixed effects models, power, lme4, R},
-            pdfborder={0 0 0},
-            breaklinks=true}
-\urlstyle{same}  % don't use monospace font for urls
+  pdftitle={Understanding mixed effects models through data simulation},
+  pdfauthor={Lisa M. DeBruine1 \& Dale J. Barr1},
+  pdflang={en-EN},
+  pdfkeywords={simulation, mixed effects models, power, lme4, R},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
 \usepackage{color}
 \usepackage{fancyvrb}
 \newcommand{\VerbBar}{|}
@@ -84,16 +93,23 @@
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
 \setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-\setlength{\emergencystretch}{3em}  % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{0}
-
-% set default figure placement to htbp
+% Set default figure placement to htbp
 \makeatletter
 \def\fps@figure{htbp}
 \makeatother
-
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% Make \paragraph and \subparagraph free-standing
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
 % Manuscript styling
 \usepackage{upgreek}
 \captionsetup{font=singlespacing,justification=justified}
@@ -145,12 +161,12 @@
 \floatplacement{figure}{H}
 \raggedbottom
 \usepackage{tcolorbox}
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
-  \usepackage[shorthands=off,main=english]{babel}
-\else
-  % load polyglossia as late as possible as it *could* call bidi if RTL lang (e.g. Hebrew or Arabic)
+\ifxetex
+  % Load polyglossia as late as possible: uses bidi with RTL langages (e.g. Hebrew, Arabic)
   \usepackage{polyglossia}
   \setmainlanguage[]{english}
+\else
+  \usepackage[shorthands=off,main=english]{babel}
 \fi
 
 \title{Understanding mixed effects models through data simulation}
@@ -183,22 +199,22 @@ Experimental designs that sample both subjects and stimuli from a larger populat
 \hypertarget{background}{%
 \section{Background}\label{background}}
 
-In this article, we walk through the simulation and analysis of multilevel data with crossed random effects of subjects and stimuli. The article's target audience is researchers who work with experimental designs that sample subjects and stimuli, such as is the case for a large amount of experimental research in face perception, psycholinguistics, or social cognition. Simulation is useful not only for helping understand how models work, but also for estimating power when planning a study or performing a sensitivity analysis. The tutorial assumes basic familiarity with R programming.
+In this article, we walk through the simulation and analysis of multilevel data with crossed random effects of subjects and stimuli. The article's target audience is researchers who work with experimental designs that sample subjects and stimuli, such as is the case for a large amount of experimental research in face perception, psycholinguistics, and social cognition. Simulation is useful not only for helping understand how models work, but also for estimating power when planning a study or performing a sensitivity analysis. The tutorial assumes basic familiarity with R programming.
 
 \hypertarget{generalizing-to-a-population-of-encounters}{%
 \section{Generalizing to a population of encounters}\label{generalizing-to-a-population-of-encounters}}
 
 Many research questions in psychology and neuroscience are questions about certain types of \emph{events}: What happens when people encounter particular types of stimuli? For example: Do people recognize abstract words faster than concrete words? What impressions do people form about a target person's personality based on their vocal qualities? Can people categorize emotional expressions more quickly on the faces of social ingroup members than on the faces of outgroup members? How do brains respond to threatening versus non-threatening stimuli? In all of these situations, researchers would like to be able to make general statements about phenomena that go beyond the particular participants and particular stimuli that they happen to have chosen for the specific study. Traditionally, people speak of such designs as having \emph{crossed random factors} of participants and stimuli, and think of the goal of inference as being simultaneous generalization to both populations. However, it may be more intuitive to construe the goal as generalizing to a single population of \emph{events} called \emph{encounters}: we want to say something general about what happens when our two types of sampling units meet---when a typical subject encounters (and responds to) a typical stimulus (Barr, 2018).
 
-Most analyses using conventional statistical techniques, such as analysis of variance and t-test, commit the fallacy of treating stimuli as fixed rather than random. For example, imagine a sample of participants are rating the trustworthiness of a sample of faces, with the goal being to determine whether the faces of people born on even numbered days look more trustworthy than those born on odd-numbered days. Obviously, they don't. At the extreme, imagine we only sample a single face from each category, but have 100 people rate each face. If our analysis treats the sample of faces as \emph{fixed}, or a perfect representation of the larger population of faces on Earth, we will be almost guaranteed a significant difference in one direction or the other. We will have sufficient power to detect even tiny differences in apparent trustworthiness, so this result will be highly replicable with large samples of raters. As you increase the number of faces in the sample, the problem gets better, but if you increase the number of raters, it gets worse again.
+Most analyses using conventional statistical techniques, such as analysis of variance and t-test, commit the fallacy of treating stimuli as fixed rather than random. For example, imagine a sample of participants are rating the trustworthiness of a sample of faces, with the goal being to determine whether the faces of people born on even numbered days look more trustworthy than those born on odd-numbered days. Obviously, they don't. At the extreme, imagine we only sample a single face from each category, but have 100 people rate each face. If our analysis treats the sample of faces as \emph{fixed}, or a perfect representation of the larger population of faces on Earth, we will be almost guaranteed a significant difference in one direction or the other. We will have sufficient power to detect even tiny differences in apparent trustworthiness, so this result will be highly replicable with large samples of raters. As you increase the number of faces in the sample, the problem gets better (the sample means are more likely to approximate the population means), but if you increase the number of raters (and thus power to detect small differences in the sample means), it gets worse again.
 
-The problem, and the solutions to the problem, have been known in psycholinguistics for over 50 years (Clark, 1973; Coleman, 1964), and most psycholinguistic journals require authors to demonstrate generality of findings over stimuli as well as over subjects. Even so, the quasi-\(F\) statistics for ANOVA (\(F'\) and min-\(F'\)) that Clark proposed as a solution were widely recognized as unreasonably conservative (Forster \& Dickinson, 1976), and until fairly recently, most psycholinguists performed separate by-subjects (\(F_1\)) and by-items analyses (\(F_2\)), declaring an effect \enquote{significant} only if it was significant for both analyses. This \(F_1 \times F_2\) approach has been widely used, despite the fact that Clark had already shown it to be invalid, since both \(F\) statistics have higher than nominal false positives in the presence of a null effect---\(F_1\) due to unmodeled stimulus variance, and \(F_2\) due to unmodeled subject variance.
+The problem, and the solutions to the problem, have been known in psycholinguistics for over 50 years (Clark, 1973; Coleman, 1964), and most psycholinguistic journals require authors to demonstrate generalizability of findings over stimuli as well as over subjects. Even so, the quasi-\(F\) statistics for ANOVA (\(F'\) and min-\(F'\)) that Clark proposed as a solution were widely recognized as unreasonably conservative (Forster \& Dickinson, 1976), and until fairly recently, most psycholinguists performed separate by-subjects (\(F_1\)) and by-items analyses (\(F_2\)), declaring an effect \enquote{significant} only if it was significant for both analyses. This \(F_1 \times F_2\) approach has been widely used, despite the fact that Clark had already shown it to be invalid, since both \(F\) statistics have higher than nominal false positives in the presence of a null effect---\(F_1\) due to unmodeled stimulus variance, and \(F_2\) due to unmodeled subject variance.
 
 Recently, psycholinguists have adopted linear mixed-effects modeling as the standard for the statistical analysis, given numerous advantages over ANOVA, including the ability to simultaneously model subject and stimulus variation, to gracefully deal with missing data or unbalanced designs, and to accommodate arbitrary types of continuous and categorical predictors or response variables (Baayen, Davidson, \& Bates, 2008; Locker, Hoffman, \& Bovaird, 2007). This development has been facilitated by the \texttt{lme4} package for R (Bates, Mächler, Bolker, \& Walker, 2015), which provides powerful functionality for model specification and estimation. With an appropriately specified model, mixed-effects models yield major improvements in power over quasi-\(F\) approaches and avoid the increased false positive rate associated with separate \(F_1\) and \(F_2\) (Barr et al., 2013).
 
 Despite mixed-effects modeling becoming the \emph{de facto} standard for analysis in psycholinguistics, the approach has yet to take hold in other areas where stimuli are routinely sampled, even in spite of repeated calls for improved analyses in social psychology (Judd, Westfall, \& Kenny, 2012) and neuroimaging (Bedny, Aguirre, \& Thompson-Schill, 2007; Westfall, Nichols, \& Yarkoni, 2016). One of the likely reasons for the limited uptake outside of psycholinguistics is because mixed-effects models expose the analyst to a level of statistical and technical complexity far beyond most researchers' training. While some of this complexity is specific to mixed-effects modeling, some of it is simply hidden away from users of traditional techniques by GUIs and function defaults. The novice mixed modeler is suddenly confronted with the need to make decisions about how to specify categorical predictors, which random effects to include or exclude, which of the statistics in the voluminous output to attend to, and whether and how to re-configure the optimizer function when a convergence error or singularity warning appears.
 
-We are optimistic that the increasing adoption of the mixed-effects approach will improve the generality and thus reproducibility of studies in psychology and related fields, but empathize with the frustration --- and sometimes, exasperation --- expressed by many novices when they attempt to grapple with these models in their research. A profitable way to build understanding and confidence is through data simulation. If you can create a datasets by sampling from a population where you know the ground truth about the population parameters you are interested in (e.g., means and standard deviations of each group), you can check how often and under what circumstances a statistical model will give you the correct answer. Knowing the ground truth also allows you to experiment with various modeling choices and observe their impact on a model's performance.
+We are optimistic that the increasing adoption of the mixed-effects approach will improve the generalizability and thus reproducibility of studies in psychology and related fields, but empathize with the frustration --- and sometimes, exasperation --- expressed by many novices when they attempt to grapple with these models in their research. A profitable way to build understanding and confidence is through data simulation. If you can create datasets by sampling from a population where you know the ground truth about the population parameters you are interested in (e.g., means and standard deviations of each group), you can check how often and under what circumstances a statistical model will give you the correct answer. Knowing the ground truth also allows you to experiment with various modeling choices and observe their impact on a model's performance.
 
 \begin{tcolorbox}[colback=black!5!white,colframe=white!5!black,title=Box 1. Glossary of terms]
 \begin{longtable}[]{@{}ll@{}}
@@ -253,7 +269,7 @@ Data simulation can play a powerful role in statistics education, enhancing unde
 
 Data simulation also has a wide variety of scientific uses, one of which is to estimate properties of statistical models in situations where algorithms for computing those properties are unknown or can only be applied with difficulty. For instance, Forster and Dickinson (1976) used Monte Carlo simulation to explore the behavior of the quasi-\(F\) statistics for ANOVA (\(F'\) and min-\(F'\)) under various conditions. In a Monte Carlo simulation, the long run properties of a process are estimated by generating and analyzing many simulated datasets---usually, thousands or tens of thousands of them.
 
-One of the most important applications of Monte Carlo simulation is in the estimation of power for complex models. The notion of power appears most frequently in the context of study planning, where a power analysis is used to determine the target \(N\) for a study. Power is the probability that a specified statistical test will generate a significant result for a sample of data of a specified size taken from a population with a specified effect. If you can characterize the population parameters, you can repeatedly simulate and analyze data from this population. The proportion of times that this procedure produces a significant result provides an estimate of the power of your test given your assumed sample size and effect size. You can adjust any parameters in this simulation in order to estimate other parameters. Instead of a estimating power, you can perform a \emph{sensitivity analysis} by varying the effect size while holding the sample size and desired power constant---for instance, to determine the minimum effect size that your analysis can detect with 80\% power and an \(N\) of 200 per group. You can also set the population effect size to zero and calculate the proportion of significant results to check if your analysis procedure inflates \emph{false positives}.
+One of the most important applications of Monte Carlo simulation is in the estimation of power for complex models. The notion of power appears most frequently in the context of study planning, where a power analysis is used to determine the target \(N\) for a study. Power is the probability that a specified statistical test will generate a significant result for a sample of data of a specified size taken from a population with a specified effect. If you can characterize the population parameters, you can repeatedly simulate and analyze data from this population. The proportion of times that this procedure produces a significant result provides an estimate of the power of your test given your assumed sample size and effect size. You can adjust any parameters in this simulation in order to estimate other parameters. Instead of estimating power, you can perform a \emph{sensitivity analysis} by varying the effect size while holding the sample size and desired power constant---for instance, to determine the minimum effect size that your analysis can detect with 80\% power and an \(N\) of 200 per group. You can also set the population effect size to zero and calculate the proportion of significant results to check if your analysis procedure inflates \emph{false positives}.
 
 For most traditional statistical procedures such as \(t\)-test or ANOVA, there are analytical procedures for estimating power. Westfall, Kenny, and Judd (2014) present analytic power curves for simple mixed effects designs such as the one described in this tutorial (with a corresponding app at \url{https://jakewestfall.shinyapps.io/crossedpower}). But even where analytical solutions exist, simulation can still be useful to estimate power or false positive rates, because real psychological data nearly always deviates from the statistical assumptions behind traditional procedures. For instance, most statistical procedures used in psychology assume a continuous and unbounded dependent variable, but it is often the case that researchers use discrete (e.g., Likert) response scales. When assumptions are not met, power simulations can provide a more reliable estimate than analytical procedures.
 
@@ -287,10 +303,42 @@ Because the code uses random number generation, if you want to reproduce the exa
 
 The first thing to do is to set up the parameters that govern the process we assume to give rise to the data, the \emph{data-generating process} or DGP. In this hypothetical study, each of 100 subjects will respond to all 50 stimulus items (25 ingroup and 25 outgroup), for a total of 5000 observations.
 
+\begin{table}[H]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:param-def}Parameters used in the data-generating model and associated R code.}
+
+\begin{tabular}{lll}
+\toprule
+model & \multicolumn{1}{c}{code} & \multicolumn{1}{c}{description}\\
+\midrule
+\$RT\_\{si\}\$ & `RT` & reaction time for subject \$s\$ to item \$i\$\\
+\$X\_i\$ & `X\_i` & condition for item \$i\$ (-.5 = ingroup, .5 = outgroup)\\
+\$\textbackslash{}beta\_0\$ & `b0` & intercept; grand mean RT\\
+\$\textbackslash{}beta\_1\$ & `b1` & slope; mean effect of ingroup/outgroup\\
+\$\textbackslash{}tau\_0\$ & `tau\_0` & standard deviation of by-subject random intercepts\\
+\$\textbackslash{}tau\_1\$ & `tau\_1` & standard deviation of by-subject random slopes\\
+\$\textbackslash{}rho\$ & `rho` & correlation between by-subject random intercepts and slopes\\
+\$\textbackslash{}omega\_0\$ & `omega\_0` & standard deviation of by-item random intercepts\\
+\$\textbackslash{}sigma\$ & `sigma` & standard deviation of residuals\\
+\$T\_\{0s\}\$ & `T\_0s` & random intercept for subject \$s\$\\
+\$T\_\{1s\}\$ & `T\_1s` & random slope for subject \$s\$\\
+\$O\_\{0i\}\$ & `O\_0i` & random intercept for item \$i\$\\
+\$e\_\{si\}\$ & `e\_si` & residual for the trial involving subject \$s\$ and item \$i\$\\
+\bottomrule
+\end{tabular}
+
+\end{threeparttable}
+\end{center}
+
+\end{table}
+
 \hypertarget{specify-the-data-structure}{%
 \subsubsection{Specify the data structure}\label{specify-the-data-structure}}
 
-We want the resulting data to be in long format, with the structure shown below, where each row is a single observation for each trial. The variable \texttt{subj\_id} runs from \texttt{S001} to \texttt{S100} and indexes the subject number; \texttt{item\_id} runs from \texttt{I01} to \texttt{I50} and indexes the item number; \texttt{category} is whether the face is ingroup or outgroup, with items 1-25 always ingroup and items 26-50 always outgroup; and \texttt{RT} is the participant's response time for that trial. Note that a trial is uniquely identified by the combination of the \texttt{subj\_id} and \texttt{item\_id} labels.
+We want the resulting data to be in long format, with the structure shown below, where each row is a single observation for each trial. The variable \texttt{subj\_id} runs from \texttt{1} to \texttt{100} and indexes the subject number; \texttt{item\_id} runs from \texttt{1} to \texttt{50} and indexes the item number; \texttt{category} is whether the face is ingroup or outgroup, with items 1-25 always ingroup and items 26-50 always outgroup; and \texttt{RT} is the participant's response time for that trial. Note that a trial is uniquely identified by the combination of the \texttt{subj\_id} and \texttt{item\_id} labels.
 
 \begin{table}[H]
 
@@ -303,15 +351,15 @@ We want the resulting data to be in long format, with the structure shown below,
 \toprule
 row & \multicolumn{1}{c}{subj\_id} & \multicolumn{1}{c}{item\_id} & \multicolumn{1}{c}{category} & \multicolumn{1}{c}{RT}\\
 \midrule
-1 & S001 & I01 & ingroup & 750.2\\
-2 & S001 & I02 & ingroup & 836.1\\
+1 & 1 & 1 & ingroup & 750.2\\
+2 & 1 & 2 & ingroup & 836.1\\
 ... & ... & ... & ... & ...\\
-49 & S001 & I49 & outgroup & 811.9\\
-50 & S001 & I50 & outgroup & 801.8\\
-51 & S002 & I01 & ingroup & 806.7\\
-52 & S002 & I02 & ingroup & 805.9\\
+49 & 1 & 49 & outgroup & 811.9\\
+50 & 1 & 50 & outgroup & 801.8\\
+51 & 2 & 1 & ingroup & 806.7\\
+52 & 2 & 2 & ingroup & 805.9\\
 ... & ... & ... & ... & ...\\
-5000 & S100 & I50 & outgroup & 859.9\\
+5000 & 100 & 50 & outgroup & 859.9\\
 \bottomrule
 \end{tabular}
 
@@ -331,7 +379,7 @@ Getting an appropriately structured dataset is the easy part. The difficult part
 RT_{si} = \beta_0 + \beta_1 X_{i} + e_{si}.
 \end{equation}
 
-\noindent According to the formula, response \(RT_{si}\) for subject \(s\) and item \(i\) is defined as sum of an intercept term \(\beta_0\), which in this example is the grand mean reaction time for the population of stimuli, plus \(\beta_1\), the mean RT difference between ingroup and outgroup stimuli, plus random noise \(e_{si}\). To make \(\beta_0\) equal the grand mean and \(\beta_1\) equal the mean outgroup minus the mean ingroup RT, we will code the \texttt{category} variable as -.5 for the ingroup category and +.5 for the outgroup category.
+\noindent According to the formula, response \(RT_{si}\) for subject \(s\) and item \(i\) is defined as sum of an intercept term \(\beta_0\), which in this example is the grand mean reaction time for the population of stimuli, plus \(\beta_1\), the mean RT difference between ingroup and outgroup stimuli, plus random noise \(e_{si}\). To make \(\beta_0\) equal the grand mean and \(\beta_1\) equal the mean outgroup minus the mean ingroup RT, we will code the item category variable \(X_{i}\) as -.5 for the ingroup category and +.5 for the outgroup category.
 
 In the model formula, we use Greek letters (\(\beta_0\), \(\beta_1\)) to represent population parameters that are being directly estimated by the model. In contrast, Roman letters represent observed values (\(RT_{si}\)) or quantities derived from observed values along with model estimates, such as residual error (\(e_{si}\)).
 
@@ -350,13 +398,13 @@ Although this model is incomplete, we can go ahead and choose parameters for \(\
 \hypertarget{specify-the-random-effects}{%
 \subsubsection{Specify the random effects}\label{specify-the-random-effects}}
 
-This model is completely unrealistic, however, because it doesn't allow for any individual differences among subjects or stimuli. Subjects are not identical in their response characteristics: some will be faster than average, and some slower. We can characterize the difference from the grand mean for each subject \(s\) in terms of a \emph{random effect} \(T_{0s}\), where the first subscript, 0, indicates that the deflection goes with the intercept term, \(\beta_0\). This \emph{random intercept} term captures the value that must be added or subtracted to the intercept for subject \(s\), which in this case corresponds to how much slower or faster this subject relative to the average reaction time of 800 ms. Just as it is unrealistic to expect the same intercept for every subject, it is also unrealistic to assume this for stimuli; in other words, that it is equally easy to categorize emotional expressions across all faces in the dataset. It will be easier to do so for some faces than others, and we can incorporate this assumption by including by-item random intercepts \(O_{0i}\), with the subscript 0 reminding us that it is a deflection from the \(\beta_0\) term, and the \(i\) indexing each of the 50 stimulus items (faces). Each face is assigned a unique \emph{random intercept} that characterizes how much slower or faster responses to this particular face tend to be relative to the average reaction time of 800 ms. Adding these terms to our model yields:
+This model is completely unrealistic, however, because it doesn't allow for any individual differences among subjects or stimuli. Subjects are not identical in their response characteristics: some will be faster than average, and some slower. We can characterize the difference from the grand mean for each subject \(s\) in terms of a \emph{random effect} \(T_{0s}\), where the first subscript, 0, indicates that the deflection goes with the intercept term, \(\beta_0\). This \emph{random intercept} term captures the value that must be added or subtracted to the intercept for subject \(s\), which in this case corresponds to how much slower or faster this subject is, relative to the average reaction time of 800 ms. Just as it is unrealistic to expect the same intercept for every subject, it is also unrealistic to assume this for stimuli; in other words, that it is equally easy to categorize emotional expressions across all faces in the dataset. It will be easier to do so for some faces than others, and we can incorporate this assumption by including by-item random intercepts \(O_{0i}\), with the subscript 0 reminding us that it is a deflection from the \(\beta_0\) term, and the \(i\) indexing each of the 50 stimulus items (faces). Each face is assigned a unique \emph{random intercept} that characterizes how much slower or faster responses to this particular face tend to be relative to the average reaction time of 800 ms. Adding these terms to our model yields:
 
 \begin{equation}
 RT_{si} = \beta_0 + T_{0s} + O_{0i} + \beta_1 X_i + e_{si} .
 \end{equation}
 
-Now, whatever values of \(T_{0s}\) and \(O_{0i}\) we end up with in our sampled dataset will depend on the luck of the draw, i.e., on which subjects and stimuli we happened to have sampled from their respective populations. Unlike fixed effects, we assume these values will differ across different realizations of the experiment where subjects and/or stimuli are different. In practice, we often re-use the same stimuli across many studies, but we still need to treat the stimuli as sampled if we want to be able to generalise our findings to the whole population of stimuli.\footnote{To ensure a finding is generalizable, when attempting a replication it is useful to sample new items, just as one would typically sample new participants.}.
+Now, whatever values of \(T_{0s}\) and \(O_{0i}\) we end up with in our sampled dataset will depend on the luck of the draw, i.e., on which subjects and stimuli we happened to have sampled from their respective populations. Unlike fixed effects, we assume these values will differ across different realizations of the experiment where subjects and/or stimuli are different. In practice, we often re-use the same stimuli across many studies, but we still need to treat the stimuli as sampled if we want to be able to generalise our findings to the whole population of stimuli.\footnote{To ensure a finding is generalizable, when attempting a replication it is useful to sample new items, just as one would typically sample new participants.}
 
 It is an important conceptual feature of mixed-effects models that they do not directly estimate the individual random effects (\(T_{0s}\) and \(O_{0i}\) values), but rather, they estimate the random effects parameters that characterize the distributions from which these effects are drawn.\footnote{You will sometimes see the assumption of random effects drawn from a normal distribution notated mathematically as, e.g.: $O_{0i} \sim N(0, {\omega_0}^2)$, which you can read as ``the random intercept $O_{0i}$ for each subject $i$ is drawn from a normal distribution with mean of zero and variance of ${\omega_0}^2$.''} It is this feature that enables generalization beyond the particular subjects and stimuli in the experiment. We assume that each \(T_{0s}\) comes from a normal distribution with a mean of zero and unknown standard deviation, \(\tau_0\) (\texttt{tau\_0} in the code). The mean of zero reflects the assumption that each random effect is a deflection from the grand mean. Similarly, for the by-item random intercepts, we assume the \(O_{0i}\) values to be sampled from a normal distribution also with a mean of zero and with an unknown standard deviation, \(\omega_0\) (\texttt{omega\_0}). In our simulation, we will set the by-subject random intercept SD to 100, and the by-item random intercept SD to 80.
 
@@ -400,14 +448,14 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
 \hypertarget{simulating-the-sampling-process}{%
 \subsection{Simulating the sampling process}\label{simulating-the-sampling-process}}
 
-Let's first define parameters related to the number of observations. In this example, we will simulate data from 100 subjects responding to 25 ingroup faces and 25 outgroup faces. There are no between-subject factors, so we can set \texttt{nsubj} to 100. We set \texttt{n\_ingroup} and \texttt{n\_outgroup} to the number of stimulus items in each condition.
+Let's first define parameters related to the number of observations. In this example, we will simulate data from 100 subjects responding to 25 ingroup faces and 25 outgroup faces. There are no between-subject factors, so we can set \texttt{n\_subj} to 100. We set \texttt{n\_ingroup} and \texttt{n\_outgroup} to the number of stimulus items in each condition.
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{# set number of subjects and items}
-\NormalTok{n_subj  <-}\StringTok{ }\DecValTok{100} \CommentTok{# number of subjects}
-\NormalTok{n_ingroup <-}\StringTok{ }\DecValTok{25} \CommentTok{# number of ingroup stimuli}
-\NormalTok{n_outgroup <-}\StringTok{ }\DecValTok{25} \CommentTok{# number of outgroup stimuli}
+\NormalTok{n_subj     <-}\StringTok{ }\DecValTok{100} \CommentTok{# number of subjects}
+\NormalTok{n_ingroup  <-}\StringTok{  }\DecValTok{25} \CommentTok{# number of ingroup stimuli}
+\NormalTok{n_outgroup <-}\StringTok{  }\DecValTok{25} \CommentTok{# number of outgroup stimuli}
 \end{Highlighting}
 \end{Shaded}
 
@@ -477,7 +525,7 @@ item\_id & \multicolumn{1}{c}{category} & \multicolumn{1}{c}{O\_0i} & \multicolu
 \hypertarget{simulate-the-sampling-of-subjects}{%
 \subsubsection{Simulate the sampling of subjects}\label{simulate-the-sampling-of-subjects}}
 
-Now we will simulate the sampling of individual subjects, resulting in a table listing each subject and their two correlated random effects. This will be slightly more complicated that what we just did, because we cannot simply sample the \(T_{0s}\) values from a univariate distribution using \texttt{rnorm()} independently from the \(T_{1s}\) values. Instead, we must sample \(\left<T_{0s}, T_{1s}\right>\) \emph{pairs}---one pair for each subject---from a bivariate normal distribution. To do this, we will use the \texttt{mvrnorm()} function, a multivariate version of \texttt{rnorm()} from the MASS package that comes pre-installed with R. We specify the three parameters describing this distribution---two variances and a correlation---by entering them into a 2x2 \emph{variance-covariance} matrix using the \texttt{matrix()} function, and then passing this matrix to \texttt{mvrnorm()} using the \texttt{Sigma} argument. This requires converting the standard deviations into variances (by squaring them) and calculating the covariance, which is simply the product of the correlation and two standard deviations, i.e., \(\rho \times \tau_0 \times \tau_1\).
+Now we will simulate the sampling of individual subjects, resulting in a table listing each subject and their two correlated random effects. This will be slightly more complicated that what we just did, because we cannot simply sample the \(T_{0s}\) values from a univariate distribution using \texttt{rnorm()} independently from the \(T_{1s}\) values. Instead, we must sample \(\left<T_{0s}, T_{1s}\right>\) \emph{pairs}---one pair for each subject---from a bivariate normal distribution. To do this, we will use the \texttt{mvrnorm()} function, a multivariate version of \texttt{rnorm()} from the MASS package that comes pre-installed with R. We specify the three parameters describing this distribution---two variances and a correlation---by entering them into a 2x2 \emph{variance-covariance} matrix using the \texttt{matrix()} function, and then passing this matrix to \texttt{mvrnorm()} using the \texttt{Sigma} argument. This requires converting the standard deviations into variances (by squaring them) and calculating the covariance, which is the product of the correlation and two standard deviations, i.e., \(\rho \times \tau_0 \times \tau_1\).
 
 We only need this one function from MASS, so we can call it directly using the \texttt{package::function()} syntax instead of loading the library (specifically, \texttt{MASS::mvrnorm()} instead of \texttt{library(MASS)}).\footnote{Note that MASS package has a function we don't need named \texttt{select()}, but loading it using \texttt{library()} would overwrite the function of the same name from the \texttt{dplyr} package that we often do need, so in general it is a good idea to avoid loading MASS.}
 
@@ -684,7 +732,7 @@ To make it easier to try out different parameters or to generate many datasets f
 \begin{Highlighting}[]
 \CommentTok{# set up the custom data simulation function}
 \NormalTok{my_sim_data <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(}
-  \DataTypeTok{nsubj      =} \DecValTok{100}\NormalTok{,   }\CommentTok{# number of subjects}
+  \DataTypeTok{n_subj      =} \DecValTok{100}\NormalTok{,   }\CommentTok{# number of subjects}
   \DataTypeTok{n_ingroup  =}  \DecValTok{25}\NormalTok{,   }\CommentTok{# number of ingroup stimuli}
   \DataTypeTok{n_outgroup =}  \DecValTok{25}\NormalTok{,   }\CommentTok{# number of outgroup stimuli}
   \DataTypeTok{b0         =} \DecValTok{800}\NormalTok{,   }\CommentTok{# grand mean}
@@ -703,26 +751,24 @@ To make it easier to try out different parameters or to generate many datasets f
 
   \CommentTok{# variance-covariance matrix}
 \NormalTok{  cov_mx  <-}\StringTok{ }\KeywordTok{matrix}\NormalTok{(}
-    \KeywordTok{c}\NormalTok{(    tau_}\DecValTok{0}\OperatorTok{^}\DecValTok{2}\NormalTok{,         rho }\OperatorTok{*}\StringTok{ }\NormalTok{tau_}\DecValTok{0} \OperatorTok{*}\StringTok{ }\NormalTok{tau_}\DecValTok{1}\NormalTok{,}
-\NormalTok{      rho }\OperatorTok{*}\StringTok{ }\NormalTok{tau_}\DecValTok{0} \OperatorTok{*}\StringTok{ }\NormalTok{tau_}\DecValTok{1}\NormalTok{,      tau_}\DecValTok{1}\OperatorTok{^}\DecValTok{2}\NormalTok{        ),}
+    \KeywordTok{c}\NormalTok{(tau_}\DecValTok{0}\OperatorTok{^}\DecValTok{2}\NormalTok{,             rho }\OperatorTok{*}\StringTok{ }\NormalTok{tau_}\DecValTok{0} \OperatorTok{*}\StringTok{ }\NormalTok{tau_}\DecValTok{1}\NormalTok{,}
+\NormalTok{      rho }\OperatorTok{*}\StringTok{ }\NormalTok{tau_}\DecValTok{0} \OperatorTok{*}\StringTok{ }\NormalTok{tau_}\DecValTok{1}\NormalTok{, tau_}\DecValTok{1}\OperatorTok{^}\DecValTok{2}\NormalTok{            ),}
     \DataTypeTok{nrow =} \DecValTok{2}\NormalTok{, }\DataTypeTok{byrow =} \OtherTok{TRUE}\NormalTok{)}
 
-\NormalTok{  subjects <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{subj_id =} \KeywordTok{seq_len}\NormalTok{(nsubj),}
-\NormalTok{                         MASS}\OperatorTok{::}\KeywordTok{mvrnorm}\NormalTok{(}\DataTypeTok{n =}\NormalTok{ nsubj,}
+\NormalTok{  subjects <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{subj_id =} \KeywordTok{seq_len}\NormalTok{(n_subj),}
+\NormalTok{                         MASS}\OperatorTok{::}\KeywordTok{mvrnorm}\NormalTok{(}\DataTypeTok{n =}\NormalTok{ n_subj,}
                                        \DataTypeTok{mu =} \KeywordTok{c}\NormalTok{(}\DataTypeTok{T_0s =} \DecValTok{0}\NormalTok{, }\DataTypeTok{T_1s =} \DecValTok{0}\NormalTok{),}
                                        \DataTypeTok{Sigma =}\NormalTok{ cov_mx))}
 
-
   \KeywordTok{crossing}\NormalTok{(subjects, items)  }\OperatorTok{%>%}
-\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{e_si =} \KeywordTok{rnorm}\NormalTok{(n_subj }\OperatorTok{*}\StringTok{ }\NormalTok{(n_ingroup }\OperatorTok{+}\StringTok{ }\NormalTok{n_outgroup),}
-                        \DataTypeTok{mean =} \DecValTok{0}\NormalTok{, }\DataTypeTok{sd =}\NormalTok{ sigma),}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{e_si =} \KeywordTok{rnorm}\NormalTok{(}\KeywordTok{nrow}\NormalTok{(.), }\DataTypeTok{mean =} \DecValTok{0}\NormalTok{, }\DataTypeTok{sd =}\NormalTok{ sigma),}
            \DataTypeTok{RT =}\NormalTok{ b0 }\OperatorTok{+}\StringTok{ }\NormalTok{T_0s }\OperatorTok{+}\StringTok{ }\NormalTok{O_0i }\OperatorTok{+}\StringTok{ }\NormalTok{(b1 }\OperatorTok{+}\StringTok{ }\NormalTok{T_1s) }\OperatorTok{*}\StringTok{ }\NormalTok{X_i }\OperatorTok{+}\StringTok{ }\NormalTok{e_si) }\OperatorTok{%>%}
 \StringTok{    }\KeywordTok{select}\NormalTok{(subj_id, item_id, category, X_i, RT)}
 \NormalTok{\}}
 \end{Highlighting}
 \end{Shaded}
 
-Now you can generate a dataset with the default parameters using \texttt{my\_sim\_data()} or, for example, a dataset with 500 subjects and no effect of category using \texttt{my\_sim\_data(nsubj\ =\ 50,\ b1\ =\ 0)}.
+Now you can generate a dataset with the default parameters using \texttt{my\_sim\_data()} or, for example, a dataset with 500 subjects and no effect of category using \texttt{my\_sim\_data(n\_subj\ =\ 500,\ b1\ =\ 0)}.
 
 \hypertarget{analyzing-the-simulated-data}{%
 \section{Analyzing the simulated data}\label{analyzing-the-simulated-data}}
@@ -745,11 +791,11 @@ RT ~ 1 + X_i + (1 | item_id) + (1 + X_i | subj_id)
 \item
   \texttt{X\_i} is the predictor for the ingroup/outgroup manipulation for item i;
 \item
-  \texttt{(1\ \textbar{}\ item\_id)} specifies a by-subject random intercept (\texttt{I0i}),
+  \texttt{(1\ \textbar{}\ item\_id)} specifies a by-subject random intercept (\texttt{O\_0i}),
 \item
-  \texttt{(1\ +\ X\_i\ \textbar{}\ subj\_id)} specifies a subject-specific random intercept (\texttt{S0s}) plus the subject-specific random slope of category (\texttt{S1s}),
+  \texttt{(1\ +\ X\_i\ \textbar{}\ subj\_id)} specifies a subject-specific random intercept (\texttt{T\_0s}) plus the subject-specific random slope of category (\texttt{T\_1s}),
 \item
-  the error term is automatically included in all models, so is left implicit
+  the error term (\texttt{e\_si}) is automatically included in all models, so is left implicit
 \end{itemize}
 
 The \enquote{fixed} part of the formula, \texttt{RT\ \textasciitilde{}\ 1\ +\ X\_i}, establishes the \(RT_{si} + \beta_0 + \beta_1 X_i + e_{si}\) part of our linear model. Every model has an intercept (\(\beta_0\)) term and residual term (\(e_{si}\)) by default, so you could alternatively leave the \texttt{1} out and just write \texttt{RT\ \textasciitilde{}\ X\_i}.
@@ -952,7 +998,7 @@ First we create a function \texttt{single\_run()} that generates data using \tex
 \end{Highlighting}
 \end{Shaded}
 
-Running a power analysis with Monte Carlo simulation requires generating and analyzing many simulated datasets (typically, thousands) to estimate the long run properties of the test. You can use the \texttt{purrr::map\_df} function to run the simulation repeatedly and save the results to a data table. This will take a while, so test it first using just a few runs (\texttt{n\_runs}) to debug and check the output. Once you are satisified it is working properly, we suggest that you use at least 1,000 runs to obtain stable estimates. It will save you a lot of time if you save the full results to a CSV file so that you don't have to re-run it each time you execute your script; you can just comment out this code and load from the saved data for the rest of your script in the future.
+Running a power analysis with Monte Carlo simulation requires generating and analyzing many simulated datasets (typically, thousands) to estimate the long run properties of the test. You can use the \texttt{purrr::map\_df} function to run the simulation repeatedly and save the results to a data table. This will take a while, so test it first using just a few runs (\texttt{n\_runs}) to debug and check the output. Once you are satisfied it is working properly, we suggest that you use at least 1,000 runs to obtain stable estimates. It will save you a lot of time if you save the full results to a CSV file so that you don't have to re-run it each time you execute your script; you can just comment out this code and load from the saved data for the rest of your script in the future.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -963,7 +1009,7 @@ Running a power analysis with Monte Carlo simulation requires generating and ana
 \end{Highlighting}
 \end{Shaded}
 
-Note that some runs may throw warnings about non-convergence or messages about \texttt{boundary\ (singular)\ fit}. The message about the singular fit can usually be ignored---see \texttt{?isSingular} for information about what this means. Non-convergence will be relatively rare with simulated data provided the sample is not unreasonably small relative to the number of estimated parameters; as long as there are not too many of these non-convergence warnings relative to the number of runs, you can probably ignore them because the won't affect the overall estimates. Alternatively, you can re-write your function to trap the warning; for more information on trapping errors and warnings, see the chapter on \enquote{Exceptions and Debugging} in the Advanced R textbook (Wickham, 2019).
+Note that some runs may throw warnings about non-convergence or messages about \texttt{boundary\ (singular)\ fit}. The message about the singular fit can usually be ignored---see \texttt{?isSingular} for information about what this means. Non-convergence will be relatively rare with simulated data provided the sample is not unreasonably small relative to the number of estimated parameters; as long as there are not too many of these non-convergence warnings relative to the number of runs, you can probably ignore them because the won't affect the overall estimates. Alternatively, you can re-write your function to trap the warning (see appendix 1C); for more information on trapping errors and warnings, see the chapter on \enquote{Exceptions and Debugging} in the Advanced R textbook (Wickham, 2019).
 
 Once our simulations are complete let's read the data back in and have a look at the estimates for our fixed effects.
 
@@ -999,7 +1045,7 @@ Once our simulations are complete let's read the data back in and have a look at
 ## # ... with 190 more rows
 \end{verbatim}
 
-\noindent Each row in the table is an estimate of a fixed-effects parameter and associated \(p\)-value from a single run of the Monte Carlo simulation (\texttt{(Intercept)} = \(\beta_0\) and \texttt{X\_i} = \(\beta_1\)). We need to calculate the proportion of runs that are significant. To start, we compute \texttt{p.value\ \textless{}\ alpha}, where \texttt{alpha} is your false positive rate (e.g., .05). This will yield a logical vector of \texttt{TRUE} whereever the effect was significant and \texttt{FALSE} where it was non-significant. Because \texttt{TRUE} is represented internally as a \texttt{1} and \texttt{FALSE} as a \texttt{0}, you can take the mean of this logical vector and it will yield the proportion of significant runs.
+\noindent Each row in the table is an estimate of a fixed-effects parameter and associated \(p\)-value from a single run of the Monte Carlo simulation (\texttt{(Intercept)} = \(\beta_0\) and \texttt{X\_i} = \(\beta_1\)). We need to calculate the proportion of runs that are significant. To start, we compute \texttt{p.value\ \textless{}\ alpha}, where \texttt{alpha} is your false positive rate (e.g., .05). This will yield a logical vector of \texttt{TRUE} wherever the effect was significant and \texttt{FALSE} where it was non-significant. Because \texttt{TRUE} is represented internally as a \texttt{1} and \texttt{FALSE} as a \texttt{0}, you can take the mean of this logical vector and it will yield the proportion of significant runs.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1009,21 +1055,14 @@ Once our simulations are complete let's read the data back in and have a look at
 \NormalTok{sims }\OperatorTok{%>%}\StringTok{ }
 \StringTok{  }\KeywordTok{filter}\NormalTok{(effect }\OperatorTok{==}\StringTok{ "fixed"}\NormalTok{) }\OperatorTok{%>%}
 \StringTok{  }\KeywordTok{group_by}\NormalTok{(term) }\OperatorTok{%>%}
-\StringTok{  }\KeywordTok{summarise}\NormalTok{(}
+\StringTok{  }\KeywordTok{summarize}\NormalTok{(}
     \DataTypeTok{mean_estimate =} \KeywordTok{mean}\NormalTok{(estimate),}
     \DataTypeTok{mean_se =} \KeywordTok{mean}\NormalTok{(std.error),}
-    \DataTypeTok{power =} \KeywordTok{mean}\NormalTok{(p.value }\OperatorTok{<}\StringTok{ }\NormalTok{alpha)}
+    \DataTypeTok{power =} \KeywordTok{mean}\NormalTok{(p.value }\OperatorTok{<}\StringTok{ }\NormalTok{alpha),}
+    \DataTypeTok{.groups =} \StringTok{"drop"}
 \NormalTok{  )}
 \end{Highlighting}
 \end{Shaded}
-
-\begin{verbatim}
-## # A tibble: 2 x 4
-##   term        mean_estimate mean_se power
-##   <ord>               <dbl>   <dbl> <dbl>
-## 1 (Intercept)         797.     15.4  1   
-## 2 X_i                  48.4    23.4  0.54
-\end{verbatim}
 
 \begin{table}[H]
 
