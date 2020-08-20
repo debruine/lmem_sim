@@ -194,7 +194,7 @@ Most analyses using conventional statistical techniques, such as analysis of var
 
 The problem, and the solutions to the problem, have been known in psycholinguistics for over 50 years (Clark, 1973; Coleman, 1964), and most psycholinguistic journals require authors to demonstrate generalizability of findings over stimuli as well as over subjects. Even so, the quasi-\(F\) statistics for ANOVA (\(F'\) and min-\(F'\)) that Clark proposed as a solution were widely recognized as unreasonably conservative (Forster \& Dickinson, 1976), and until fairly recently, most psycholinguists performed separate by-subjects (\(F_1\)) and by-items analyses (\(F_2\)), declaring an effect \enquote{significant} only if it was significant for both analyses. This \(F_1 \times F_2\) approach has been widely used, despite the fact that Clark had already shown it to be invalid, since both \(F\) statistics have higher than nominal false positives in the presence of a null effect---\(F_1\) due to unmodeled stimulus variance, and \(F_2\) due to unmodeled subject variance.
 
-Recently, psycholinguists have adopted linear mixed-effects modeling as the standard for the statistical analysis, given numerous advantages over ANOVA, including the ability to simultaneously model subject and stimulus variation, to gracefully deal with missing data or unbalanced designs, and to accommodate arbitrary types of continuous and categorical predictors or response variables (Baayen, Davidson, \& Bates, 2008; Locker, Hoffman, \& Bovaird, 2007). This development has been facilitated by the \texttt{lme4} package for R (Bates, Mächler, Bolker, \& Walker, 2015), which provides powerful functionality for model specification and estimation. With an appropriately specified model, mixed-effects models yield major improvements in power over quasi-\(F\) approaches and avoid the increased false positive rate associated with separate \(F_1\) and \(F_2\) (Barr et al., 2013).
+Recently, psycholinguists have adopted linear mixed-effects modeling as the standard for statistical analysis, given numerous advantages over ANOVA, including the ability to simultaneously model subject and stimulus variation, to gracefully deal with missing data or unbalanced designs, and to accommodate arbitrary types of continuous and categorical predictors or response variables (Baayen, Davidson, \& Bates, 2008; Locker, Hoffman, \& Bovaird, 2007). This development has been facilitated by the \texttt{lme4} package for R (Bates, Mächler, Bolker, \& Walker, 2015), which provides powerful functionality for model specification and estimation. With an appropriately specified model, mixed-effects models yield major improvements in power over quasi-\(F\) approaches and avoid the increased false positive rate associated with separate \(F_1\) and \(F_2\) (Barr et al., 2013).
 
 Despite mixed-effects modeling becoming the \emph{de facto} standard for analysis in psycholinguistics, the approach has yet to take hold in other areas where stimuli are routinely sampled, even in spite of repeated calls for improved analyses in social psychology (Judd, Westfall, \& Kenny, 2012) and neuroimaging (Bedny, Aguirre, \& Thompson-Schill, 2007; Westfall, Nichols, \& Yarkoni, 2016). One of the likely reasons for the limited uptake outside of psycholinguistics is because mixed-effects models expose the analyst to a level of statistical and technical complexity far beyond most researchers' training. While some of this complexity is specific to mixed-effects modeling, some of it is simply hidden away from users of traditional techniques by GUIs and function defaults. The novice mixed modeler is suddenly confronted with the need to make decisions about how to specify categorical predictors, which random effects to include or exclude, which of the statistics in the voluminous output to attend to, and whether and how to re-configure the optimizer function when a convergence error or singularity warning appears.
 
@@ -322,10 +322,10 @@ row & \multicolumn{1}{c}{subj\_id} & \multicolumn{1}{c}{item\_id} & \multicolumn
 
 \end{table}
 
-Note that for independent variables in designs where subjects and stimuli are crossed, you can't think of factors as being solely \enquote{within} or \enquote{between} because we have two sampling units; you must ask not only whether independent variables are within- or between- subjects, but also whether they are within- or between- stimulus items. Recall that a within-subjects factor is one where each and every subject receives all of the levels, and a between-subjects factors is one where each subject receives only one of the levels. Likewise, a within-items factor is one for which each stimulus receives all of the levels. For our current example, the category factor is within subjects but between items, given that each stimulus item is either ingroup or outgroup.
+Note that for independent variables in designs where subjects and stimuli are crossed, you can't think of factors as being solely \enquote{within} or \enquote{between} because we have two sampling units; you must ask not only whether independent variables are within- or between- subjects, but also whether they are within- or between- stimulus items. Recall that a within-subjects factor is one where each and every subject receives all of the levels, and a between-subjects factors is one where each subject receives only one of the levels. Likewise, a within-items factor is one for which each stimulus receives all of the levels. For our current example, the ingroup/outgroup factor (\texttt{category}) is within subjects but between items, given that each stimulus item is either ingroup or outgroup.
 
-\hypertarget{specify-the-fixed-effects}{%
-\subsubsection{Specify the fixed effects}\label{specify-the-fixed-effects}}
+\hypertarget{specify-the-fixed-effect-parameters}{%
+\subsubsection{Specify the fixed effect parameters}\label{specify-the-fixed-effect-parameters}}
 
 \begin{table}[H]
 
@@ -369,7 +369,7 @@ RT_{si} = \beta_0 + \beta_1 X_{i} + e_{si}.
 
 \noindent According to the formula, response \(RT_{si}\) for subject \(s\) and item \(i\) is defined as sum of an intercept term \(\beta_0\), which in this example is the grand mean reaction time for the population of stimuli, plus \(\beta_1\), the mean RT difference between ingroup and outgroup stimuli, plus random noise \(e_{si}\). To make \(\beta_0\) equal the grand mean and \(\beta_1\) equal the mean outgroup minus the mean ingroup RT, we will code the item category variable \(X_{i}\) as -.5 for the ingroup category and +.5 for the outgroup category.
 
-In the model formula, we use Greek letters (\(\beta_0\), \(\beta_1\)) to represent population parameters that are being directly estimated by the model. In contrast, Roman letters represent observed values (\(RT_{si}\)) or quantities derived from observed values along with model estimates, such as residual error (\(e_{si}\)).
+In the model formula, we use Greek letters (\(\beta_0\), \(\beta_1\)) to represent population parameters that are being directly estimated by the model. In contrast, Roman letters represent the remaining variables: observed variables whose values are determined by sampling (e.g., \(RT_{si}\), \(T_{0s}\), \(e_{si}\)) or fixed by the experiment design (\(X_i\)).
 
 Although this model is incomplete, we can go ahead and choose parameters for \(\beta_0\) and \(\beta_1\). For this example, we set a grand mean of 800 ms and a mean difference of 50 ms. You will need to use disciplinary expertise and/or pilot data to choose these parameters; by the end of this tutorial you will understand how to extract those parameters from an analysis.
 
@@ -383,10 +383,10 @@ Although this model is incomplete, we can go ahead and choose parameters for \(\
 
 \noindent The parameters \(\beta_0\) and \(\beta_1\) are \emph{fixed effects}: they characterize properties of the population of encounters between subjects and stimuli. Thus, we set the mean RT for a \enquote{typical} subject encountering a \enquote{typical} stimulus to 800 ms, and assume that responses are typically 50 ms slower for outgroup than ingroup faces.
 
-\hypertarget{specify-the-random-effects}{%
-\subsubsection{Specify the random effects}\label{specify-the-random-effects}}
+\hypertarget{specify-the-random-effect-parameters}{%
+\subsubsection{Specify the random effect parameters}\label{specify-the-random-effect-parameters}}
 
-This model is completely unrealistic, however, because it doesn't allow for any individual differences among subjects or stimuli. Subjects are not identical in their response characteristics: some will be faster than average, and some slower. We can characterize the difference from the grand mean for each subject \(s\) in terms of a \emph{random effect} \(T_{0s}\), where the first subscript, 0, indicates that the deflection goes with the intercept term, \(\beta_0\). This \emph{random intercept} term captures the value that must be added or subtracted to the intercept for subject \(s\), which in this case corresponds to how much slower or faster this subject is, relative to the average reaction time of 800 ms. Just as it is unrealistic to expect the same intercept for every subject, it is also unrealistic to assume this for stimuli; in other words, that it is equally easy to categorize emotional expressions across all faces in the dataset. It will be easier to do so for some faces than others, and we can incorporate this assumption by including by-item random intercepts \(O_{0i}\), with the subscript 0 reminding us that it is a deflection from the \(\beta_0\) term, and the \(i\) indexing each of the 50 stimulus items (faces). Each face is assigned a unique \emph{random intercept} that characterizes how much slower or faster responses to this particular face tend to be relative to the average reaction time of 800 ms. Adding these terms to our model yields:
+This model is completely unrealistic, however, because it doesn't allow for any individual differences among subjects or stimuli. Subjects are not identical in their response characteristics: some will be faster than average, and some slower. We can characterize the difference from the grand mean for each subject \(s\) in terms of a \emph{random effect} \(T_{0s}\), where the first subscript, 0, indicates that the deflection goes with the intercept term, \(\beta_0\). This \emph{random intercept} term captures the value that must be added or subtracted to the intercept for subject \(s\), which in this case corresponds to how much slower or faster this subject is relative to the average reaction time of 800 ms. Just as it is unrealistic to expect the same intercept for every subject, it is also unrealistic to assume this for stimuli; it will be easier to categorize emotional expressions for some faces than others, and we can incorporate this assumption by including by-item random intercepts \(O_{0i}\), with the subscript 0 reminding us that it is a deflection from the \(\beta_0\) term, and the \(i\) indexing each of the 50 stimulus items (faces). Each face is assigned a unique \emph{random intercept} that characterizes how much slower or faster responses to this particular face tend to be relative to the average reaction time of 800 ms. Adding these terms to our model yields:
 
 \begin{equation}
 RT_{si} = \beta_0 + T_{0s} + O_{0i} + \beta_1 X_i + e_{si} .
@@ -431,7 +431,7 @@ To summarize, we established a reasonable statistical model underlying the data 
 RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
 \end{equation}
 
-\noindent The response time for subject \(s\) on item \(i\), \(RT_{si}\), is decomposed into a population grand mean \(\beta_0\), a by-subject random intercept \(T_{0s}\), a by-item random intercept \(O_{0i}\), a fixed slope \(\beta_1\), a by-subject random slope \(T_{1s}\), and a trial-level residual \(e_{si}\). Our data-generating process is fully determined by seven parameters. There are two fixed effects parameters, the fixed intercept \(\beta_0\) (\texttt{beta\_0}) and fixed slope \(\beta_1\) (\texttt{beta\_1}). There are four random effects parameters governing by-subject and by-item variance components: the standard deviation of the by-subject random intercepts, \(\tau_0\) (\texttt{tau\_0}); the standard deviation of by-subject random slopes, \(\tau_1\) (\texttt{tau\_1}), the correlation between the by-subject random intercepts and random slopes, \(\rho\) (\texttt{rho}); and the standard deviation of the by-item random intercepts, \(\omega_0\) (\texttt{omega\_0}). Finally, the seventh parameter \(\sigma\) (\texttt{sigma}) reflects any remaining trial-by-trial variation not already captured by the model. In the next section we will apply this data-generating process to simulate the sampling of subjects, items, and trials (encounters).
+\noindent The response time for subject \(s\) on item \(i\), \(RT_{si}\), is decomposed into a population grand mean \(\beta_0\), a by-subject random intercept \(T_{0s}\), a by-item random intercept \(O_{0i}\), a fixed slope \(\beta_1\), a by-subject random slope \(T_{1s}\), and a trial-level residual \(e_{si}\). Our data-generating process is fully determined by seven population parameters, all denoted by Greek letters: \(\beta_0\), \(\beta_1\), \(\tau_0\), \(\tau_1\), \(\rho\), \(\omega_0\), and \(\sigma\) (see Table~\ref{tab:paramdef}). In the next section we will apply this data-generating process to simulate the sampling of subjects, items, and trials (encounters).
 
 \hypertarget{simulating-the-sampling-process}{%
 \subsection{Simulating the sampling process}\label{simulating-the-sampling-process}}
@@ -450,7 +450,7 @@ Let's first define parameters related to the number of observations. In this exa
 \hypertarget{simulate-the-sampling-of-stimulus-items}{%
 \subsubsection{Simulate the sampling of stimulus items}\label{simulate-the-sampling-of-stimulus-items}}
 
-We need to create a table listing each item, which category it is in, and simulated values for its random effects.
+We need to create a table listing each item \(i\), which category it is in, and its random effect \(O_{0i}\).
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -464,7 +464,7 @@ We need to create a table listing each item, which category it is in, and simula
 \end{Highlighting}
 \end{Shaded}
 
-For the first variable in the dataset, \texttt{item\_id}, we have used \texttt{seq\_len()} to assign a unique integer to each of the 50 stimulus faces; these IDs function like names. The \texttt{category} variable designates whether the face is ingroup or outgroup, with the first 25 items being ingroup and the last 25 being outgroup. Finally, we sample the values of \(O_{0i}\) from a normal distribution using the \texttt{rnorm()} function, with a mean of 0 and SD of \(\omega_0\).
+\noindent For the first variable in the dataset, \texttt{item\_id}, we have used \texttt{seq\_len()} to assign a unique integer to each of the 50 stimulus faces; these IDs function like names. The \texttt{category} variable designates whether the face is ingroup or outgroup, with the first 25 items being ingroup and the last 25 being outgroup. Finally, we sample the values of \(O_{0i}\) from a normal distribution using the \texttt{rnorm()} function, with a mean of 0 and SD of \(\omega_0\).
 
 Let us introduce a numeric predictor to represent what category each stimulus item \(i\) appears in (i.e., for the \(X_i\) in our model). Since we predict that responses to ingroup faces will be faster than outgroup faces, we set ingroup to -0.5 and outgroup to +0.5. We will later multiply this \emph{effect coded} factor by the fixed effect of category (\texttt{beta\_1} = 50) to simulate data where the ingroup faces are on average -25 ms different from the grand mean, while the outgroup faces are on average 25 ms different from the grand mean. After adding this variable, the resulting table \texttt{items} should look like Table~\ref{tab:items-table}, although the specific values you obtain for \(O_{0i}\) may differ, depending on whether you set the random seed.
 
@@ -475,7 +475,7 @@ Let us introduce a numeric predictor to represent what category each stimulus it
 \end{Highlighting}
 \end{Shaded}
 
-In R, most regression procedures can handle two-level factors like \texttt{category} as predictor variables. By default, the procedure will create a new numeric predictor that codes one level of the factor as zero and the other as one. Why not just use the defaults? The short explanation is that the default of 0, 1 coding is not well-suited to the kinds of factorial experimental designs often found in psychology and related fields. For the current example, using the default coding for the \(X\) predictor would change the interpretation of \(\beta_0\): instead of the grand mean, it would reflect the mean for the group coded as zero. One could change the default, but we feel it is better to be explicit in the code about what values are being used (see \url{https://talklab.psy.gla.ac.uk/tvw/catpred} for further discussion; see also the R mixed modeling package \texttt{afex} (Singmann, Bolker, Westfall, \& Aust, 2019), which provides better defaults for specifying categorical predictors in ANOVA-style designs.)
+In R, most regression procedures can handle two-level factors like \texttt{category} as predictor variables. By default, the procedure will create a new numeric predictor that codes one level of the factor as zero and the other as one. Why not just use the defaults? The short explanation is that the default of 0, 1 coding is not well-suited to the kinds of factorial experimental designs often found in psychology and related fields. For the current example, using the default coding for the \(X\) predictor would change the interpretation of \(\beta_0\): instead of the grand mean, it would reflect the mean for the group coded as zero. One could change the default, but we feel it is better to be explicit in the code about what values are being used. See \url{https://talklab.psy.gla.ac.uk/tvw/catpred} for further discussion; see also the R mixed modeling package \texttt{afex} (Singmann, Bolker, Westfall, \& Aust, 2019), which provides better defaults for specifying categorical predictors in ANOVA-style designs.
 
 \begin{table}[H]
 
@@ -515,7 +515,7 @@ In R, most regression procedures can handle two-level factors like \texttt{categ
 
 Now we will simulate the sampling of individual subjects, resulting in a table listing each subject and their two correlated random effects. This will be slightly more complicated that what we just did, because we cannot simply sample the \(T_{0s}\) values from a univariate distribution using \texttt{rnorm()} independently from the \(T_{1s}\) values. Instead, we must sample \(\left<T_{0s}, T_{1s}\right>\) \emph{pairs}---one pair for each subject---from a bivariate normal distribution. To do this, we will use the \texttt{mvrnorm()} function, a multivariate version of \texttt{rnorm()} from the MASS package that comes pre-installed with R. We specify the three parameters describing this distribution---two variances and a correlation---by entering them into a 2x2 \emph{variance-covariance} matrix using the \texttt{matrix()} function, and then passing this matrix to \texttt{mvrnorm()} using the \texttt{Sigma} argument. This requires converting the standard deviations into variances (by squaring them) and calculating the covariance, which is the product of the correlation and two standard deviations, i.e., \(\rho \times \tau_0 \times \tau_1\).
 
-We only need this one function from MASS, so we can call it directly using the \texttt{package::function()} syntax instead of loading the library (specifically, \texttt{MASS::mvrnorm()} instead of \texttt{library(MASS)}).\footnote{Note that MASS package has a function we don't need named \texttt{select()}, but loading it using \texttt{library()} would overwrite the function of the same name from the \texttt{dplyr} package that we often do need, so in general it is a good idea to avoid loading MASS.} The resulting table \texttt{subjects} should have the structure as shown in Table~\ref{tab:subj-table}.
+We only need this one function from MASS, so we can call it directly using the \texttt{package::function()} syntax instead of loading the library (specifically, \texttt{MASS::mvrnorm()} instead of \texttt{library(MASS)}).\footnote{Note that MASS package has a function we don't need named \texttt{select()}, but loading it using \texttt{library()} would overwrite the function of the same name from the \texttt{dplyr} package that we often do need, so in general it is a good idea to avoid loading MASS.} The resulting table \texttt{subjects} should have the structure shown in Table~\ref{tab:subj-table}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -597,7 +597,7 @@ An alternative way to sample from a bivariate distribution would be to use the f
 \hypertarget{simulate-trials-encounters}{%
 \subsubsection{Simulate trials (encounters)}\label{simulate-trials-encounters}}
 
-Since all subjects respond to all items, we can set up a table of trials by making a table with every possible combination of the rows in the subject and item tables using the tidyverse function \texttt{crossing()}. Each trial has random error associated; we simulate this from a normal distribution with a mean of 0 and SD of \texttt{sigma}. The resulting table should correspond to Table~\ref{tab:trials-table}.
+Since all subjects respond to all items, we can set up a table of trials by making a table with every possible combination of the rows in the subject and item tables using the tidyverse function \texttt{crossing()}. Each trial has random error associated with it, reflecting fluctuations in trial-by-trial performance due to unknown factors; we simulate this by sampling values from a normal distribution with a mean of 0 and SD of \texttt{sigma}. The resulting table should correspond to Table~\ref{tab:trials-table}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -645,13 +645,13 @@ Since all subjects respond to all items, we can set up a table of trials by maki
 \hypertarget{calculate-the-response-values}{%
 \subsubsection{Calculate the response values}\label{calculate-the-response-values}}
 
-Note how this resulting table contains the full decomposition of effects that we need to compute the response according to the linear model we defined above:
+With this resulting table, in combination with the constants \texttt{beta\_0} and \texttt{beta\_1}, we have the full set of values that we need to compute the response variable \texttt{RT} according to the linear model we defined above:
 
 \begin{equation}
 RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
 \end{equation}
 
-\noindent Thus, we will calculate the response variable \texttt{RT} by adding together:
+\noindent Thus, we calculate the response variable \texttt{RT} by adding together:
 
 \begin{itemize}
 \tightlist
@@ -773,20 +773,18 @@ RT ~ 1 + X_i + (1 | item_id) + (1 + X_i | subj_id)
 \begin{itemize}
 \tightlist
 \item
-  \texttt{RT} is the response
+  \texttt{RT} is the response;
 \item
-  \texttt{1} corresponds to the grand intercept (\texttt{beta\_0}),
+  \texttt{1} corresponds to the grand intercept (\texttt{beta\_0});
 \item
   \texttt{X\_i} is the predictor for the ingroup/outgroup manipulation for item i;
 \item
-  \texttt{(1\ \textbar{}\ item\_id)} specifies a by-subject random intercept (\texttt{O\_0i}),
+  \texttt{(1\ \textbar{}\ item\_id)} specifies a by-subject random intercept (\texttt{O\_0i});
 \item
-  \texttt{(1\ +\ X\_i\ \textbar{}\ subj\_id)} specifies a subject-specific random intercept (\texttt{T\_0s}) plus the subject-specific random slope of category (\texttt{T\_1s}),
-\item
-  the error term (\texttt{e\_si}) is automatically included in all models, so is left implicit
+  \texttt{(1\ +\ X\_i\ \textbar{}\ subj\_id)} specifies a subject-specific random intercept (\texttt{T\_0s}) plus the subject-specific random slope of category (\texttt{T\_1s}).
 \end{itemize}
 
-The \enquote{fixed} part of the formula, \texttt{RT\ \textasciitilde{}\ 1\ +\ X\_i}, establishes the \(RT_{si} + \beta_0 + \beta_1 X_i + e_{si}\) part of our linear model. Every model has an intercept (\(\beta_0\)) term and residual term (\(e_{si}\)) by default, so you could alternatively leave the \texttt{1} out and just write \texttt{RT\ \textasciitilde{}\ X\_i}.
+\noindent The error term (\texttt{e\_si}) is automatically included in all models, so is left implicit. The \enquote{fixed} part of the formula, \texttt{RT\ \textasciitilde{}\ 1\ +\ X\_i}, establishes the \(RT_{si} + \beta_0 + \beta_1 X_i + e_{si}\) part of our linear model. Every model has an intercept (\(\beta_0\)) term and residual term (\(e_{si}\)) by default, so you could alternatively leave the \texttt{1} out and just write \texttt{RT\ \textasciitilde{}\ X\_i}.
 
 The terms in parentheses with the \texttt{\textbar{}} separator define the random effects structure. For each of these bracketed terms, the left-hand side of the \texttt{\textbar{}} names the effects you wish to allow to vary and the right hand side names the variable identifying the levels of the random factor over which the terms vary (e.g., subjects or items). The first term, \texttt{(1\ \textbar{}\ item\_id)} allows the intercept (\texttt{1}) to vary over the random factor of items (\texttt{item\_id}). This is an instruction to estimate the parameter underlying the \texttt{O\_0i} values, namely \texttt{omega\_0}. The second term, \texttt{(1\ +\ X\_i\ \textbar{}\ subj\_id)}, allows both the intercept and the effect of category (coded by \texttt{X\_i}) to vary over the random factor of subjects (\texttt{subj\_id}). It is an instruction to estimate the three parameters that underlie the \texttt{T\_0s} and \texttt{T\_1s} values, namely \texttt{tau\_0}, \texttt{tau\_1}, and \texttt{rho}.
 
@@ -960,7 +958,7 @@ Now that you see where each parameter we used to generate the data appears in th
 \hypertarget{calculate-power}{%
 \section{Calculate Power}\label{calculate-power}}
 
-Data simulation is useful not only for illuminating modeling approaches, but also for calculating power when planning a study. The basic idea of a power simulation is to generate a large number of datasets encoding your assumptions about likely parameter values, fit models to each dataset, and then calculate the proportion of models that reject the null hypothesis as a measure of power.
+Data simulation is a particularly flexible approach for estimating power when planning a study. The basic idea of a power simulation is to choose parameter values with which to generate a large number of datasets, fit models to each dataset, and then calculate the proportion of models that reject the null hypothesis. This proportion is an estimate of your power for those particular parameter values. To estimate this value accurately using Monte Carlo simulation, you need to generate and analyze a large number (typically, hundreds or thousands) of datasets.
 
 First we create a function \texttt{single\_run()} that generates data using \texttt{my\_sim\_data()}, analyzes it, and returns a table with the parameter estimates. This would correspond to a single \enquote{run} for our power simulation.
 
@@ -1025,7 +1023,7 @@ ran\_pars & Residual & sd\_\_Observation & 199.15 & NA & NA & NA & NA\\
 
 \end{table}
 
-Running a power analysis with Monte Carlo simulation requires generating and analyzing many simulated datasets (typically, thousands) to estimate the long run properties of the test. You can use the \texttt{purrr::map\_df} function to run the simulation repeatedly and save the results to a data table. This will take a while, so test it first using just a few runs (\texttt{n\_runs}) to debug and check the output. Once you are satisfied it is working properly, we suggest that you use at least 1,000 runs to obtain stable estimates. It will save you a lot of time if you save the full results to a CSV file so that you don't have to re-run it each time you execute your script; you can just comment out this code and load from the saved data for the rest of your script in the future.
+You can use the \texttt{purrr::map\_df} function to run the simulation repeatedly and save the results to a data table. This will take a while, so test it first using just a few runs (\texttt{n\_runs}) to debug and check the output. Once you are satisfied it is working properly, we suggest that you use at least a thousand runs to obtain stable estimates. It will save you a lot of time if you save the full results to disk so that you don't have to re-run it each time you execute your script; you can just comment out this code and load from the saved data for the rest of your script in the future.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1117,13 +1115,13 @@ The results of our power analysis appear in Table~\ref{tab:calc-power-table}. Th
 \hypertarget{conclusion}{%
 \section{Conclusion}\label{conclusion}}
 
-Mixed-effects modeling is a powerful technique for analyzing data from complex designs. The technique is close to ideal for analyzing data with crossed random factors of subjects and stimuli: it gracefully and simultaneously accounts for subject and item variance within a single analysis, and outperforms traditional techniques in terms of type I error and power. However, this additional power comes at the price of technical complexity. Through this article, we have attempted to make mixed-effects models more approachable using data simulation.
+Mixed-effects modeling is a powerful technique for analyzing data from complex designs. The technique is close to ideal for analyzing data with crossed random factors of subjects and stimuli: it gracefully and simultaneously accounts for subject and item variance within a single analysis, and outperforms traditional techniques in terms of type I error and power (Barr et al., 2013). However, this additional power comes at the price of technical complexity. Through this article, we have attempted to make mixed-effects models more approachable using data simulation.
 
-We considered only a simple, one-factor design. However, the general principles are the same for higher-order designs. For instance, consider a 2x2 design, with factors \(A\) and \(B\) both within subjects, but \(A\) within items and \(B\) between items. For such a design, you would have four instead of two by-subject random effects: the intercept, main effect of \(A\), main effect of \(B\), and the \(AB\) interaction. You would also need to specify correlations between each of these effects. You would also have two by-item random effects: one for the intercept and one for \(A\). Our supplemental online materials (\url{https://osf.io/3cz2e/}) include such an extension of the example in this paper with\texttt{category} as a within-subject and between-item factor and adding \texttt{expression} as a within-subject and within-item factor. For further guidance and discussion on how to specify the random effects structure in complex designs, see (Barr, 2013).
+We considered only a simple, one-factor design. However, the general principles are the same for higher-order designs. For instance, consider a 2x2 design, with factors \(A\) and \(B\) both within subjects, but \(A\) within items and \(B\) between items. For such a design, you would have four instead of two by-subject random effects: the intercept, main effect of \(A\), main effect of \(B\), and the \(AB\) interaction. You would also need to specify correlations between each of these effects. You would also have two by-item random effects: one for the intercept and one for \(A\). Our supplemental online materials (\url{https://osf.io/3cz2e/}) include such an extension of the example in this paper with \texttt{category} as a within-subject and between-item factor and adding \texttt{expression} as a within-subject and within-item factor. For further guidance and discussion on how to specify the random effects structure in complex designs, see Barr (2013).
 
 Here we only considered a design with a normally distributed response variable. However, generalised linear mixed effect models allow for response variables with different distributions, such as binomial. Our supplemental online materials (\url{https://osf.io/3cz2e/}) illustrate the differences in simulation required for the study design in this paper with a binomial accuracy score (correct/incorrect) as the response variable.
 
-We also have not said much in this tutorial about estimation issues, such as what to do when the fitting procedure fails to converge. Further guidance on this point can be found in (Barr et al., 2013), and by consulting the help materials in the \texttt{lme4} package (\texttt{?lme4::convergence}). We have also assumed that the random effects specification for the \texttt{lmer()} function should be based on the study design. However, we note that others have argued in favor of data-driven approaches for random effects specification (Matuschek, Kliegl, Vasishth, Baayen, \& Bates, 2017).
+We also have not said much in this tutorial about estimation issues, such as what to do when the fitting procedure fails to converge. Further guidance on this point can be found in Barr et al. (2013) as well as in the help materials in the \texttt{lme4} package (\texttt{?lme4::convergence}). We have also assumed that the random effects specification for the \texttt{lmer()} function should be based on the study design. However, we note that others have argued in favor of data-driven approaches for random effects specification (Matuschek, Kliegl, Vasishth, Baayen, \& Bates, 2017).
 
 In this tutorial, we have introduced the main concepts needed to get started with mixed effects models. Through data simulation of your own study designs, you can develop your understanding and perform power calculations to guide your sample size plans.
 
@@ -1133,7 +1131,7 @@ In this tutorial, we have introduced the main concepts needed to get started wit
 \hypertarget{author-contributions}{%
 \subsubsection{Author Contributions}\label{author-contributions}}
 
-DJB drafted the substantive explanation and LDB drafted the tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app \url{http://shiny.psy.gla.ac.uk/lmem_sim/} and DJB created the app \url{http://shiny.psy.gla.ac.uk/crossed/}.
+DJB drafted the substantive explanation and LDB drafted the tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app \url{http://shiny.psy.gla.ac.uk/lmem_sim/}.
 
 \hypertarget{declaration-of-conflicting-interests}{%
 \subsubsection{Declaration of Conflicting Interests}\label{declaration-of-conflicting-interests}}
