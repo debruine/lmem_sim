@@ -20,6 +20,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+[Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix2_extended_example.Rmd)
+
 ```{r, message=FALSE}
 library("lme4")        # model specification / estimation
 library("afex")        # deriving p-values from lmer
@@ -392,7 +394,7 @@ The power function is similar to above, with a different data generating functio
 
 ```{r}
 # set up the power function
-single_run_2ww2ww <- function(filename = NULL, ...) {
+single_run2 <- function(filename = NULL, ...) {
   dat_sim <- sim_data_2ww2ww(...) # change to 2ww2ww version
   
   mod_sim <- lmer(RT ~ 1 + X_e*X_c + 
@@ -416,11 +418,11 @@ single_run_2ww2ww <- function(filename = NULL, ...) {
 ### Power Analysis
 
 ```{r}
-filename <- "sims/ext_sims_2ww2ww.csv" # change for new analyses
+filename <- "sims/ext_sims_2.csv" # change for new analyses
 if (!file.exists(filename)) {
   # run simulations and save to a file
   reps <- 20
-  sims <- purrr::map_df(1:reps, ~single_run_2ww2ww(filename))
+  sims <- purrr::map_df(1:reps, ~single_run2(filename))
 }
 
 # read saved simulation data

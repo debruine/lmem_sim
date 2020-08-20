@@ -68,6 +68,9 @@
     <li>
       <a href="../articles/appendix3_binomial.html">Appendix 3: Binomial Example</a>
     </li>
+    <li>
+      <a href="../articles/appendix3b_extended_binomial.html">Appendix 3b: Extended Binomial Example</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -96,6 +99,7 @@
 
     
     
+<p><a href="https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix3_binomial.Rmd">Download the .Rmd for this example</a></p>
 <div id="simulating-binomial-data-with-crossed-random-factors" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simulating-binomial-data-with-crossed-random-factors" class="anchor"></a>Simulating binomial data with crossed random factors</h2>
@@ -142,98 +146,132 @@
 <p>The data generating process is slighly different for binomial logistic regression. The random effects and their correlations are set the same way as for a gaussian model (you’ll need some pilot data to estimate reasonable parameters), but we don’t need an error term.</p>
 <div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="co"># set up the custom data simulation function</span>
 <span class="no">my_bin_data</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(
-  <span class="no">tau_n</span>  <span class="kw">=</span> <span class="fl">100</span>, <span class="co"># number of subjects</span>
-  <span class="no">omega_n</span>  <span class="kw">=</span> <span class="fl">50</span>,  <span class="co"># number of items per category</span>
-  <span class="no">b0</span>     <span class="kw">=</span> <span class="fl">0</span>, <span class="co"># intercept</span>
-  <span class="no">b1</span>     <span class="kw">=</span> <span class="fl">0</span>, <span class="co"># effect of category</span>
-  <span class="no">omega_0</span> <span class="kw">=</span> <span class="fl">1</span>, <span class="co"># by-item random intercept sd</span>
-  <span class="no">tau_0</span> <span class="kw">=</span> <span class="fl">1</span>, <span class="co"># by-subject random intercept sd</span>
-  <span class="no">tau_1</span> <span class="kw">=</span> <span class="fl">1</span>, <span class="co"># by-subject random slope sd</span>
-  <span class="no">tau_r</span>   <span class="kw">=</span> <span class="fl">0</span> <span class="co"># correlation between intercept and slope</span>
+  <span class="no">n_subj</span>     <span class="kw">=</span> <span class="fl">100</span>, <span class="co"># number of subjects</span>
+  <span class="no">n_ingroup</span>  <span class="kw">=</span>  <span class="fl">25</span>,  <span class="co"># number of faces in ingroup</span>
+  <span class="no">n_outgroup</span> <span class="kw">=</span>  <span class="fl">25</span>,  <span class="co"># number of faces in outgroup</span>
+  <span class="no">beta_0</span>     <span class="kw">=</span>   <span class="fl">0</span>, <span class="co"># intercept</span>
+  <span class="no">beta_1</span>     <span class="kw">=</span>   <span class="fl">0</span>, <span class="co"># effect of category</span>
+  <span class="no">omega_0</span>    <span class="kw">=</span>   <span class="fl">1</span>, <span class="co"># by-item random intercept sd</span>
+  <span class="no">tau_0</span>      <span class="kw">=</span>   <span class="fl">1</span>, <span class="co"># by-subject random intercept sd</span>
+  <span class="no">tau_1</span>      <span class="kw">=</span>   <span class="fl">1</span>, <span class="co"># by-subject random slope sd</span>
+  <span class="no">rho</span>        <span class="kw">=</span>   <span class="fl">0</span> <span class="co"># correlation between intercept and slope</span>
                         ) {
    <span class="co"># simulate a sample of items</span>
   <span class="no">items</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(
-    <span class="kw">item_id</span> <span class="kw">=</span> <span class="fl">1</span>:(<span class="no">omega_n</span>*<span class="fl">2</span>),
-    <span class="kw">category</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"ingroup"</span>, <span class="st">"outgroup"</span>), <span class="no">omega_n</span>),
-    <span class="kw">O0i</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="no">omega_n</span>*<span class="fl">2</span>, <span class="fl">0</span>, <span class="no">omega_0</span>)
+    <span class="kw">item_id</span> <span class="kw">=</span> <span class="fl">1</span>:(<span class="no">n_ingroup</span> + <span class="no">n_outgroup</span>),
+    <span class="kw">category</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"ingroup"</span>, <span class="st">"outgroup"</span>),
+                   <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">n_ingroup</span>, <span class="no">n_outgroup</span>)),
+    <span class="kw">O_0i</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="no">n_ingroup</span> + <span class="no">n_outgroup</span>, <span class="fl">0</span>, <span class="no">omega_0</span>)
   )
 
   <span class="co"># effect code category</span>
-  <span class="no">items</span>$<span class="no">cat</span> <span class="kw">&lt;-</span> <span class="fu">recode</span>(<span class="no">items</span>$<span class="no">category</span>,
+  <span class="no">items</span>$<span class="no">X_i</span> <span class="kw">&lt;-</span> <span class="fu">recode</span>(<span class="no">items</span>$<span class="no">category</span>,
                       <span class="st">"ingroup"</span> <span class="kw">=</span> -<span class="fl">0.5</span>,
                       <span class="st">"outgroup"</span> <span class="kw">=</span> <span class="fl">0.5</span>)
 
   <span class="co"># simulate a sample of subjects</span>
   <span class="no">subjects</span> <span class="kw">&lt;-</span> <span class="kw pkg">faux</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/faux/man/rnorm_multi.html">rnorm_multi</a></span>(
-    <span class="kw">n</span> <span class="kw">=</span> <span class="no">tau_n</span>,
+    <span class="kw">n</span> <span class="kw">=</span> <span class="no">n_subj</span>,
     <span class="kw">mu</span> <span class="kw">=</span> <span class="fl">0</span>,
     <span class="kw">sd</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">tau_0</span>, <span class="no">tau_1</span>),
-    <span class="kw">r</span> <span class="kw">=</span> <span class="no">tau_r</span>,
-    <span class="kw">varnames</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"T0s"</span>, <span class="st">"T1s"</span>)
+    <span class="kw">r</span> <span class="kw">=</span> <span class="no">rho</span>,
+    <span class="kw">varnames</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"T_0s"</span>, <span class="st">"T_1s"</span>)
   )
-  <span class="no">subjects</span>$<span class="no">subj_id</span> <span class="kw">&lt;-</span> <span class="fl">1</span>:<span class="no">tau_n</span>
+  <span class="no">subjects</span>$<span class="no">subj_id</span> <span class="kw">&lt;-</span> <span class="fl">1</span>:<span class="no">n_subj</span>
 
-  <span class="co"># simulate trials</span>
-  <span class="no">dat_sim</span> <span class="kw">&lt;-</span> <span class="fu">crossing</span>(<span class="kw">subj_id</span> <span class="kw">=</span> <span class="no">subjects</span>$<span class="no">subj_id</span>,
-                      <span class="kw">item_id</span> <span class="kw">=</span> <span class="no">items</span>$<span class="no">item_id</span>) <span class="kw">%&gt;%</span>
-    <span class="fu">inner_join</span>(<span class="no">subjects</span>, <span class="st">"subj_id"</span>) <span class="kw">%&gt;%</span>
-    <span class="fu">inner_join</span>(<span class="no">items</span>, <span class="st">"item_id"</span>) <span class="kw">%&gt;%</span>
-    <span class="fu">mutate</span>(<span class="kw">Y</span> <span class="kw">=</span> <span class="no">b0</span> + <span class="no">I0i</span> + <span class="no">S0s</span> + (<span class="no">b1</span> + <span class="no">S1s</span>) * <span class="no">cat</span>, <span class="co"># calculate gaussian DV</span>
-           <span class="kw">pr</span> <span class="kw">=</span> <span class="fu">inv_logit</span>(<span class="no">Y</span>), <span class="co"># transform to probability of getting 1</span>
-           <span class="kw">Y_bin</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">.</span>), <span class="fl">1</span>, <span class="no">pr</span>)) <span class="kw">%&gt;%</span> <span class="co"># sample from bernoulli distribution </span>
-  <span class="fu">select</span>(<span class="no">subj_id</span>, <span class="no">item_id</span>, <span class="no">category</span>, <span class="no">cat</span>, <span class="no">Y</span>, <span class="no">Y_bin</span>)
-
-  <span class="no">dat_sim</span>
-}
-
-<span class="co"># set up the power function</span>
-<span class="no">my_glmer_power</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">...</span>) {
+  <span class="co"># cross subject and item IDs </span>
+  <span class="fu">crossing</span>(<span class="no">subjects</span>, <span class="no">items</span>)  <span class="kw">%&gt;%</span>
+    <span class="fu">mutate</span>(
+      <span class="co"># calculate gaussian DV</span>
+      <span class="kw">Y</span> <span class="kw">=</span> <span class="no">beta_0</span> + <span class="no">T_0s</span> + <span class="no">O_0i</span> + (<span class="no">beta_1</span> + <span class="no">T_1s</span>) * <span class="no">X_i</span>,
+      <span class="kw">pr</span> <span class="kw">=</span> <span class="fu">inv_logit</span>(<span class="no">Y</span>), <span class="co"># transform to probability of getting 1</span>
+      <span class="kw">Y_bin</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">.</span>), <span class="fl">1</span>, <span class="no">pr</span>) <span class="co"># sample from bernoulli distribution</span>
+    ) <span class="kw">%&gt;%</span>
+    <span class="fu">select</span>(<span class="no">subj_id</span>, <span class="no">item_id</span>, <span class="no">category</span>, <span class="no">X_i</span>, <span class="no">Y</span>, <span class="no">Y_bin</span>)
+}</pre></body></html></div>
+<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">dat_sim</span> <span class="kw">&lt;-</span> <span class="fu">my_bin_data</span>()
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">dat_sim</span>)</pre></body></html></div>
+<pre><code>## # A tibble: 6 x 6
+##   subj_id item_id category   X_i      Y Y_bin
+##     &lt;int&gt;   &lt;int&gt; &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;
+## 1      63       1 ingroup   -0.5 -3.60      0
+## 2      63       2 ingroup   -0.5 -1.88      0
+## 3      63       3 ingroup   -0.5 -3.22      0
+## 4      63       4 ingroup   -0.5 -0.576     0
+## 5      63       5 ingroup   -0.5 -1.54      0
+## 6      63       6 ingroup   -0.5 -1.62      0</code></pre>
+</div>
+<div id="power-function" class="section level3">
+<h3 class="hasAnchor">
+<a href="#power-function" class="anchor"></a>Power function</h3>
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">single_run</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">filename</span> <span class="kw">=</span> <span class="kw">NULL</span>, <span class="no">...</span>) {
   <span class="co"># ... is a shortcut that forwards any arguments to my_sim_data()</span>
   <span class="no">dat_sim</span> <span class="kw">&lt;-</span> <span class="fu">my_bin_data</span>(<span class="no">...</span>)
-  <span class="no">mod_sim</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/glmer.html">glmer</a></span>(<span class="no">Y_bin</span> ~ <span class="fl">1</span> + <span class="no">cat</span> + (<span class="fl">1</span> <span class="kw">|</span> <span class="no">item_id</span>) + (<span class="fl">1</span> + <span class="no">cat</span> <span class="kw">|</span> <span class="no">subj_id</span>),
+  <span class="no">mod_sim</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/glmer.html">glmer</a></span>(<span class="no">Y_bin</span> ~ <span class="fl">1</span> + <span class="no">X_i</span> + (<span class="fl">1</span> <span class="kw">|</span> <span class="no">item_id</span>) + (<span class="fl">1</span> + <span class="no">X_i</span> <span class="kw">|</span> <span class="no">subj_id</span>),
                 <span class="kw">data</span> <span class="kw">=</span> <span class="no">dat_sim</span>, <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>)
 
-  <span class="kw pkg">broom.mixed</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/broom.mixed/man/reexports.html">tidy</a></span>(<span class="no">mod_sim</span>)
-}</pre></body></html></div>
-<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="co"># run simulations</span>
+  <span class="no">sim_results</span> <span class="kw">&lt;-</span> <span class="kw pkg">broom.mixed</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/broom.mixed/man/reexports.html">tidy</a></span>(<span class="no">mod_sim</span>)
 
-<span class="no">prob2param</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">a</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="no">b</span> <span class="kw">=</span> <span class="fl">0</span>) {
+  <span class="co"># append the results to a file if filename is set</span>
+  <span class="kw">if</span> (!<span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span>(<span class="no">filename</span>)) {
+    <span class="no">append</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.exists</a></span>(<span class="no">filename</span>) <span class="co"># append if the file exists</span>
+    <span class="fu">write_csv</span>(<span class="no">sim_results</span>, <span class="no">filename</span>, <span class="kw">append</span> <span class="kw">=</span> <span class="no">append</span>)
+  }
+
+  <span class="co"># return the tidy table</span>
+  <span class="no">sim_results</span>
+}</pre></body></html></div>
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="co"># run one model with default parameters</span>
+<span class="fu">single_run</span>()</pre></body></html></div>
+<pre><code>## # A tibble: 6 x 7
+##   effect   group   term                 estimate std.error statistic p.value
+##   &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;                   &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 fixed    &lt;NA&gt;    (Intercept)           -0.0343     0.166    -0.207   0.836
+## 2 fixed    &lt;NA&gt;    X_i                    0.0670     0.292     0.230   0.818
+## 3 ran_pars subj_id sd__(Intercept)        0.942     NA        NA      NA    
+## 4 ran_pars subj_id cor__(Intercept).X_i  -0.0466    NA        NA      NA    
+## 5 ran_pars subj_id sd__X_i                1.01      NA        NA      NA    
+## 6 ran_pars item_id sd__(Intercept)        0.938     NA        NA      NA</code></pre>
+<p>The following function converts probabilities of getting a 1 in the first and second category levels into beta values. You will need to figure out a custom function for each design to do this, or estimate fixed effect parameters from analysis of pilot data.</p>
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">prob2param</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">a</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="no">b</span> <span class="kw">=</span> <span class="fl">0</span>) {
   <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-    <span class="kw">b0</span> <span class="kw">=</span> (<span class="fu">logit</span>(<span class="no">a</span>) + <span class="fu">logit</span>(<span class="no">b</span>))/<span class="fl">2</span>,
-    <span class="kw">b1</span> <span class="kw">=</span> <span class="fu">logit</span>(<span class="no">a</span>) - <span class="fu">logit</span>(<span class="no">b</span>)
+    <span class="kw">beta_0</span> <span class="kw">=</span> (<span class="fu">logit</span>(<span class="no">a</span>) + <span class="fu">logit</span>(<span class="no">b</span>))/<span class="fl">2</span>,
+    <span class="kw">beta_1</span> <span class="kw">=</span> <span class="fu">logit</span>(<span class="no">a</span>) - <span class="fu">logit</span>(<span class="no">b</span>)
+  )
+}</pre></body></html></div>
+<p>To get an accurate estimation of power, you need to run the simulation many times. We use 20 here as an example because the analysis is very slow, but your results are more accurate the more replications you run. This will depend on the specifics of your analysis, but we recommend at least 1000 replications.</p>
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="co"># run simulations and save to a file on each rep</span>
+<span class="no">filename</span> <span class="kw">&lt;-</span> <span class="st">"sims/binomial.csv"</span>
+<span class="no">reps</span> <span class="kw">&lt;-</span> <span class="fl">20</span>
+<span class="no">b</span> <span class="kw">&lt;-</span> <span class="fu">prob2param</span>(<span class="fl">.4</span>, <span class="fl">.6</span>)
+<span class="no">tau_0</span>    <span class="kw">&lt;-</span> <span class="fl">1</span>
+<span class="no">tau_1</span>    <span class="kw">&lt;-</span> <span class="fl">1</span>
+<span class="no">omega_0</span>  <span class="kw">&lt;-</span> <span class="fl">1</span>
+<span class="no">rho</span>      <span class="kw">&lt;-</span> <span class="fl">0.5</span>
+
+<span class="kw">if</span> (!<span class="fu"><a href="https://rdrr.io/r/base/files.html">file.exists</a></span>(<span class="no">filename</span>)) {
+  <span class="co"># run simulations and save to a file</span>
+  <span class="no">sims</span> <span class="kw">&lt;-</span> <span class="kw pkg">purrr</span><span class="kw ns">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_df</a></span>(<span class="fl">1</span>:<span class="no">reps</span>, ~<span class="fu">single_run</span>(
+    <span class="kw">filename</span> <span class="kw">=</span> <span class="no">filename</span>,
+    <span class="kw">beta_0</span>   <span class="kw">=</span> <span class="no">b</span>$<span class="no">beta_0</span>,
+    <span class="kw">beta_1</span>   <span class="kw">=</span> <span class="no">b</span>$<span class="no">beta_1</span>,
+    <span class="kw">tau_0</span>    <span class="kw">=</span> <span class="no">tau_0</span>,
+    <span class="kw">tau_1</span>    <span class="kw">=</span> <span class="no">tau_1</span>,
+    <span class="kw">omega_0</span>  <span class="kw">=</span> <span class="no">omega_0</span>,
+    <span class="kw">rho</span>      <span class="kw">=</span> <span class="fl">0.5</span>)
   )
 }
 
-<span class="no">reps</span> <span class="kw">&lt;-</span> <span class="fl">5</span>
-<span class="no">b</span> <span class="kw">=</span> <span class="fu">prob2param</span>(<span class="fl">.4</span>, <span class="fl">.6</span>)
-<span class="no">tau_0</span> <span class="kw">=</span> <span class="fl">1</span>
-<span class="no">tau_1</span> <span class="kw">=</span> <span class="fl">1</span>
-<span class="no">omega_0</span> <span class="kw">=</span> <span class="fl">1</span>
-<span class="no">tau_r</span> <span class="kw">=</span> <span class="fl">0.5</span>
-
-<span class="no">filename</span> <span class="kw">&lt;-</span> <span class="st">"sims/binomial.csv"</span></pre></body></html></div>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="co"># run simulations and save to a file on each rep</span>
-<span class="no">sims</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span>(<span class="no">reps</span>, {
-  <span class="no">sim</span> <span class="kw">&lt;-</span> <span class="fu">my_glmer_power</span>(<span class="kw">b0</span> <span class="kw">=</span> <span class="no">b</span>$<span class="no">b0</span>,
-                       <span class="kw">b1</span> <span class="kw">=</span> <span class="no">b</span>$<span class="no">b1</span>,
-                       <span class="kw">tau_0</span> <span class="kw">=</span> <span class="no">tau_0</span>,
-                       <span class="kw">tau_1</span> <span class="kw">=</span> <span class="no">tau_1</span>,
-                       <span class="kw">omega_0</span> <span class="kw">=</span> <span class="no">omega_0</span>,
-                       <span class="kw">tau_r</span> <span class="kw">=</span> <span class="no">tau_r</span>)
-  <span class="co"># check if there are already simulations </span>
-  <span class="co"># saved to file and add them</span>
-  <span class="no">append</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.exists</a></span>(<span class="no">filename</span>)
-  <span class="fu">write_csv</span>(<span class="no">sim</span>, <span class="no">filename</span>, <span class="kw">append</span> <span class="kw">=</span> <span class="no">append</span>)
-})</pre></body></html></div>
-<p>The chunk above is set to not evaluate when you knit this file; it just reads the saved data from the file. The code below calculates the mean estimates and power for each group.</p>
+<span class="co"># read saved simulation data</span>
+<span class="no">ct</span> <span class="kw">&lt;-</span> <span class="fu">cols</span>(<span class="co"># makes sure plots display in this order</span>
+           <span class="kw">group</span> <span class="kw">=</span> <span class="fu">col_factor</span>(<span class="kw">ordered</span> <span class="kw">=</span> <span class="fl">TRUE</span>),
+           <span class="kw">term</span> <span class="kw">=</span> <span class="fu">col_factor</span>(<span class="kw">ordered</span> <span class="kw">=</span> <span class="fl">TRUE</span>))
+<span class="no">sims</span> <span class="kw">&lt;-</span> <span class="fu">read_csv</span>(<span class="no">filename</span>, <span class="kw">col_types</span> <span class="kw">=</span> <span class="no">ct</span>)</pre></body></html></div>
 </div>
 <div id="calculate-mean-estimates-and-cell-probabilities" class="section level3">
 <h3 class="hasAnchor">
 <a href="#calculate-mean-estimates-and-cell-probabilities" class="anchor"></a>Calculate mean estimates and cell probabilities</h3>
-<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="co"># read saved simulation data</span>
-<span class="no">sims</span> <span class="kw">&lt;-</span> <span class="fu">read_csv</span>(<span class="no">filename</span>)
-
-<span class="no">est</span> <span class="kw">&lt;-</span> <span class="no">sims</span> <span class="kw">%&gt;%</span>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">est</span> <span class="kw">&lt;-</span> <span class="no">sims</span> <span class="kw">%&gt;%</span>
   <span class="fu">group_by</span>(<span class="no">group</span>, <span class="no">term</span>) <span class="kw">%&gt;%</span>
   <span class="fu">summarise</span>(
     <span class="kw">mean_estimate</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">estimate</span>),
@@ -242,7 +280,7 @@
 
 <span class="no">int_est</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="no">est</span>, <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="no">group</span>), <span class="no">term</span> <span class="kw">==</span> <span class="st">"(Intercept)"</span>) <span class="kw">%&gt;%</span>
   <span class="fu">pull</span>(<span class="no">mean_estimate</span>)
-<span class="no">cat_est</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="no">est</span>, <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="no">group</span>), <span class="no">term</span> <span class="kw">==</span> <span class="st">"cat"</span>) <span class="kw">%&gt;%</span>
+<span class="no">cat_est</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="no">est</span>, <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="no">group</span>), <span class="no">term</span> <span class="kw">==</span> <span class="st">"X_i"</span>) <span class="kw">%&gt;%</span>
   <span class="fu">pull</span>(<span class="no">mean_estimate</span>)
 
 <span class="no">pr0</span> <span class="kw">&lt;-</span> <span class="fu">inv_logit</span>(<span class="no">int_est</span>) <span class="kw">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span>(<span class="fl">2</span>)
@@ -252,185 +290,19 @@
 <span class="no">est</span> <span class="kw">%&gt;%</span>
   <span class="fu">arrange</span>(!<span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(<span class="no">group</span>), <span class="no">group</span>, <span class="no">term</span>) <span class="kw">%&gt;%</span>
   <span class="fu">mutate</span>(
-  <span class="kw">sim</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">b</span>$<span class="no">b0</span>, <span class="no">b</span>$<span class="no">b1</span>, <span class="no">omega_0</span>, <span class="no">tau_r</span>, <span class="no">tau_0</span>, <span class="no">tau_1</span>),
+  <span class="kw">sim</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">b</span>$<span class="no">beta_0</span>, <span class="no">b</span>$<span class="no">beta_1</span>, <span class="no">omega_0</span>, <span class="no">rho</span>, <span class="no">tau_0</span>, <span class="no">tau_1</span>),
   <span class="kw">prob</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">pr0</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="no">pr1_minus</span>, <span class="st">":"</span>, <span class="no">pr1_plus</span>), <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fl">NA</span>, <span class="fl">4</span>))
 ) <span class="kw">%&gt;%</span>
   <span class="fu">mutate_if</span>(<span class="no">is.numeric</span>, <span class="no">round</span>, <span class="fl">2</span>)</pre></body></html></div>
 <pre><code>## # A tibble: 6 x 5
-##   group   term                 mean_estimate   sim prob     
-##   &lt;chr&gt;   &lt;chr&gt;                        &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;    
-## 1 &lt;NA&gt;    (Intercept)                   0.03  0    0.51     
-## 2 &lt;NA&gt;    cat                          -0.96 -0.81 0.63:0.39
-## 3 item_id sd__(Intercept)               0.98  1    &lt;NA&gt;     
-## 4 subj_id cor__(Intercept).cat          0.51  0.5  &lt;NA&gt;     
-## 5 subj_id sd__(Intercept)               1     1    &lt;NA&gt;     
-## 6 subj_id sd__cat                       0.95  1    &lt;NA&gt;</code></pre>
-</div>
-</div>
-<div id="ww2wb-design" class="section level2">
-<h2 class="hasAnchor">
-<a href="#ww2wb-design" class="anchor"></a>2ww*2wb design</h2>
-<p>In this example, 100 subjects will respond twice (for happy and angry expressions) to 50 items; 25 items in each of 2 categories. In this example, <code>expression</code> is a within-subject and within-item factor and <code>category</code> is a within-subject and between-item factor.</p>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">ext_bin_data</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(
-  <span class="no">tau_n</span>        <span class="kw">=</span> <span class="fl">100</span>, <span class="co"># number of subjects/btwn-grp</span>
-  <span class="no">omega_n</span>        <span class="kw">=</span>  <span class="fl">25</span>, <span class="co"># number of items/btwn-grp</span>
-  <span class="no">b0</span>           <span class="kw">=</span>   <span class="fl">0</span>, <span class="co"># grand mean</span>
-  <span class="no">b_cat</span>        <span class="kw">=</span>   <span class="fl">0</span>, <span class="co"># main effect of category</span>
-  <span class="no">b_exp</span>        <span class="kw">=</span>   <span class="fl">0</span>, <span class="co"># main effect of expression</span>
-  <span class="no">b_cat_exp</span>    <span class="kw">=</span>   <span class="fl">0</span>, <span class="co"># interaction between category and expression</span>
-  <span class="no">omega_0</span>       <span class="kw">=</span>   <span class="fl">1</span>, <span class="co"># by-item random intercept sd</span>
-  <span class="no">Iexp_sd</span>      <span class="kw">=</span>   <span class="fl">1</span>, <span class="co"># by-item random slope for exp</span>
-  <span class="no">icor</span>         <span class="kw">=</span>   <span class="fl">0</span>, <span class="co"># by-item random effect correlation</span>
-  <span class="no">tau_0</span>       <span class="kw">=</span>   <span class="fl">1</span>, <span class="co"># by-subject random intercept sd</span>
-  <span class="no">Scat_sd</span>      <span class="kw">=</span>   <span class="fl">1</span>, <span class="co"># by-subject random slope sd for category</span>
-  <span class="no">Sexp_sd</span>      <span class="kw">=</span>   <span class="fl">1</span>, <span class="co"># by-subject random slope sd for exp</span>
-  <span class="no">Scat_exp_sd</span>  <span class="kw">=</span>   <span class="fl">1</span>, <span class="co"># by-subject random slope sd for category*exp</span>
-  <span class="co"># by-subject random effect correlations</span>
-  <span class="no">tau_r</span>         <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>,   <span class="co"># S0s  * cat, exp, tc</span>
-                      <span class="fl">0</span>, <span class="fl">0</span>,   <span class="co"># cat  *      exp, tc</span>
-                         <span class="fl">0</span>)   <span class="co"># exp  *           tc</span>
-) {
-
-  <span class="co"># simulate items</span>
-  <span class="no">items</span> <span class="kw">&lt;-</span> <span class="kw pkg">faux</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/faux/man/sim_design.html">sim_design</a></span>(
-    <span class="kw">within</span>  <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">components</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"I0i"</span>, <span class="st">"Iexp"</span>)),
-    <span class="kw">between</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">category</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"ingroup"</span>, <span class="st">"outgroup"</span>)),
-    <span class="kw">n</span> <span class="kw">=</span> <span class="no">omega_n</span>,
-    <span class="kw">sd</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">I0i</span> <span class="kw">=</span> <span class="no">omega_0</span>,
-                    <span class="kw">Iexp</span> <span class="kw">=</span> <span class="no">Iexp_sd</span>),
-    <span class="kw">r</span> <span class="kw">=</span> <span class="no">icor</span>,
-    <span class="kw">id</span> <span class="kw">=</span> <span class="st">"item_id"</span>,
-    <span class="kw">plot</span> <span class="kw">=</span> <span class="fl">FALSE</span>
-  )
-
-  <span class="co"># simulate subjects</span>
-  <span class="no">subjects</span> <span class="kw">&lt;-</span> <span class="kw pkg">faux</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/faux/man/sim_design.html">sim_design</a></span>(
-    <span class="kw">within</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">components</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"S0s"</span>, <span class="st">"Scat"</span>, <span class="st">"Sexp"</span>, <span class="st">"Scat_exp"</span>)),
-    <span class="kw">n</span> <span class="kw">=</span> <span class="no">tau_n</span>,
-    <span class="kw">sd</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="kw">S0s</span>  <span class="kw">=</span> <span class="no">tau_0</span>,
-           <span class="kw">Scat</span> <span class="kw">=</span> <span class="no">Scat_sd</span>,
-           <span class="kw">Sexp</span> <span class="kw">=</span> <span class="no">Sexp_sd</span>,
-           <span class="kw">Scat.exp</span>  <span class="kw">=</span> <span class="no">Scat_exp_sd</span>),
-    <span class="kw">r</span> <span class="kw">=</span> <span class="no">tau_r</span>,
-    <span class="kw">id</span> <span class="kw">=</span> <span class="st">"subj_id"</span>,
-    <span class="kw">plot</span> <span class="kw">=</span> <span class="fl">FALSE</span>
-  )
-
-  <span class="co"># simulate trials</span>
-  <span class="no">dat_sim</span> <span class="kw">&lt;-</span> <span class="fu">crossing</span>(
-    <span class="kw">subj_id</span> <span class="kw">=</span> <span class="no">subjects</span>$<span class="no">subj_id</span>,
-    <span class="kw">item_id</span> <span class="kw">=</span> <span class="no">items</span>$<span class="no">item_id</span>,
-    <span class="kw">expression</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"happy"</span>, <span class="st">"angry"</span>), <span class="kw">ordered</span> <span class="kw">=</span> <span class="fl">TRUE</span>)
-  ) <span class="kw">%&gt;%</span>
-    <span class="fu">inner_join</span>(<span class="no">subjects</span>, <span class="st">"subj_id"</span>) <span class="kw">%&gt;%</span>
-    <span class="fu">inner_join</span>(<span class="no">items</span>, <span class="st">"item_id"</span>) <span class="kw">%&gt;%</span>
-    <span class="fu">mutate</span>(<span class="kw">exp</span> <span class="kw">=</span> <span class="fu">recode</span>(<span class="no">expression</span>, <span class="st">"happy"</span> <span class="kw">=</span> -<span class="fl">0.5</span>, <span class="st">"angry"</span> <span class="kw">=</span> <span class="fl">0.5</span>),
-           <span class="kw">cat</span> <span class="kw">=</span> <span class="fu">recode</span>(<span class="no">category</span>, <span class="st">"ingroup"</span> <span class="kw">=</span> -<span class="fl">0.5</span>, <span class="st">"outgroup"</span> <span class="kw">=</span> +<span class="fl">0.5</span>),
-           <span class="kw">trial_i</span>    <span class="kw">=</span> <span class="no">b0</span> + <span class="no">I0i</span> +  <span class="no">S0s</span>,
-           <span class="kw">trial_cat</span>  <span class="kw">=</span> <span class="no">b_cat</span> + <span class="no">Scat</span>,
-           <span class="kw">trial_exp</span>  <span class="kw">=</span> <span class="no">b_exp</span> + <span class="no">Iexp</span> + <span class="no">Sexp</span>,
-           <span class="kw">trial_ct</span>   <span class="kw">=</span> <span class="no">b_cat_exp</span> + <span class="no">Scat.exp</span>,
-           <span class="kw">Y</span> <span class="kw">=</span> <span class="no">trial_i</span> +
-             (<span class="no">trial_cat</span>*<span class="no">cat</span>) +
-             (<span class="no">trial_exp</span>*<span class="no">exp</span>) +
-             (<span class="no">trial_ct</span>*<span class="no">cat</span>*<span class="no">exp</span>),
-           <span class="kw">pr</span> <span class="kw">=</span> <span class="fu">inv_logit</span>(<span class="no">Y</span>),
-           <span class="kw">Y_bin</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">.</span>), <span class="fl">1</span>, <span class="no">pr</span>))
-
-  <span class="no">dat_sim</span>
-}
-
-<span class="no">ext_bin_func</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">...</span>) {
-
-  <span class="no">dat_sim</span> <span class="kw">&lt;-</span> <span class="fu">ext_bin_data</span>(<span class="no">...</span>)
-
-  <span class="no">mod_sim</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/glmer.html">glmer</a></span>(<span class="no">Y_bin</span> ~ <span class="fl">1</span> + <span class="no">cat</span>*<span class="no">exp</span> +
-                    (<span class="fl">1</span> + <span class="no">exp</span> <span class="kw">|</span> <span class="no">item_id</span>) +
-                    (<span class="fl">1</span> + <span class="no">cat</span>*<span class="no">exp</span> <span class="kw">|</span> <span class="no">subj_id</span>),
-                  <span class="kw">data</span> <span class="kw">=</span> <span class="no">dat_sim</span>, <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>)
-
-  <span class="kw pkg">broom.mixed</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/broom.mixed/man/reexports.html">tidy</a></span>(<span class="no">mod_sim</span>)
-}</pre></body></html></div>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="co"># run simulations</span>
-<span class="no">prob2param</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">angry_ingroup</span> <span class="kw">=</span> <span class="fl">0</span>,
-                       <span class="no">angry_outgroup</span> <span class="kw">=</span> <span class="fl">0</span>,
-                       <span class="no">happy_ingroup</span> <span class="kw">=</span> <span class="fl">0</span>,
-                       <span class="no">happy_outgroup</span> <span class="kw">=</span> <span class="fl">0</span>) {
-  <span class="no">ai</span> <span class="kw">&lt;-</span> <span class="fu">logit</span>(<span class="no">angry_ingroup</span>)
-  <span class="no">ao</span> <span class="kw">&lt;-</span> <span class="fu">logit</span>(<span class="no">angry_outgroup</span>)
-  <span class="no">hi</span> <span class="kw">&lt;-</span> <span class="fu">logit</span>(<span class="no">happy_ingroup</span>)
-  <span class="no">ho</span> <span class="kw">&lt;-</span> <span class="fu">logit</span>(<span class="no">happy_outgroup</span>)
-  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-    <span class="kw">b0</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">ai</span>,<span class="no">ao</span>,<span class="no">hi</span>,<span class="no">ho</span>)),
-    <span class="kw">b_cat</span> <span class="kw">=</span> (<span class="no">ao</span>+<span class="no">ho</span>) - (<span class="no">ai</span>+<span class="no">hi</span>),
-    <span class="kw">b_exp</span> <span class="kw">=</span> (<span class="no">ao</span>+<span class="no">ai</span>) - (<span class="no">ho</span>+<span class="no">hi</span>),
-    <span class="kw">b_cat_exp</span> <span class="kw">=</span> (<span class="no">ao</span>-<span class="no">ai</span>) - (<span class="no">ho</span>-<span class="no">hi</span>)
-  )
-}
-
-<span class="no">reps</span> <span class="kw">&lt;-</span> <span class="fl">10</span>
-<span class="no">b</span> <span class="kw">=</span> <span class="fu">prob2param</span>(<span class="fl">.5</span>, <span class="fl">.6</span>, <span class="fl">.4</span>, <span class="fl">.5</span>)
-
-<span class="no">filename</span> <span class="kw">&lt;-</span> <span class="st">"sims/binomial2.csv"</span></pre></body></html></div>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="co"># run simulations and save to a file on each rep</span>
-<span class="no">sims</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span>(<span class="no">reps</span>, {
-  <span class="no">sim</span> <span class="kw">&lt;-</span> <span class="fu">ext_bin_func</span>(<span class="kw">b0</span> <span class="kw">=</span> <span class="no">b</span>$<span class="no">b0</span>,
-                      <span class="kw">b_cat</span> <span class="kw">=</span> <span class="no">b</span>$<span class="no">b_cat</span>,
-                      <span class="kw">b_exp</span> <span class="kw">=</span> <span class="no">b</span>$<span class="no">b_exp</span>,
-                      <span class="kw">b_cat_exp</span> <span class="kw">=</span> <span class="no">b</span>$<span class="no">b_cat_exp</span>)
-  <span class="co"># check if there are already simulations </span>
-  <span class="co"># saved to file and add them</span>
-  <span class="no">append</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/files.html">file.exists</a></span>(<span class="no">filename</span>)
-  <span class="fu">write_csv</span>(<span class="no">sim</span>, <span class="no">filename</span>, <span class="kw">append</span> <span class="kw">=</span> <span class="no">append</span>)
-})</pre></body></html></div>
-</div>
-<div id="calculate-mean-estimates" class="section level1">
-<h1 class="hasAnchor">
-<a href="#calculate-mean-estimates" class="anchor"></a>Calculate mean estimates</h1>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="co"># read saved simulation data</span>
-<span class="no">sims</span> <span class="kw">&lt;-</span> <span class="fu">read_csv</span>(<span class="no">filename</span>)
-
-<span class="no">est</span> <span class="kw">&lt;-</span> <span class="no">sims</span> <span class="kw">%&gt;%</span>
-  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="no">effect</span> <span class="kw">==</span> <span class="st">"fixed"</span>) <span class="kw">%&gt;%</span>
-  <span class="fu">group_by</span>(<span class="no">term</span>) <span class="kw">%&gt;%</span>
-  <span class="fu">summarise</span>(
-    <span class="kw">mean_estimate</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">estimate</span>),
-    <span class="kw">.groups</span> <span class="kw">=</span> <span class="st">"drop"</span>
-  )
-
-<span class="no">est</span> <span class="kw">%&gt;%</span> <span class="fu">mutate</span>(
-  <span class="kw">sim</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">b</span>$<span class="no">b0</span>, <span class="no">b</span>$<span class="no">b_cat</span>, <span class="no">b</span>$<span class="no">b_cat_exp</span>, <span class="no">b</span>$<span class="no">b_exp</span>)
-) <span class="kw">%&gt;%</span>
-  <span class="fu">mutate_if</span>(<span class="no">is.numeric</span>, <span class="no">round</span>, <span class="fl">2</span>)</pre></body></html></div>
-<pre><code>## # A tibble: 4 x 3
-##   term        mean_estimate   sim
-##   &lt;chr&gt;               &lt;dbl&gt; &lt;dbl&gt;
-## 1 (Intercept)          0.02  0   
-## 2 cat                  0.71  0.81
-## 3 cat:exp              0.22  0   
-## 4 exp                  0.84  0.81</code></pre>
-<div id="calculate-probabilities" class="section level3">
-<h3 class="hasAnchor">
-<a href="#calculate-probabilities" class="anchor"></a>Calculate probabilities</h3>
-<p>Sum estimates for each cell and use inverse logit transform to recover probabilities.</p>
-<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">int</span> <span class="kw">&lt;-</span> <span class="no">est</span><span class="kw">[[</span><span class="fl">1</span>,<span class="fl">2</span>]]
-<span class="no">cat</span> <span class="kw">&lt;-</span> <span class="no">est</span><span class="kw">[[</span><span class="fl">2</span>,<span class="fl">2</span>]]
-<span class="no">exp</span> <span class="kw">&lt;-</span> <span class="no">est</span><span class="kw">[[</span><span class="fl">4</span>,<span class="fl">2</span>]]
-<span class="no">cat_exp</span> <span class="kw">&lt;-</span> <span class="no">est</span><span class="kw">[[</span><span class="fl">3</span>,<span class="fl">2</span>]]
-
-<span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(
-  <span class="kw">angry_outgroup</span> <span class="kw">=</span> <span class="fu">inv_logit</span>(<span class="no">int</span> + <span class="fl">.5</span>*<span class="no">cat</span> + <span class="fl">.5</span>*<span class="no">exp</span> + <span class="fl">.5</span>*<span class="fl">.5</span>*<span class="no">cat_exp</span>),
-  <span class="kw">angry_ingroup</span>  <span class="kw">=</span> <span class="fu">inv_logit</span>(<span class="no">int</span> - <span class="fl">.5</span>*<span class="no">cat</span> + <span class="fl">.5</span>*<span class="no">exp</span> - <span class="fl">.5</span>*<span class="fl">.5</span>*<span class="no">cat_exp</span>),
-  <span class="kw">happy_outgroup</span> <span class="kw">=</span> <span class="fu">inv_logit</span>(<span class="no">int</span> + <span class="fl">.5</span>*<span class="no">cat</span> - <span class="fl">.5</span>*<span class="no">exp</span> - <span class="fl">.5</span>*<span class="fl">.5</span>*<span class="no">cat_exp</span>),
-  <span class="kw">happy_ingroup</span>  <span class="kw">=</span> <span class="fu">inv_logit</span>(<span class="no">int</span> - <span class="fl">.5</span>*<span class="no">cat</span> - <span class="fl">.5</span>*<span class="no">exp</span> + <span class="fl">.5</span>*<span class="fl">.5</span>*<span class="no">cat_exp</span>)
-) <span class="kw">%&gt;%</span>
-  <span class="fu">gather</span>(<span class="no">key</span>, <span class="no">val</span>, <span class="fl">1</span>:<span class="fl">4</span>) <span class="kw">%&gt;%</span>
-  <span class="fu">separate</span>(<span class="no">key</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"exp"</span>, <span class="st">"cat"</span>)) <span class="kw">%&gt;%</span>
-  <span class="fu">spread</span>(<span class="no">cat</span>, <span class="no">val</span>) <span class="kw">%&gt;%</span>
-  <span class="fu">mutate_if</span>(<span class="no">is.numeric</span>, <span class="no">round</span>, <span class="fl">2</span>)</pre></body></html></div>
-<pre><code>##     exp ingroup outgroup
-## 1 angry    0.51     0.70
-## 2 happy    0.33     0.47</code></pre>
+##   group   term                 mean_estimate   sim prob    
+##   &lt;ord&gt;   &lt;ord&gt;                        &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;   
+## 1 &lt;NA&gt;    (Intercept)                  -0.04  0    0.49    
+## 2 &lt;NA&gt;    X_i                          -0.86 -0.81 0.6:0.39
+## 3 subj_id sd__(Intercept)               1.02  1    &lt;NA&gt;    
+## 4 subj_id cor__(Intercept).X_i          0.5   0.5  &lt;NA&gt;    
+## 5 subj_id sd__X_i                       1.02  1    &lt;NA&gt;    
+## 6 item_id sd__(Intercept)               0.99  1    &lt;NA&gt;</code></pre>
 </div>
 </div>
   </div>

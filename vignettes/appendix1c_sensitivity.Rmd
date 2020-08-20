@@ -20,6 +20,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+[Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix1c_sensitivity.Rmd)
+
 ### Required software
 
 ```{r, message=FALSE}

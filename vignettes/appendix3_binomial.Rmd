@@ -20,6 +20,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+[Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix3_binomial.Rmd)
+
 ## Simulating binomial data with crossed random factors
 
 To give an overview of the simulation task, we will simulate data from a design with crossed random factors of subjects and stimuli, fit a model to the simulated data, and then try to recover the parameter values we put in from the output. In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use accuracy (correct/incorrect) as the primary dependent variable. The faces are of two types: either from the subject's ingroup or from an outgroup. For simplicity, we further assume that each face appears only once in the stimulus set. The key question is whether there is any difference in classification accuracy across the type of face.
@@ -72,109 +74,132 @@ The data generating process is slighly different for binomial logistic regressio
 
 # set up the custom data simulation function
 my_bin_data <- function(
-  tau_n  = 100, # number of subjects
-  omega_n  = 50,  # number of items per category
-  b0     = 0, # intercept
-  b1     = 0, # effect of category
-  omega_0 = 1, # by-item random intercept sd
-  tau_0 = 1, # by-subject random intercept sd
-  tau_1 = 1, # by-subject random slope sd
-  tau_r   = 0 # correlation between intercept and slope
+  n_subj     = 100, # number of subjects
+  n_ingroup  =  25,  # number of faces in ingroup
+  n_outgroup =  25,  # number of faces in outgroup
+  beta_0     =   0, # intercept
+  beta_1     =   0, # effect of category
+  omega_0    =   1, # by-item random intercept sd
+  tau_0      =   1, # by-subject random intercept sd
+  tau_1      =   1, # by-subject random slope sd
+  rho        =   0 # correlation between intercept and slope
                         ) {
    # simulate a sample of items
   items <- data.frame(
-    item_id = 1:(omega_n*2),
-    category = rep(c("ingroup", "outgroup"), omega_n),
-    O0i = rnorm(omega_n*2, 0, omega_0)
+    item_id = 1:(n_ingroup + n_outgroup),
+    category = rep(c("ingroup", "outgroup"), 
+                   c(n_ingroup, n_outgroup)),
+    O_0i = rnorm(n_ingroup + n_outgroup, 0, omega_0)
   )
 
   # effect code category
-  items$cat <- recode(items$category, 
+  items$X_i <- recode(items$category, 
                       "ingroup" = -0.5, 
                       "outgroup" = 0.5)
   
   # simulate a sample of subjects
   subjects <- faux::rnorm_multi(
-    n = tau_n, 
+    n = n_subj, 
     mu = 0,
     sd = c(tau_0, tau_1),
-    r = tau_r, 
-    varnames = c("T0s", "T1s")
+    r = rho, 
+    varnames = c("T_0s", "T_1s")
   )
-  subjects$subj_id <- 1:tau_n
+  subjects$subj_id <- 1:n_subj
   
-  # simulate trials
-  dat_sim <- crossing(subj_id = subjects$subj_id,
-                      item_id = items$item_id) %>%
-    inner_join(subjects, "subj_id") %>%
-    inner_join(items, "item_id") %>%
-    mutate(Y = b0 + I0i + S0s + (b1 + S1s) * cat, # calculate gaussian DV
-           pr = inv_logit(Y), # transform to probability of getting 1
-           Y_bin = rbinom(nrow(.), 1, pr)) %>% # sample from bernoulli distribution 
-  select(subj_id, item_id, category, cat, Y, Y_bin)
-  
-  dat_sim
+  # cross subject and item IDs 
+  crossing(subjects, items)  %>%
+    mutate(
+      # calculate gaussian DV
+      Y = beta_0 + T_0s + O_0i + (beta_1 + T_1s) * X_i,
+      pr = inv_logit(Y), # transform to probability of getting 1
+      Y_bin = rbinom(nrow(.), 1, pr) # sample from bernoulli distribution
+    ) %>%
+    select(subj_id, item_id, category, X_i, Y, Y_bin)
 }
-
-# set up the power function
-my_glmer_power <- function(...) {
-  # ... is a shortcut that forwards any arguments to my_sim_data()
-  dat_sim <- my_bin_data(...)
-  mod_sim <- glmer(Y_bin ~ 1 + cat + (1 | item_id) + (1 + cat | subj_id),
-                data = dat_sim, family = "binomial")
-  
-  broom.mixed::tidy(mod_sim)
-}
-
-
 ```
-
 
 
 ```{r}
-# run simulations
+dat_sim <- my_bin_data()
+head(dat_sim)
+```
 
+### Power function
+
+```{r}
+single_run <- function(filename = NULL, ...) {
+  # ... is a shortcut that forwards any arguments to my_sim_data()
+  dat_sim <- my_bin_data(...)
+  mod_sim <- glmer(Y_bin ~ 1 + X_i + (1 | item_id) + (1 + X_i | subj_id),
+                data = dat_sim, family = "binomial")
+  
+  sim_results <- broom.mixed::tidy(mod_sim)
+  
+  # append the results to a file if filename is set
+  if (!is.null(filename)) {
+    append <- file.exists(filename) # append if the file exists
+    write_csv(sim_results, filename, append = append)
+  }
+  
+  # return the tidy table
+  sim_results
+}
+
+```
+
+```{r}
+# run one model with default parameters
+single_run()
+```
+
+The following function converts probabilities of getting a 1 in the first and second category levels into beta values. You will need to figure out a custom function for each design to do this, or estimate fixed effect parameters from analysis of pilot data.
+
+```{r}
 prob2param <- function(a = 0, b = 0) {
   list(
-    b0 = (logit(a) + logit(b))/2,
-    b1 = logit(a) - logit(b)
+    beta_0 = (logit(a) + logit(b))/2,
+    beta_1 = logit(a) - logit(b)
+  )
+}
+```
+
+To get an accurate estimation of power, you need to run the simulation many times. We use 20 here as an example because the analysis is very slow, but your results are more accurate the more replications you run. This will depend on the specifics of your analysis, but we recommend at least 1000 replications.
+
+```{r}
+# run simulations and save to a file on each rep
+filename <- "sims/binomial.csv"
+reps <- 20
+b <- prob2param(.4, .6)
+tau_0    <- 1
+tau_1    <- 1
+omega_0  <- 1
+rho      <- 0.5
+  
+if (!file.exists(filename)) {
+  # run simulations and save to a file
+  sims <- purrr::map_df(1:reps, ~single_run(
+    filename = filename,
+    beta_0   = b$beta_0,
+    beta_1   = b$beta_1,
+    tau_0    = tau_0, 
+    tau_1    = tau_1, 
+    omega_0  = omega_0, 
+    rho      = 0.5)
   )
 }
 
-reps <- 5
-b = prob2param(.4, .6)
-tau_0 = 1
-tau_1 = 1
-omega_0 = 1
-tau_r = 0.5
-
-filename <- "sims/binomial.csv"
+# read saved simulation data
+ct <- cols(# makes sure plots display in this order
+           group = col_factor(ordered = TRUE),
+           term = col_factor(ordered = TRUE))
+sims <- read_csv(filename, col_types = ct)
 ```
 
-```{r, eval = FALSE}
-# run simulations and save to a file on each rep
-sims <- replicate(reps, { 
-  sim <- my_glmer_power(b0 = b$b0,
-                       b1 = b$b1,
-                       tau_0 = tau_0, 
-                       tau_1 = tau_1, 
-                       omega_0 = omega_0, 
-                       tau_r = tau_r)
-  # check if there are already simulations 
-  # saved to file and add them
-  append <- file.exists(filename)
-  write_csv(sim, filename, append = append)
-})
-```
-
-The chunk above is set to not evaluate when you knit this file; it just reads the saved data from the file. The code below calculates the mean estimates and power for each group.
 
 ### Calculate mean estimates and cell probabilities
 
-```{r, message = FALSE}
-# read saved simulation data
-sims <- read_csv(filename)
-
+```{r}
 est <- sims %>%
   group_by(group, term) %>%
   summarise(
@@ -184,7 +209,7 @@ est <- sims %>%
 
 int_est <- filter(est, is.na(group), term == "(Intercept)") %>%
   pull(mean_estimate)
-cat_est <- filter(est, is.na(group), term == "cat") %>%
+cat_est <- filter(est, is.na(group), term == "X_i") %>%
   pull(mean_estimate)
 
 pr0 <- inv_logit(int_est) %>% round(2)
@@ -194,180 +219,9 @@ pr1_minus <- inv_logit(int_est - .5*cat_est) %>% round(2)
 est %>% 
   arrange(!is.na(group), group, term) %>%
   mutate(
-  sim = c(b$b0, b$b1, omega_0, tau_r, tau_0, tau_1),
+  sim = c(b$beta_0, b$beta_1, omega_0, rho, tau_0, tau_1),
   prob = c(pr0, paste0(pr1_minus, ":", pr1_plus), rep(NA, 4))
 ) %>%
   mutate_if(is.numeric, round, 2)
-```
-
-## 2ww*2wb design
-
-In this example, 100 subjects will respond twice (for happy and angry expressions) to 50 items; 25 items in each of 2 categories. In this example, `expression` is a within-subject and within-item factor and `category` is a within-subject and between-item factor.
-
-```{r}
-ext_bin_data <- function(
-  tau_n        = 100, # number of subjects/btwn-grp
-  omega_n        =  25, # number of items/btwn-grp
-  b0           =   0, # grand mean
-  b_cat        =   0, # main effect of category
-  b_exp        =   0, # main effect of expression
-  b_cat_exp    =   0, # interaction between category and expression
-  omega_0       =   1, # by-item random intercept sd
-  Iexp_sd      =   1, # by-item random slope for exp
-  icor         =   0, # by-item random effect correlation
-  tau_0       =   1, # by-subject random intercept sd
-  Scat_sd      =   1, # by-subject random slope sd for category
-  Sexp_sd      =   1, # by-subject random slope sd for exp
-  Scat_exp_sd  =   1, # by-subject random slope sd for category*exp
-  # by-subject random effect correlations
-  tau_r         = c(0, 0, 0,   # S0s  * cat, exp, tc
-                      0, 0,   # cat  *      exp, tc
-                         0)   # exp  *           tc
-) {
-
-  # simulate items
-  items <- faux::sim_design(
-    within  = list(components = c("I0i", "Iexp")),
-    between = list(category = c("ingroup", "outgroup")),
-    n = omega_n,
-    sd = data.frame(I0i = omega_0, 
-                    Iexp = Iexp_sd),
-    r = icor,
-    id = "item_id",
-    plot = FALSE
-  )
-
-  # simulate subjects
-  subjects <- faux::sim_design(
-    within = list(components = c("S0s", "Scat", "Sexp", "Scat_exp")), 
-    n = tau_n,
-    sd = c(S0s  = tau_0,
-           Scat = Scat_sd, 
-           Sexp = Sexp_sd, 
-           Scat.exp  = Scat_exp_sd), 
-    r = tau_r,
-    id = "subj_id",
-    plot = FALSE
-  )
-
-  # simulate trials
-  dat_sim <- crossing(
-    subj_id = subjects$subj_id,
-    item_id = items$item_id,
-    expression = factor(c("happy", "angry"), ordered = TRUE)
-  ) %>%
-    inner_join(subjects, "subj_id") %>%
-    inner_join(items, "item_id") %>%
-    mutate(exp = recode(expression, "happy" = -0.5, "angry" = 0.5),
-           cat = recode(category, "ingroup" = -0.5, "outgroup" = +0.5),
-           trial_i    = b0 + I0i +  S0s,
-           trial_cat  = b_cat + Scat,
-           trial_exp  = b_exp + Iexp + Sexp,
-           trial_ct   = b_cat_exp + Scat.exp,
-           Y = trial_i + 
-             (trial_cat*cat) + 
-             (trial_exp*exp) + 
-             (trial_ct*cat*exp),
-           pr = inv_logit(Y), 
-           Y_bin = rbinom(nrow(.), 1, pr))
-  
-  dat_sim
-}
-
-ext_bin_func <- function(...) {
-  
-  dat_sim <- ext_bin_data(...)
-  
-  mod_sim <- glmer(Y_bin ~ 1 + cat*exp + 
-                    (1 + exp | item_id) + 
-                    (1 + cat*exp | subj_id),
-                  data = dat_sim, family = "binomial")
-  
-  broom.mixed::tidy(mod_sim)
-}
-```
-
-```{r}
-# run simulations
-prob2param <- function(angry_ingroup = 0,
-                       angry_outgroup = 0,
-                       happy_ingroup = 0,
-                       happy_outgroup = 0) {
-  ai <- logit(angry_ingroup)
-  ao <- logit(angry_outgroup)
-  hi <- logit(happy_ingroup)
-  ho <- logit(happy_outgroup)
-  list(
-    b0 = mean(c(ai,ao,hi,ho)),
-    b_cat = (ao+ho) - (ai+hi),
-    b_exp = (ao+ai) - (ho+hi),
-    b_cat_exp = (ao-ai) - (ho-hi)
-  )
-}
-
-reps <- 10
-b = prob2param(.5, .6, .4, .5)
-
-filename <- "sims/binomial2.csv"
-```
-
-
-```{r, eval = FALSE}
-# run simulations and save to a file on each rep
-sims <- replicate(reps, { 
-  sim <- ext_bin_func(b0 = b$b0,
-                      b_cat = b$b_cat,
-                      b_exp = b$b_exp,
-                      b_cat_exp = b$b_cat_exp)
-  # check if there are already simulations 
-  # saved to file and add them
-  append <- file.exists(filename)
-  write_csv(sim, filename, append = append)
-})
-```
-
-
-
-# Calculate mean estimates
-
-```{r}
-# read saved simulation data
-sims <- read_csv(filename)
-
-est <- sims %>%
-  filter(effect == "fixed") %>%
-  group_by(term) %>%
-  summarise(
-    mean_estimate = mean(estimate),
-    .groups = "drop"
-  )
-
-est %>% mutate(
-  sim = c(b$b0, b$b_cat, b$b_cat_exp, b$b_exp)
-) %>%
-  mutate_if(is.numeric, round, 2)
-```
-
-### Calculate probabilities
-
-Sum estimates for each cell and use inverse logit transform to recover probabilities.
-
-```{r}
-int <- est[[1,2]]
-cat <- est[[2,2]]
-exp <- est[[4,2]]
-cat_exp <- est[[3,2]]
-
-data.frame(
-  angry_outgroup = inv_logit(int + .5*cat + .5*exp + .5*.5*cat_exp),
-  angry_ingroup  = inv_logit(int - .5*cat + .5*exp - .5*.5*cat_exp),
-  happy_outgroup = inv_logit(int + .5*cat - .5*exp - .5*.5*cat_exp),
-  happy_ingroup  = inv_logit(int - .5*cat - .5*exp + .5*.5*cat_exp)
-) %>%
-  gather(key, val, 1:4) %>%
-  separate(key, c("exp", "cat")) %>%
-  spread(cat, val) %>%
-  mutate_if(is.numeric, round, 2)
-
 ```
 

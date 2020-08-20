@@ -21,6 +21,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+[Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix1b_example_code.Rmd)
+
 This script provides equivalent code to the version using pipes and functions from the tidyverse. While this code may be of interest to people who want to learn more about the computations that generate correlated data, it will be more difficult to extend to more complicated designs.
 
 ## Simulate data with crossed random factors
