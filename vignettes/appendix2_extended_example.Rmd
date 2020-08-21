@@ -1,10 +1,10 @@
 ---
-title: 'Appendix 2: Extended Example'
+title: 'Appendix 2: Extended Examples'
 subtitle: "Understanding mixed effects models through data simulation"
 author: "Lisa M. DeBruine & Dale J. Barr"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Appendix 2: Extended Example}
+  %\VignetteIndexEntry{Appendix 2: Extended Examples}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

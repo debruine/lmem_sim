@@ -1,11 +1,11 @@
 ---
-title: 'Appendix 1: Example Code'
+title: 'Appendix 1a: Example Code'
 subtitle: "Understanding mixed effects models through data simulation"
 author: "Lisa M. DeBruine & Dale J. Barr"
 
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Appendix 1: Example Code}
+  %\VignetteIndexEntry{Appendix 1a: Example Code}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-[Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix1_example_code.Rmd)
+[Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix1a_example_code.Rmd)
 
 
 ## Simulate data with crossed random factors

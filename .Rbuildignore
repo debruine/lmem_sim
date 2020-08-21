@@ -4,6 +4,7 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^vignettes/paper.Rmd$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^inst/paper/Makefile

@@ -1,10 +1,10 @@
 ---
-title: 'Appendix 3: Binomial Example'
+title: 'Appendix 3a: Binomial Example'
 subtitle: "Understanding mixed effects models through data simulation"
 author: "Lisa M. DeBruine & Dale J. Barr"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Appendix 3: Binomial Example}
+  %\VignetteIndexEntry{Appendix 3a: Binomial Example}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-[Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix3_binomial.Rmd)
+[Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix3a_binomial.Rmd)
 
 ## Simulating binomial data with crossed random factors
 

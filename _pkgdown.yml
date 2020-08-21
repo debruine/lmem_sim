@@ -1,0 +1,12 @@
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - paper
+  - appendix1a_example_code
+  - appendix1b_example_code
+  - appendix1c_sensitivity
+  - appendix2_extended_example
+  - appendix3a_binomial
+  - appendix3b_extended_binomial
+

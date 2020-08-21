@@ -4,7 +4,7 @@ subtitle: "Understanding mixed effects models through data simulation"
 author: "Lisa M. DeBruine & Dale J. Barr"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Appendix 3: Binomial Example}
+  %\VignetteIndexEntry{Appendix 3b: Extended Binomial Example}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
