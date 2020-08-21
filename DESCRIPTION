@@ -31,11 +31,15 @@ Imports:
     afex,
     lme4,
     broom.mixed,
-    faux
+    faux,
+    lmerTest
 Suggests: 
     knitr,
     rmarkdown,
-    papaja
+    papaja,
+    shiny,
+    shinydashboard,
+    shinyjs
 Remotes: 
     debruine/faux,
     crsh/papaja
