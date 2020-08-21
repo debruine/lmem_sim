@@ -131,7 +131,7 @@ population\strut
 
 # Data, materials, and online resources
 
-The code to reproduce the analyses reported in this article and appendices with extended examples are publicly available via the Open Science Framework and can be accessed at <https://osf.io/3cz2e>. This code is supplemented by two web apps at <http://shiny.psy.gla.ac.uk/lmem_sim> and <http://shiny.psy.gla.ac.uk/crossed> that perform data simulation without requiring knowledge of R code. These apps allow you to change parameters and inspect the results of LMEM and ANOVA analyses, as well as calculate power and false positive rates for these analyses.
+The code to reproduce the analyses reported in this article and appendices with extended examples are publicly available via the Open Science Framework and can be accessed at <https://osf.io/3cz2e>. This code is supplemented by web apps that perform data simulation without requiring knowledge of R code. These apps allow you to change parameters and inspect the results of LMEM and ANOVA analyses, as well as calculate power and false positive rates for these analyses.
 
 # Simulating data with crossed random factors
 
@@ -159,7 +159,7 @@ library("tidyverse")   # data wrangling and visualisation
 
 Because the code uses random number generation, if you want to reproduce the exact results below you will need to set the random number seed at the top of your script and ensure you are using R version 3.6.0 or higher. If you change the seed or are using a lower version of R, your exact numbers will differ, but the procedure will still produce a valid simulation.
 
-```{r pkgs}
+```{r seed}
 # ensure this script returns the same results on each run
 set.seed(8675309)
 ```
@@ -829,6 +829,9 @@ The author(s) declared that there were no conflicts of interest with respect to 
 ### Funding
 LMD is supported by European Research Council grant #647910.
 
+### Research Software
+
+This tutorial uses the following open-source research software: @R-base; @R-lme4; @R-lmerTest; @R-broom.mixed; @R-afex; @R-tidyverse; @R-faux; @R-papaja.
 
 \newpage
 

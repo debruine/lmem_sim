@@ -1,40 +1,49 @@
-\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 %
-\documentclass[english,doc,floatsintext]{apa6}
+\documentclass[
+  english,
+  doc,floatsintext]{apa6}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e} % provides \textsubscript
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provides euro and other symbols
-\else % if luatex or xelatex
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
   \usepackage{unicode-math}
-  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
-% use upquote if available, for straight quotes in verbatim environments
+% Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-% use microtype if available
-\IfFileExists{microtype.sty}{%
-\usepackage[]{microtype}
-\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
-\IfFileExists{parskip.sty}{%
-\usepackage{parskip}
-}{% else
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-}
-\usepackage{hyperref}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \hypersetup{
-            pdftitle={Understanding mixed effects models through data simulation},
-            pdfauthor={Lisa M. DeBruine1 \& Dale J. Barr1},
-            pdfkeywords={simulation, mixed effects models, power, lme4, R},
-            pdfborder={0 0 0},
-            breaklinks=true}
-\urlstyle{same}  % don't use monospace font for urls
+  pdftitle={Understanding mixed effects models through data simulation},
+  pdfauthor={Lisa M. DeBruine1 \& Dale J. Barr1},
+  pdflang={en-EN},
+  pdfkeywords={simulation, mixed effects models, power, lme4, R},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
 \usepackage{color}
 \usepackage{fancyvrb}
 \newcommand{\VerbBar}{|}
@@ -84,16 +93,23 @@
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
 \setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-\setlength{\emergencystretch}{3em}  % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{0}
-
-% set default figure placement to htbp
+% Set default figure placement to htbp
 \makeatletter
 \def\fps@figure{htbp}
 \makeatother
-
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% Make \paragraph and \subparagraph free-standing
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
 % Manuscript styling
 \usepackage{upgreek}
 \captionsetup{font=singlespacing,justification=justified}
@@ -145,12 +161,12 @@
 \floatplacement{figure}{H}
 \raggedbottom
 \usepackage{tcolorbox}
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
-  \usepackage[shorthands=off,main=english]{babel}
-\else
-  % load polyglossia as late as possible as it *could* call bidi if RTL lang (e.g. Hebrew or Arabic)
+\ifxetex
+  % Load polyglossia as late as possible: uses bidi with RTL langages (e.g. Hebrew, Arabic)
   \usepackage{polyglossia}
   \setmainlanguage[]{english}
+\else
+  \usepackage[shorthands=off,main=english]{babel}
 \fi
 
 \title{Understanding mixed effects models through data simulation}
@@ -244,7 +260,7 @@ population\strut
 \hypertarget{data-materials-and-online-resources}{%
 \section{Data, materials, and online resources}\label{data-materials-and-online-resources}}
 
-The code to reproduce the analyses reported in this article and appendices with extended examples are publicly available via the Open Science Framework and can be accessed at \url{https://osf.io/3cz2e}. This code is supplemented by two web apps at \url{http://shiny.psy.gla.ac.uk/lmem_sim} and \url{http://shiny.psy.gla.ac.uk/crossed} that perform data simulation without requiring knowledge of R code. These apps allow you to change parameters and inspect the results of LMEM and ANOVA analyses, as well as calculate power and false positive rates for these analyses.
+The code to reproduce the analyses reported in this article and appendices with extended examples are publicly available via the Open Science Framework and can be accessed at \url{https://osf.io/3cz2e}. This code is supplemented by web apps that perform data simulation without requiring knowledge of R code. These apps allow you to change parameters and inspect the results of LMEM and ANOVA analyses, as well as calculate power and false positive rates for these analyses.
 
 \hypertarget{simulating-data-with-crossed-random-factors}{%
 \section{Simulating data with crossed random factors}\label{simulating-data-with-crossed-random-factors}}
@@ -1143,6 +1159,11 @@ The author(s) declared that there were no conflicts of interest with respect to 
 
 LMD is supported by European Research Council grant \#647910.
 
+\hypertarget{research-software}{%
+\subsubsection{Research Software}\label{research-software}}
+
+This tutorial uses the following open-source research software: R Core Team (2018); Bates et al. (2015); Kuznetsova, Brockhoff, and Christensen (2017); Bolker and Robinson (2019); Singmann et al. (2019); Wickham (2017); DeBruine (2020); Aust and Barth (2018).
+
 \newpage
 
 \hypertarget{references}{%
@@ -1153,6 +1174,9 @@ LMD is supported by European Research Council grant \#647910.
 \setlength{\leftskip}{0.5in}
 
 \hypertarget{refs}{}
+\leavevmode\hypertarget{ref-R-papaja}{}%
+Aust, F., \& Barth, M. (2018). \emph{papaja: Create APA manuscripts with R Markdown}. Retrieved from \url{https://github.com/crsh/papaja}
+
 \leavevmode\hypertarget{ref-baayen_davidson_bates_2008}{}%
 Baayen, R. H., Davidson, D. J., \& Bates, D. M. (2008). Mixed-effects modeling with crossed random effects for subjects and items. \emph{Journal of Memory and Language}, \emph{59}, 390--412.
 
@@ -1171,6 +1195,9 @@ Bates, D., Mächler, M., Bolker, B., \& Walker, S. (2015). Fitting linear mixed-
 \leavevmode\hypertarget{ref-bedny_aguirre_thompson-schill_2007}{}%
 Bedny, M., Aguirre, G. K., \& Thompson-Schill, S. L. (2007). Item analysis in functional magnetic resonance imaging. \emph{Neuroimage}, \emph{35}(3), 1093--1102.
 
+\leavevmode\hypertarget{ref-R-broom.mixed}{}%
+Bolker, B., \& Robinson, D. (2019). \emph{Broom.mixed: Tidying methods for mixed models}. Retrieved from \url{https://CRAN.R-project.org/package=broom.mixed}
+
 \leavevmode\hypertarget{ref-clark_1973}{}%
 Clark, H. H. (1973). The language-as-fixed-effect fallacy: A critique of language statistics in psychological research. \emph{Journal of Verbal Learning and Verbal Behavior}, \emph{12}, 335--359.
 
@@ -1185,6 +1212,9 @@ Forster, K., \& Dickinson, R. (1976). More on the language-as-fixed-effect falla
 
 \leavevmode\hypertarget{ref-judd_westfall_kenny_2012}{}%
 Judd, C. M., Westfall, J., \& Kenny, D. A. (2012). Treating stimuli as a random factor in social psychology: A new and comprehensive solution to a pervasive but largely ignored problem. \emph{Journal of Personality and Social Psychology}, \emph{103}, 54.
+
+\leavevmode\hypertarget{ref-R-lmerTest}{}%
+Kuznetsova, A., Brockhoff, P. B., \& Christensen, R. H. B. (2017). lmerTest package: Tests in linear mixed effects models. \emph{Journal of Statistical Software}, \emph{82}(13), 1--26. \url{https://doi.org/10.18637/jss.v082.i13}
 
 \leavevmode\hypertarget{ref-locker_hoffman_bovaird_2007}{}%
 Locker, L., Hoffman, L., \& Bovaird, J. (2007). On the use of multilevel modeling as an alternative to items analysis in psycholinguistic research. \emph{Behavior Research Methods}, \emph{39}, 723--730.
@@ -1206,6 +1236,9 @@ Westfall, J., Kenny, D. A., \& Judd, C. M. (2014). Statistical power and optimal
 
 \leavevmode\hypertarget{ref-westfall_yarkoni_2016}{}%
 Westfall, J., Nichols, T. E., \& Yarkoni, T. (2016). Fixing the stimulus-as-fixed-effect fallacy in task fMRI. \emph{Wellcome Open Research}, \emph{1}.
+
+\leavevmode\hypertarget{ref-R-tidyverse}{}%
+Wickham, H. (2017). \emph{Tidyverse: Easily install and load the 'tidyverse'}. Retrieved from \url{https://CRAN.R-project.org/package=tidyverse}
 
 \leavevmode\hypertarget{ref-wickham-advr}{}%
 Wickham, H. (2019). \emph{Advanced R}. CRC press. Retrieved from \url{http://adv-r.had.co.nz/}
