@@ -54,7 +54,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/appendix1_example_code.html">Appendix 1: Example Code</a>
+      <a href="articles/paper.html">Understanding mixed effects models through data simulation</a>
+    </li>
+    <li>
+      <a href="articles/appendix1a_example_code.html">Appendix 1a: Example Code</a>
     </li>
     <li>
       <a href="articles/appendix1b_example_code.html">Appendix 1b: Example Code (no tidyverse)</a>
@@ -63,10 +66,13 @@
       <a href="articles/appendix1c_sensitivity.html">Appendix 1c: Sensitivity Analysis</a>
     </li>
     <li>
-      <a href="articles/appendix2_extended_example.html">Appendix 2: Extended Example</a>
+      <a href="articles/appendix2_extended_example.html">Appendix 2: Extended Examples</a>
     </li>
     <li>
-      <a href="articles/appendix3_binomial.html">Appendix 3: Binomial Example</a>
+      <a href="articles/appendix3a_binomial.html">Appendix 3a: Binomial Example</a>
+    </li>
+    <li>
+      <a href="articles/appendix3b_extended_binomial.html">Appendix 3b: Extended Binomial Example</a>
     </li>
   </ul>
 </li>
@@ -103,8 +109,8 @@
 <p>You can install the development version of a package that include all the packages you’ll need for the examples, plus a local version of the shiny app, from <a href="https://github.com/debruine/lmem_sim">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="r"><span class="kw pkg">devtools</span><span class="kw ns">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span>(<span class="st">"debruine/lmem_sim"</span>)</pre></div>
 <p>Here are some functions included in the app:</p>
-<div class="sourceCode" id="cb2"><pre class="r"><span class="kw pkg">lmem.sim</span><span class="kw ns">::</span><span class="fu">paper</span>()       <span class="co"># open the pdf version of the paper</span>
-<span class="kw pkg">lmem.sim</span><span class="kw ns">::</span><span class="fu">paper</span>(<span class="st">"html"</span>) <span class="co"># open the html version of the paper</span>
+<div class="sourceCode" id="cb2"><pre class="r"><span class="kw pkg">lmem.sim</span><span class="kw ns">::</span><span class="fu"><a href="reference/paper.html">paper</a></span>()       <span class="co"># open the pdf version of the paper</span>
+<span class="kw pkg">lmem.sim</span><span class="kw ns">::</span><span class="fu"><a href="reference/paper.html">paper</a></span>(<span class="st">"html"</span>) <span class="co"># open the html version of the paper</span>
 <span class="kw pkg">lmem.sim</span><span class="kw ns">::</span><span class="fu"><a href="reference/app.html">app</a></span>()         <span class="co"># start the app</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/citation.html">citation</a></span>(<span class="st">"lmem.sim"</span>)    <span class="co"># get the citation</span></pre></div>
 </div>
