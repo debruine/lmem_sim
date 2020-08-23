@@ -245,7 +245,7 @@ beta_0 <- 800 # intercept; i.e., the grand mean
 beta_1 <-  50 # slope; i.e, effect of category
 ```
 
-\noindent The parameters $\beta_0$ and $\beta_1$ are *fixed effects*: they characterize properties of the population of encounters between subjects and stimuli. Thus, we set the mean RT for a "typical" subject encountering a "typical" stimulus to `r beta_0` ms, and assume that responses are typically `r beta_1` ms slower for outgroup than ingroup faces.
+\noindent The parameters $\beta_0$ and $\beta_1$ are *fixed effects*: they characterize the population of events in which a typical subject encounters a typical stimulus. Thus, we set the mean RT for a "typical" subject encountering a "typical" stimulus to `r beta_0` ms, and assume that responses are typically `r beta_1` ms slower for outgroup than ingroup faces.
 
 ### Specify the random effect parameters
 
