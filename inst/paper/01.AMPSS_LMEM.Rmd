@@ -33,6 +33,8 @@ draft             : no
 documentclass     : "apa6"
 classoption       : "doc"
 output            : 
+  rmarkdown::word_document:
+    default
   rmarkdown::html_document:
     toc: true
     toc_depth: 4
@@ -43,7 +45,7 @@ header-includes   :
   - \floatplacement{figure}{H}
   - \raggedbottom
   - \usepackage{tcolorbox}
-note              : "Preprint submitted for publication"
+note              : "In press at Advances in Methods and Practices in Psychological Science"
 ---
 
 ```{r setup, include = FALSE}
