@@ -33,6 +33,8 @@ draft             : no
 documentclass     : "apa6"
 classoption       : "doc"
 output            : 
+  rmarkdown::word_document:
+    default
   rmarkdown::html_document:
     toc: true
     toc_depth: 4
@@ -43,7 +45,7 @@ header-includes   :
   - \floatplacement{figure}{H}
   - \raggedbottom
   - \usepackage{tcolorbox}
-note              : "Preprint submitted for publication"
+note              : "In press at Advances in Methods and Practices in Psychological Science"
 ---
 
 ```{r setup, include = FALSE}
@@ -225,7 +227,7 @@ tibble::tribble(~`model`, ~`code`, ~`description`,
 
 ```
 
-Getting an appropriately structured dataset is the easy part. The difficult part is generating the RT values. For this, we need to establish an underlying statistical model. In this and the next section, we will build up a statistical model step by step, defining variables in the code as we go along that reflect our choices for parameters. For convenience, Table\ \@ref(tab:paramdef) lists all of the variables in the statistical model and their associated variable names in the code. 
+Now that we have an appropriate structure for our simulated dataset, we need to generate the RT values. For this, we need to establish an underlying statistical model. In this and the next section, we will build up a statistical model step by step, defining variables in the code as we go along that reflect our choices for parameters. For convenience, Table\ \@ref(tab:paramdef) lists all of the variables in the statistical model and their associated variable names in the code. 
 
 Let us start with a basic model and build up from there. We want a model of RT for subject $s$ and item $i$ that looks something like:
 
@@ -245,7 +247,7 @@ beta_0 <- 800 # intercept; i.e., the grand mean
 beta_1 <-  50 # slope; i.e, effect of category
 ```
 
-\noindent The parameters $\beta_0$ and $\beta_1$ are *fixed effects*: they characterize properties of the population of encounters between subjects and stimuli. Thus, we set the mean RT for a "typical" subject encountering a "typical" stimulus to `r beta_0` ms, and assume that responses are typically `r beta_1` ms slower for outgroup than ingroup faces.
+\noindent The parameters $\beta_0$ and $\beta_1$ are *fixed effects*: they characterize the population of events in which a typical subject encounters a typical stimulus. Thus, we set the mean RT for a "typical" subject encountering a "typical" stimulus to `r beta_0` ms, and assume that responses are typically `r beta_1` ms slower for outgroup than ingroup faces.
 
 ### Specify the random effect parameters
 
@@ -276,7 +278,7 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 
 The random slope $T_{1s}$ is an estimate of how much faster or slower subject $s$ is in categorizing ingroup/outgroup faces than the population mean effect $\beta_1$, which we already set to `r beta_1` ms.  Given how we coded the $X_i$ variable, the mean effect for subject $s$ is given by the $\beta_1 + T_{1s}$ term. So, a participant who is 90 ms faster on average to categorize ingroup than outgroup faces would have a random slope $T_{1s}$ of `r 90-beta_1` ($\beta_1 + T_{1s} = `r beta_1` + `r 90-beta_1` = 90$). As we did for the random intercepts, we assume that the $T_{1s}$ effects are drawn from a normal distribution, with a mean of zero and standard deviation of $\tau_1$ (`tau_1` in the code). For this example, we assume the standard deviation is 40 ms.
 
-But note that we are sampling *two* random effects for each subject $s$, a random intercept $T_{0s}$ and a random slope $T_{1s}$.  It is possible for these values to be correlated, in which case we should not sample them independently. For instance, perhaps people who are faster than average overall (negative random intercept) also show a smaller than average effect of the ingroup/outgroup manipulation (negative random slope) due to allocating less attention to the task.  We can capture this by allowing for a small correlation between the two factors, `rho`, which we assign to be 0.2.
+But note that we are sampling *two* random effects for each subject $s$, a random intercept $T_{0s}$ and a random slope $T_{1s}$.  It is possible for these values to be positively or negatively correlated, in which case we should not sample them independently. For instance, perhaps people who are faster than average overall (negative random intercept) also show a smaller than average effect of the ingroup/outgroup manipulation (negative random slope) due to allocating less attention to the task.  We can capture this by allowing for a small positive correlation between the two factors, `rho`, which we assign to be 0.2.
 
 Finally, we need to characterize the trial-level noise in the study ($e_{si}$) in terms of its standard deviation. Here we simply assign this parameter value `sigma` to be twice the size of the by-subject random intercept SD.
 
@@ -581,7 +583,7 @@ RT ~ 1 + X_i + (1 | item_id) + (1 + X_i | subj_id)
 
 \noindent The error term (`e_si`) is automatically included in all models, so is left implicit. The 'fixed' part of the formula, `RT ~ 1 + X_i`, establishes the $RT_{si} + \beta_0 + \beta_1 X_i + e_{si}$ part of our linear model. Every model has an intercept ($\beta_0$) term and residual term ($e_{si}$) by default, so you could alternatively leave the `1` out and just write `RT ~ X_i`.
 
-The terms in parentheses with the `|` separator define the random effects structure. For each of these bracketed terms, the left-hand side of the `|` names the effects you wish to allow to vary and the right hand side names the variable identifying the levels of the random factor over which the terms vary (e.g., subjects or items). The first term, `(1 | item_id)` allows the intercept (`1`) to vary over the random factor of items (`item_id`). This is an instruction to estimate the parameter underlying the `O_0i` values, namely `omega_0`. The second term, `(1 + X_i | subj_id)`, allows both the intercept and the effect of category (coded by `X_i`) to vary over the random factor of subjects (`subj_id`). It is an instruction to estimate the three parameters that underlie the `T_0s` and `T_1s` values, namely `tau_0`, `tau_1`, and `rho`.
+The terms in parentheses with the "pipe" separator (`|`) define the random effects structure. For each of these bracketed terms, the left-hand side of the pipe names the effects you wish to allow to vary and the right hand side names the variable identifying the levels of the random factor over which the terms vary (e.g., subjects or items). The first term, `(1 | item_id)` allows the intercept (`1`) to vary over the random factor of items (`item_id`). This is an instruction to estimate the parameter underlying the `O_0i` values, namely `omega_0`. The second term, `(1 + X_i | subj_id)`, allows both the intercept and the effect of category (coded by `X_i`) to vary over the random factor of subjects (`subj_id`). It is an instruction to estimate the three parameters that underlie the `T_0s` and `T_1s` values, namely `tau_0`, `tau_1`, and `rho`.
 
 ## Interpreting the lmer summary
 
@@ -673,7 +675,7 @@ tibble(
                   
 ```
 
-You can also use `broom.mixed::tidy()` to output fixed and/or random effects in a tidy table. This is especially useful when you need to combine the output from hundreds of simulations to calculate power. The code below adds a column with the simulated parameters we set above so you can compare them to the estimated parameters from this simulated dataset (Table\ \@ref(tab:broom-tidy-table)).
+You can also use `broom.mixed::tidy()` to output fixed and/or random effects in a tidy table (Table\ \@ref(tab:broom-tidy-table)). This is especially useful when you need to combine the output from hundreds of simulations to calculate power. The column "effect" specifies whether a row is a fixed effect ("fixed") or a random effect parameter ("ran_pars"). The column "group" specifies the group by the random factor column name (or "Residual") for random effect parameters. The column "term" refers to the predictor term for fixed effects, and also the parameter for random effects; for example, "sd__X_i" refers to the standard deviation of the random slope for `X_i`, while "cor__(Intercept).X_i" refers to `rho`, the correlation between the random intercept and slope for `X_i`. We added the column "sim" to the standard output of `broom.mixed::tidy()` so you can compare the simulated parameters we set above to the estimated parameters from this simulated dataset, which are in the column "estimate". The last four columns give the standard error, $t$-statistic, estimated degrees of freedom, and p-value for the fixed effects.
 
 ```{r broom-tidy, eval = FALSE}
 # get a tidy table of results

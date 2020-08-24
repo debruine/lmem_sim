@@ -54,7 +54,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/appendix1_example_code.html">Appendix 1: Example Code</a>
+      <a href="../articles/paper.html">Understanding mixed effects models through data simulation</a>
+    </li>
+    <li>
+      <a href="../articles/appendix1a_example_code.html">Appendix 1a: Example Code</a>
     </li>
     <li>
       <a href="../articles/appendix1b_example_code.html">Appendix 1b: Example Code (no tidyverse)</a>
@@ -63,16 +66,13 @@
       <a href="../articles/appendix1c_sensitivity.html">Appendix 1c: Sensitivity Analysis</a>
     </li>
     <li>
-      <a href="../articles/appendix2_extended_example.html">Appendix 2: Extended Example</a>
+      <a href="../articles/appendix2_extended_example.html">Appendix 2: Extended Examples</a>
     </li>
     <li>
-      <a href="../articles/appendix3_binomial.html">Appendix 3: Binomial Example</a>
+      <a href="../articles/appendix3a_binomial.html">Appendix 3a: Binomial Example</a>
     </li>
     <li>
       <a href="../articles/appendix3b_extended_binomial.html">Appendix 3b: Extended Binomial Example</a>
-    </li>
-    <li>
-      <a href="../articles/paper.html">Understanding mixed effects models through data simulation</a>
     </li>
   </ul>
 </li>
@@ -332,7 +332,7 @@
 </tr>
 </tbody>
 </table>
-<p>Getting an appropriately structured dataset is the easy part. The difficult part is generating the RT values. For this, we need to establish an underlying statistical model. In this and the next section, we will build up a statistical model step by step, defining variables in the code as we go along that reflect our choices for parameters. For convenience, Table @ref(tab:paramdef) lists all of the variables in the statistical model and their associated variable names in the code.</p>
+<p>Now that we have an appropriate structure for our simulated dataset, we need to generate the RT values. For this, we need to establish an underlying statistical model. In this and the next section, we will build up a statistical model step by step, defining variables in the code as we go along that reflect our choices for parameters. For convenience, Table @ref(tab:paramdef) lists all of the variables in the statistical model and their associated variable names in the code.</p>
 <p>Let us start with a basic model and build up from there. We want a model of RT for subject <span class="math inline">\(s\)</span> and item <span class="math inline">\(i\)</span> that looks something like:</p>
 <p><span class="math display">\[\begin{equation}
 RT_{si} = \beta_0 + \beta_1 X_{i} + e_{si}.
@@ -343,7 +343,7 @@ RT_{si} = \beta_0 + \beta_1 X_{i} + e_{si}.
 <div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="co"># set fixed effect parameters</span>
 <span class="no">beta_0</span> <span class="kw">&lt;-</span> <span class="fl">800</span> <span class="co"># intercept; i.e., the grand mean</span>
 <span class="no">beta_1</span> <span class="kw">&lt;-</span>  <span class="fl">50</span> <span class="co"># slope; i.e, effect of category</span></pre></body></html></div>
-<p>The parameters <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are <em>fixed effects</em>: they characterize properties of the population of encounters between subjects and stimuli. Thus, we set the mean RT for a “typical” subject encountering a “typical” stimulus to 800 ms, and assume that responses are typically 50 ms slower for outgroup than ingroup faces.</p>
+<p>The parameters <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are <em>fixed effects</em>: they characterize the population of events in which a typical subject encounters a typical stimulus. Thus, we set the mean RT for a “typical” subject encountering a “typical” stimulus to 800 ms, and assume that responses are typically 50 ms slower for outgroup than ingroup faces.</p>
 </div>
 <div id="specify-the-random-effect-parameters" class="section level3">
 <h3 class="hasAnchor">
@@ -362,7 +362,7 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \beta_1 X_i + e_{si} .
 RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 \end{equation}\]</span></p>
 <p>The random slope <span class="math inline">\(T_{1s}\)</span> is an estimate of how much faster or slower subject <span class="math inline">\(s\)</span> is in categorizing ingroup/outgroup faces than the population mean effect <span class="math inline">\(\beta_1\)</span>, which we already set to 50 ms. Given how we coded the <span class="math inline">\(X_i\)</span> variable, the mean effect for subject <span class="math inline">\(s\)</span> is given by the <span class="math inline">\(\beta_1 + T_{1s}\)</span> term. So, a participant who is 90 ms faster on average to categorize ingroup than outgroup faces would have a random slope <span class="math inline">\(T_{1s}\)</span> of 40 (<span class="math inline">\(\beta_1 + T_{1s} = 50 + 40 = 90\)</span>). As we did for the random intercepts, we assume that the <span class="math inline">\(T_{1s}\)</span> effects are drawn from a normal distribution, with a mean of zero and standard deviation of <span class="math inline">\(\tau_1\)</span> (<code>tau_1</code> in the code). For this example, we assume the standard deviation is 40 ms.</p>
-<p>But note that we are sampling <em>two</em> random effects for each subject <span class="math inline">\(s\)</span>, a random intercept <span class="math inline">\(T_{0s}\)</span> and a random slope <span class="math inline">\(T_{1s}\)</span>. It is possible for these values to be correlated, in which case we should not sample them independently. For instance, perhaps people who are faster than average overall (negative random intercept) also show a smaller than average effect of the ingroup/outgroup manipulation (negative random slope) due to allocating less attention to the task. We can capture this by allowing for a small correlation between the two factors, <code>rho</code>, which we assign to be 0.2.</p>
+<p>But note that we are sampling <em>two</em> random effects for each subject <span class="math inline">\(s\)</span>, a random intercept <span class="math inline">\(T_{0s}\)</span> and a random slope <span class="math inline">\(T_{1s}\)</span>. It is possible for these values to be positively or negatively correlated, in which case we should not sample them independently. For instance, perhaps people who are faster than average overall (negative random intercept) also show a smaller than average effect of the ingroup/outgroup manipulation (negative random slope) due to allocating less attention to the task. We can capture this by allowing for a small positive correlation between the two factors, <code>rho</code>, which we assign to be 0.2.</p>
 <p>Finally, we need to characterize the trial-level noise in the study (<span class="math inline">\(e_{si}\)</span>) in terms of its standard deviation. Here we simply assign this parameter value <code>sigma</code> to be twice the size of the by-subject random intercept SD.</p>
 <div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="co"># set more random effect and error parameters</span>
 <span class="no">tau_1</span>  <span class="kw">&lt;-</span>  <span class="fl">40</span> <span class="co"># by-subject random slope sd</span>
@@ -994,7 +994,7 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
 <code>(1 + X_i | subj_id)</code> specifies a subject-specific random intercept (<code>T_0s</code>) plus the subject-specific random slope of category (<code>T_1s</code>).</li>
 </ul>
 <p>The error term (<code>e_si</code>) is automatically included in all models, so is left implicit. The ‘fixed’ part of the formula, <code>RT ~ 1 + X_i</code>, establishes the <span class="math inline">\(RT_{si} + \beta_0 + \beta_1 X_i + e_{si}\)</span> part of our linear model. Every model has an intercept (<span class="math inline">\(\beta_0\)</span>) term and residual term (<span class="math inline">\(e_{si}\)</span>) by default, so you could alternatively leave the <code>1</code> out and just write <code>RT ~ X_i</code>.</p>
-<p>The terms in parentheses with the <code><a href="https://rdrr.io/r/base/Logic.html">|</a></code> separator define the random effects structure. For each of these bracketed terms, the left-hand side of the <code><a href="https://rdrr.io/r/base/Logic.html">|</a></code> names the effects you wish to allow to vary and the right hand side names the variable identifying the levels of the random factor over which the terms vary (e.g., subjects or items). The first term, <code>(1 | item_id)</code> allows the intercept (<code>1</code>) to vary over the random factor of items (<code>item_id</code>). This is an instruction to estimate the parameter underlying the <code>O_0i</code> values, namely <code>omega_0</code>. The second term, <code>(1 + X_i | subj_id)</code>, allows both the intercept and the effect of category (coded by <code>X_i</code>) to vary over the random factor of subjects (<code>subj_id</code>). It is an instruction to estimate the three parameters that underlie the <code>T_0s</code> and <code>T_1s</code> values, namely <code>tau_0</code>, <code>tau_1</code>, and <code>rho</code>.</p>
+<p>The terms in parentheses with the “pipe” separator (<code><a href="https://rdrr.io/r/base/Logic.html">|</a></code>) define the random effects structure. For each of these bracketed terms, the left-hand side of the pipe names the effects you wish to allow to vary and the right hand side names the variable identifying the levels of the random factor over which the terms vary (e.g., subjects or items). The first term, <code>(1 | item_id)</code> allows the intercept (<code>1</code>) to vary over the random factor of items (<code>item_id</code>). This is an instruction to estimate the parameter underlying the <code>O_0i</code> values, namely <code>omega_0</code>. The second term, <code>(1 + X_i | subj_id)</code>, allows both the intercept and the effect of category (coded by <code>X_i</code>) to vary over the random factor of subjects (<code>subj_id</code>). It is an instruction to estimate the three parameters that underlie the <code>T_0s</code> and <code>T_1s</code> values, namely <code>tau_0</code>, <code>tau_1</code>, and <code>rho</code>.</p>
 </div>
 <div id="interpreting-the-lmer-summary" class="section level2">
 <h2 class="hasAnchor">
@@ -1115,7 +1115,7 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
 </tr>
 </tbody>
 </table>
-<p>You can also use <code><a href="https://rdrr.io/pkg/broom.mixed/man/reexports.html">broom.mixed::tidy()</a></code> to output fixed and/or random effects in a tidy table. This is especially useful when you need to combine the output from hundreds of simulations to calculate power. The code below adds a column with the simulated parameters we set above so you can compare them to the estimated parameters from this simulated dataset (Table @ref(tab:broom-tidy-table)).</p>
+<p>You can also use <code><a href="https://rdrr.io/pkg/broom.mixed/man/reexports.html">broom.mixed::tidy()</a></code> to output fixed and/or random effects in a tidy table (Table @ref(tab:broom-tidy-table)). This is especially useful when you need to combine the output from hundreds of simulations to calculate power. The column “effect” specifies whether a row is a fixed effect (“fixed”) or a random effect parameter (“ran_pars”). The column “group” specifies the group by the random factor column name (or “Residual”) for random effect parameters. The column “term” refers to the predictor term for fixed effects, and also the parameter for random effects; for example, "sd__X_i" refers to the standard deviation of the random slope for <code>X_i</code>, while "cor__(Intercept).X_i" refers to <code>rho</code>, the correlation between the random intercept and slope for <code>X_i</code>. We added the column “sim” to the standard output of <code><a href="https://rdrr.io/pkg/broom.mixed/man/reexports.html">broom.mixed::tidy()</a></code> so you can compare the simulated parameters we set above to the estimated parameters from this simulated dataset, which are in the column “estimate”. The last four columns give the standard error, <span class="math inline">\(t\)</span>-statistic, estimated degrees of freedom, and p-value for the fixed effects.</p>
 <div class="sourceCode" id="cb22"><html><body><pre class="r"><span class="co"># get a tidy table of results</span>
 <span class="kw pkg">broom.mixed</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/broom.mixed/man/reexports.html">tidy</a></span>(<span class="no">mod_sim</span>) <span class="kw">%&gt;%</span>
   <span class="fu">mutate</span>(<span class="kw">sim</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="no">beta_0</span>, <span class="no">beta_1</span>, <span class="no">tau_0</span>, <span class="no">rho</span>, <span class="no">tau_1</span>, <span class="no">omega_0</span>, <span class="no">sigma</span>)) <span class="kw">%&gt;%</span>
