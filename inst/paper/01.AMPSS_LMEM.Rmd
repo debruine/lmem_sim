@@ -21,7 +21,7 @@ abstract: |
   
   Experimental designs that sample both subjects and stimuli from a larger population need to account for random effects of both subjects and stimuli using mixed effects models. However, much of this research is analyzed using ANOVA on aggregated responses because researchers are not confident specifying and interpreting mixed effects models. The tutorial will explain how to simulate data with random effects structure and analyse the data using linear mixed effects regression (with the lme4 R package), with a focus on interpreting the output in light of the simulated parameters. Data simulation can not only enhance understanding of how these models work, but also enables researchers to perform power calculations for complex designs. All materials associated with this article can be accessed at https://osf.io/3cz2e/. 
 keywords          : "simulation, mixed effects models, power, lme4, R"
-wordcount         : "5572"
+wordcount         : "7890"
 bibliography      : ["bibliography.bib", "r-references.bib"]
 floatsintext      : yes
 figurelist        : no
@@ -33,12 +33,12 @@ draft             : no
 documentclass     : "apa6"
 classoption       : "doc"
 output            : 
-  rmarkdown::word_document:
+  papaja::apa6_pdf:
     default
   rmarkdown::html_document:
     toc: true
     toc_depth: 4
-  papaja::apa6_pdf:
+  rmarkdown::word_document:
     default
 header-includes   :
   - \usepackage{float}
