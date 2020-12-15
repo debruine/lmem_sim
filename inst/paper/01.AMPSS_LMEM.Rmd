@@ -292,7 +292,7 @@ sigma  <- 200 # residual (error) sd
 To summarize, we established a reasonable statistical model underlying the data having the form:
 
 \begin{equation}
-RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
+RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 \end{equation}
 
 \noindent The response time for subject $s$ on item $i$, $RT_{si}$, is decomposed into a population grand mean $\beta_0$, a by-subject random intercept $T_{0s}$, a by-item random intercept $O_{0i}$, a fixed slope $\beta_1$, a by-subject random slope $T_{1s}$, and a trial-level residual $e_{si}$. Our data-generating process is fully determined by seven population parameters, all denoted by Greek letters: $\beta_0$, $\beta_1$, $\tau_0$, $\tau_1$, $\rho$, $\omega_0$, and $\sigma$ (see Table\ \@ref(tab:paramdef)). In the next section we will apply this data-generating process to simulate the sampling of subjects, items, and trials (encounters).
@@ -475,7 +475,7 @@ bind_rows(.tri %>% slice(1:6) %>%
 With this resulting table, in combination with the constants `beta_0` and `beta_1`, we have the full set of values that we need to compute the response variable `RT` according to the linear model we defined above:
 
 \begin{equation}
-RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
+RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 \end{equation}
 
 \noindent Thus, we calculate the response variable `RT` by adding together:
@@ -823,7 +823,7 @@ In this tutorial, we have introduced the main concepts needed to get started wit
 
 ### Author Contributions
 
-DJB drafted the substantive explanation and LDB drafted the tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app http://shiny.psy.gla.ac.uk/lmem_sim/.
+DJB drafted the substantive explanation and LDB drafted the tutorial. Both authors revised the draft and approved the final submitted version of the manuscript. LDB created the app https://shiny.psy.gla.ac.uk/lmem_sim/.
 
 ### Declaration of Conflicting Interests
 The author(s) declared that there were no conflicts of interest with respect to the authorship or the publication of this article.

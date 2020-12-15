@@ -444,7 +444,7 @@ Finally, we need to characterize the trial-level noise in the study (\(e_{si}\))
 To summarize, we established a reasonable statistical model underlying the data having the form:
 
 \begin{equation}
-RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
+RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 \end{equation}
 
 \noindent The response time for subject \(s\) on item \(i\), \(RT_{si}\), is decomposed into a population grand mean \(\beta_0\), a by-subject random intercept \(T_{0s}\), a by-item random intercept \(O_{0i}\), a fixed slope \(\beta_1\), a by-subject random slope \(T_{1s}\), and a trial-level residual \(e_{si}\). Our data-generating process is fully determined by seven population parameters, all denoted by Greek letters: \(\beta_0\), \(\beta_1\), \(\tau_0\), \(\tau_1\), \(\rho\), \(\omega_0\), and \(\sigma\) (see Table~\ref{tab:paramdef}). In the next section we will apply this data-generating process to simulate the sampling of subjects, items, and trials (encounters).
@@ -664,7 +664,7 @@ Since all subjects respond to all items, we can set up a table of trials by maki
 With this resulting table, in combination with the constants \texttt{beta\_0} and \texttt{beta\_1}, we have the full set of values that we need to compute the response variable \texttt{RT} according to the linear model we defined above:
 
 \begin{equation}
-RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + O_{1s}\right) X_i + e_{si}
+RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 \end{equation}
 
 \noindent Thus, we calculate the response variable \texttt{RT} by adding together:
