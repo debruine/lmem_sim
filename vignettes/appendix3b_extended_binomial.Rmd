@@ -148,8 +148,8 @@ ext_bin_data <- function(
       X_c = recode(category, "ingroup" = -0.5, "outgroup" = +0.5),
       # add together fixed and random effects for each effect
       B_0  = beta_0  + S_0 + I_0,
-      B_e  = beta_c  + S_e + I_e,
-      B_c  = beta_e  + S_c,
+      B_e  = beta_e  + S_e + I_e,
+      B_c  = beta_c  + S_c,
       B_ec = beta_ec + S_ec,
       # calculate gaussian effect
       Y = B_0 + (B_e*X_e) + (B_c*X_c) + (B_ec*X_e*X_c),
