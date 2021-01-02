@@ -9,6 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,
@@ -32,8 +33,8 @@ The important parts of the design are:
 * Random factor 2: faces
 * Fixed factor 1: expression (level = angry, happy)
     * within subject: subjects see both angry and happy faces
-    * within face: faces are both angry and happy
-* Fixed factor 1: category (level = ingroup, outgroup)
+    * within face: same faces are both angry and happy
+* Fixed factor 2: category (level = ingroup, outgroup)
     * within subject: subjects see both ingroup and outgroup faces
     * between face: faces are either ingroup or outgroup
 
@@ -46,26 +47,22 @@ library("afex")        # anova and deriving p-values from lmer
 library("broom.mixed") # extracting data from model fits 
 library("faux")        # data simulation
 library("tidyverse")   # data wrangling and visualisation
-
 # ensure this script returns the same results on each run
 set.seed(8675309)
 faux_options(verbose = FALSE)
 ```
 
-This example presents an extended simulation for a binomial logistic mixed regression. Part of the process involves conversion between probability and the logit function of probability. The code below converts between these.
+This example presents an extended simulation for a binomial logistic mixed regression. Where response accuracy is measured in terms of probability, the regression needs to work with a link function that uses the logit, which does not have the problems of being bounded by 0 and 1. The function below is used later to convert between probability and the logit function of probability. 
 
 ```{r fig.width = 8, fig.height = 3}
-
 logit <- function(x) { log(x / (1 - x)) }
 inv_logit <- function(x) { 1 / (1 + exp(-x)) }
-
 data.frame(
   prob = seq(0,1,.01)
 ) %>%
   mutate(logit = logit(prob)) %>%
   ggplot(aes(prob, logit)) +
   geom_point()
-
 ```
 
 
@@ -93,12 +90,17 @@ Other terms:
 * `*_rho`: correlations; a vector of the upper right triangle for the correlation matrix for that group's random effects
 * `n_*`: sample size
 
-```{r}
+Betas are on logit scale; later we use inv_logit to convert to probabilities.
+The defaults for the makebinary function below are for null effects.  
+When simulating realistic data, we will call the function using beta values computed using expected probabilities for combinations of independent variables. These overwrite the defaults specified here.
+All SDs, representing variation in item and subject-specific effects, are set to one.
+
+```{r simulatedata}
 ext_bin_data <- function(
   n_subj     = 100, # number of subjects
   n_ingroup  =  25,  # number of faces in ingroup
   n_outgroup =  25,  # number of faces in outgroup
-  beta_0     =   0, # grand mean
+  beta_0     =   0, # grand mean - inv_logit(0)=.5
   beta_e     =   0, # main effect of expression
   beta_c     =   0, # main effect of category
   beta_ec    =   0, # interaction between category and expression
@@ -114,8 +116,7 @@ ext_bin_data <- function(
                     0, 0, # subj_e  *         subj_c, subj_ec
                        0) # subj_c  *                 subj_ec
 ) {
-
-  # simulate items
+  # simulate items;  separate item ID for each item; simulating each item's individual effect for intercept (I_0) and slope
   items <- faux::rnorm_multi(
     n = n_ingroup + n_outgroup,
     mu = 0, 
@@ -126,8 +127,8 @@ ext_bin_data <- function(
     mutate(item_id = faux::make_id(nrow(.), "I"),
            category = rep(c("ingroup", "outgroup"), 
                            c(n_ingroup, n_outgroup)))
-
-   # simulate subjects
+  
+   # simulate subjects: separate subject ID for each subject; simulating each subject's individual effect for intercept (I_0) and slope for each factor and the interaction.
   subjects <- faux::rnorm_multi(
     n = n_subj,
     mu = 0,
@@ -136,7 +137,6 @@ ext_bin_data <- function(
     varnames = c("S_0", "S_e", "S_c", "S_ec")
   ) %>%
     mutate(subj_id = faux::make_id(nrow(.), "S"))
-
   # simulate trials
   # simulate trials
   crossing(subjects, items,
@@ -154,19 +154,20 @@ ext_bin_data <- function(
       # calculate gaussian effect
       Y = B_0 + (B_e*X_e) + (B_c*X_c) + (B_ec*X_e*X_c),
       pr = inv_logit(Y), # transform to probability of getting 1
-      Y_bin = rbinom(nrow(.), 1, pr) # sample from bernoulli distribution
+      Y_bin = rbinom(nrow(.), 1, pr) # sample from bernoulli distribution, ie use pr to set observed binary response to 0 or 1, so if pr = .5, then 0 and 1 equally likely
     ) %>%
     select(subj_id, item_id, expression, category, X_e, X_c, Y, Y_bin)
 }
 ```
 
-```{r}
+```{r showsimdat}
 dat_sim <- ext_bin_data()
 head(dat_sim)
+
 ```
+Can compare single run output with the parameters that were set.
 
-
-```{r}
+```{r singlerun_function}
 single_run2 <- function(filename = NULL, ...) {
   dat_sim <- ext_bin_data(...)
   mod_sim <- glmer(Y_bin ~ 1 + X_e*X_c + 
@@ -185,20 +186,25 @@ single_run2 <- function(filename = NULL, ...) {
   # return the tidy table
   sim_results
 }
-
 ```
 
-The following function calculate the betas from probabilities for each cell. You will need to figure out a custom function for each design to do this, or estimate fixed effect parameters from analysis of pilot data.
 
-```{r}
-prob2param <- function(angry_ingroup = 0,
-                       angry_outgroup = 0,
-                       happy_ingroup = 0,
-                       happy_outgroup = 0) {
-  ai <- logit(angry_ingroup)
-  ao <- logit(angry_outgroup)
-  hi <- logit(happy_ingroup)
-  ho <- logit(happy_outgroup)
+
+The following function calculates the betas (on logit scale) from mean probability correct for each combination of factors. 
+The values entered are the mean probability correct for each combination of effects.
+Default is all are 50% correct
+
+You will need to figure out a custom function for each design to do this, or estimate fixed effect parameters from analysis of pilot data.
+
+```{r prob2param}
+prob2param <- function(A1B1 = .5,
+                       A1B2 = .5,
+                       A2B1 = .5,
+                       A2B2 = .5) {
+  ai <- logit(A1B1)
+  ao <- logit(A1B2)
+  hi <- logit(A2B1)
+  ho <- logit(A2B2)
   list(
     beta_0 = mean(c(ai,ao,hi,ho)), # grand mean
     beta_e = (ao+ai) - (ho+hi), # angry - happy
@@ -208,12 +214,41 @@ prob2param <- function(angry_ingroup = 0,
 }
 ```
 
-```{r}
-# run simulations and save to a file on each rep
-filename <- "sims/binomial_ext.csv"
-b = prob2param(.5, .6, .4, .5)
-reps <- 10
+Demonstrate a single run of the function.
 
+```{r singlerundemo}
+#first we specify proportions correct for the 4 combinations. These are just estimated values to show how it works
+
+#to check false positive rate of analysis, set all these to same value (e.g. .5)
+A1B1 = .5 #angry_ingroup
+A1B2 = .6 #angry_outgroup
+A2B1 = .4 #happy_ingroup
+A2B2 = .5 #happy_outgroup
+b = prob2param(A1B1, A1B2,A2B1,A2B2) 
+print('beta values are: ')
+b
+
+# e.g. with values set to .5,.6,.4,.5 we get beta_0 and beta_ec of zero (no interaction)
+# and beta_e and beta_c of .81 (same size effect of angry/happy and ingroup/outgroup)
+
+# We now do a single run of analysis on simulated data. This is slow - we show how long one run takes using the timer.
+ptm <- proc.time() #start clock
+sims <- single_run2(
+    beta_0 = b$beta_0,
+    beta_e = b$beta_e,
+    beta_c = b$beta_c,
+    beta_ec = b$beta_ec)
+# Stop the clock
+proc.time() - ptm
+sims
+```
+
+```{r runsims}
+# We now run many simulations and save to a file on each rep
+
+reps <- 10
+#we make a filename indicating this specific set of estimated values
+filename <- paste0("sims/binomial_",A1B1,"_",A1B2,"_",A2B1,"_",A2B2,"_rep",reps,".csv")
 if (!file.exists(filename)) {
   # run simulations and save to a file
   sims <- purrr::map_df(1:reps, ~single_run2(
@@ -224,7 +259,6 @@ if (!file.exists(filename)) {
     beta_ec = b$beta_ec)
   )
 }
-
 # read saved simulation data
 sims <- read_csv(filename)
 ```
@@ -232,7 +266,7 @@ sims <- read_csv(filename)
 
 ### Calculate mean estimates
 
-```{r}
+```{r meanests}
 est <- sims %>%
   filter(effect == "fixed") %>%
   group_by(term) %>%
@@ -240,12 +274,14 @@ est <- sims %>%
     mean_estimate = mean(estimate),
     .groups = "drop"
   )
-
 est %>% mutate(
   parameter = c("beta_0", "beta_c", "beta_e", "beta_ec"),
   value = c(b$beta_0, b$beta_c, b$beta_e, b$beta_ec)
 ) %>%
   mutate_if(is.numeric, round, 2)
+
+#value is the true value of beta derived from the probabilities we specified
+#estimate is the mean estimate of that value in the simulations
 ```
 
 ### Calculate probabilities
@@ -257,7 +293,6 @@ int <- est[[1,2]]
 cat <- est[[2,2]]
 exp <- est[[3,2]]
 cat_exp <- est[[4,2]]
-
 data.frame(
   angry_outgroup = inv_logit(int + .5*cat + .5*exp + .5*.5*cat_exp),
   angry_ingroup  = inv_logit(int - .5*cat + .5*exp - .5*.5*cat_exp),
@@ -269,5 +304,32 @@ data.frame(
   spread(cat, val) %>%
   mutate_if(is.numeric, round, 2)
 
+#Can compare with specified values of .5.,.6, .4, .5 in runsims. 
 ```
+
+## Power analysis
+
+```{r power}
+
+# calculate mean power for specified alpha
+alpha <- 0.05
+sims %>% 
+  filter(effect == "fixed") %>%
+  dplyr::group_by(term) %>%
+  dplyr::summarise(
+    mean_estimate = mean(estimate),
+    mean_se = mean(std.error),
+    power = mean(p.value < alpha),
+    .groups = "drop"
+  )
+
+# Note use of dplyr:: with the tidyverse commands group_by and summarise. This avoids problems that can arise from conflicts of these names with other packages.
+
+
+```
+
+
+
+
+
 
