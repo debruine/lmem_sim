@@ -97,7 +97,7 @@ All SDs, representing variation in item and subject-specific effects, are set to
 
 ```{r simulatedata}
 ext_bin_data <- function(
-  n_subj     = 100, # number of subjects
+  n_subj     = 30, # number of subjects - modified to run faster
   n_ingroup  =  25,  # number of faces in ingroup
   n_outgroup =  25,  # number of faces in outgroup
   beta_0     =   0, # grand mean - inv_logit(0)=.5
@@ -223,7 +223,7 @@ Demonstrate a single run of the function.
 A1B1 = .5 #angry_ingroup
 A1B2 = .6 #angry_outgroup
 A2B1 = .4 #happy_ingroup
-A2B2 = .5 #happy_outgroup
+A2B2 = .6 #happy_outgroup
 b = prob2param(A1B1, A1B2,A2B1,A2B2) 
 print('beta values are: ')
 b
@@ -278,7 +278,7 @@ est %>% mutate(
   parameter = c("beta_0", "beta_c", "beta_e", "beta_ec"),
   value = c(b$beta_0, b$beta_c, b$beta_e, b$beta_ec)
 ) %>%
-  mutate_if(is.numeric, round, 2)
+  mutate_if(is.numeric, round, 4)
 
 #value is the true value of beta derived from the probabilities we specified
 #estimate is the mean estimate of that value in the simulations
@@ -294,10 +294,10 @@ cat <- est[[2,2]]
 exp <- est[[3,2]]
 cat_exp <- est[[4,2]]
 data.frame(
-  angry_outgroup = inv_logit(int + .5*cat + .5*exp + .5*.5*cat_exp),
-  angry_ingroup  = inv_logit(int - .5*cat + .5*exp - .5*.5*cat_exp),
-  happy_outgroup = inv_logit(int + .5*cat - .5*exp - .5*.5*cat_exp),
-  happy_ingroup  = inv_logit(int - .5*cat - .5*exp + .5*.5*cat_exp)
+  angry_outgroup = inv_logit(int + .25*cat + .25*exp + .25*cat_exp),
+  angry_ingroup  = inv_logit(int - .25*cat + .25*exp - .25*cat_exp),
+  happy_outgroup = inv_logit(int + .25*cat - .25*exp - .25*cat_exp),
+  happy_ingroup  = inv_logit(int - .25*cat - .25*exp + .25*cat_exp)
 ) %>%
   gather(key, val, 1:4) %>%
   separate(key, c("exp", "cat")) %>%
