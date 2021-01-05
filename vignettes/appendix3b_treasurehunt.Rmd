@@ -231,8 +231,8 @@ prob2param <- function(A1B1 = .5,
   ho <- logit(A2B2)
   list(
     beta_0 = mean(c(ai,ao,hi,ho)), # grand mean
-    beta_e = (ao+ai) - (ho+hi), # T1 - T2
-    beta_c = (ao+ho) - (ai+hi), # condN - condR
+    beta_e = (ao+ai)/2 - (ho+hi)/2, # T1 - T2
+    beta_c = (ao+ho)/2 - (ai+hi)/2, # condN - condR
     beta_ec = (ao-ai) - (ho-hi) # T1 o-i diff - T2 o-i diff
   )
 }

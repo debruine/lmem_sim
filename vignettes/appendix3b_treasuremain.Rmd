@@ -239,8 +239,8 @@ prob2param <- function(A1B1 = .5,
   ho <- logit(A2B2)
   list(
     beta_0 = mean(c(ai,ao,hi,ho)), # grand mean
-    beta_e = (ao+ai) - (ho+hi), # T1 - T2
-    beta_c = (ao+ho) - (ai+hi), # condN - condR
+    beta_e = (ao+ai)/2 - (ho+hi)/2, # T1 - T2
+    beta_c = (ao+ho)/2 - (ai+hi)/2, # condN - condR
     beta_ec = (ao-ai) - (ho-hi) # T1 o-i diff - T2 o-i diff
   )
 }
@@ -346,10 +346,10 @@ cat <- est[[2,2]]
 exp <- est[[3,2]]
 cat_exp <- est[[4,2]]
 data.frame(
-  T1_condN = inv_logit(int + .25*cat + .25*exp + .25*cat_exp),
-  T1_condR  = inv_logit(int - .25*cat + .25*exp - .25*cat_exp),
-  T2_condN = inv_logit(int + .25*cat - .25*exp - .25*cat_exp),
-  T2_condR  = inv_logit(int - .25*cat - .25*exp + .25*cat_exp)
+  T1_condN = inv_logit(int + .5*cat + .5*exp + .5*.5*cat_exp),
+  T1_condR  = inv_logit(int - .5*cat + .5*exp - .5*.5*cat_exp),
+  T2_condN = inv_logit(int + .5*cat - .5*exp - .5*.5*cat_exp),
+  T2_condR  = inv_logit(int - .5*cat - .5*exp + .5*.5*cat_exp)
 ) %>%
   gather(key, val, 1:4) %>%
   separate(key, c("exp", "cat")) %>%

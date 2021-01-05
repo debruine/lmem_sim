@@ -1,7 +1,7 @@
 ---
 title: 'Appendix 3b: Extended Binomial Example'
 subtitle: "Understanding mixed effects models through data simulation"
-author: "Lisa M. DeBruine & Dale J. Barr"
+author: "Lisa M. DeBruine, Dale J. Barr & Dorothy Bishop"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Appendix 3b: Extended Binomial Example}
@@ -25,25 +25,25 @@ knitr::opts_chunk$set(
 
 ## Simulating binomial data with crossed random factors
 
-To give an overview of the simulation task, we will simulate data from a design with crossed random factors of subjects and stimuli, fit a model to the simulated data, and then try to recover the parameter values we put in from the output. In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use accuracy (correct/incorrect) as the primary dependent variable. The faces are of two types: either from the subject's ingroup or from an outgroup. For simplicity, we further assume that each face appears only once in the stimulus set. The key question is whether there is any difference in classification accuracy across the type of face.
+To give an overview of the simulation task, we will simulate data from a design with crossed random factors of subjects and stimuli, fit a model to the simulated data, and then try to recover the parameter values we put in from the output. In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use accuracy (correct/incorrect) as the primary dependent variable. The faces are of two types: either from the subject's ingroup or from an outgroup. The key question is whether there is any difference in classification accuracy across the type of face.
 
 The important parts of the design are:
 
 * Random factor 1: subjects 
 * Random factor 2: faces
 * Fixed factor 1: expression (level = angry, happy)
-    * within subject: subjects see both angry and happy faces
+    * within subject: same subjects see both angry and happy faces
     * within face: same faces are both angry and happy
 * Fixed factor 2: category (level = ingroup, outgroup)
-    * within subject: subjects see both ingroup and outgroup faces
-    * between face: faces are either ingroup or outgroup
+    * within subject: same subjects see both ingroup and outgroup faces
+    * between face: each face is either ingroup or outgroup
 
 ### Required software
 
 ```{r, message=FALSE}
 # load required packages
 library("lme4")        # model specification / estimation
-library("afex")        # anova and deriving p-values from lmer
+library("afex")        # deriving p-values from lmer
 library("broom.mixed") # extracting data from model fits 
 library("faux")        # data simulation
 library("tidyverse")   # data wrangling and visualisation
@@ -52,11 +52,15 @@ set.seed(8675309)
 faux_options(verbose = FALSE)
 ```
 
-This example presents an extended simulation for a binomial logistic mixed regression. Where response accuracy is measured in terms of probability, the regression needs to work with a link function that uses the logit, which does not have the problems of being bounded by 0 and 1. The function below is used later to convert between probability and the logit function of probability. 
+### Probability vs logit
 
-```{r fig.width = 8, fig.height = 3}
+This example presents an extended simulation for a binomial logistic mixed regression. Where response accuracy is measured in terms of probability, the regression needs to work with a link function that uses the logit, which does not have the problems of being bounded by 0 and 1. The functions below are used later to convert between probability and the logit function of probability. 
+
+```{r prob-vs-logit, fig.width = 8, fig.height = 3}
 logit <- function(x) { log(x / (1 - x)) }
+
 inv_logit <- function(x) { 1 / (1 + exp(-x)) }
+
 data.frame(
   prob = seq(0,1,.01)
 ) %>%
@@ -66,11 +70,14 @@ data.frame(
 ```
 
 
-## 2ww*2wb design
+### 2ww*2wb design
 
-In this example, 100 subjects will respond twice (for happy and angry expressions) to 50 items; 25 items in each of 2 categories. In this example, `expression` is a within-subject and within-item factor and `category` is a within-subject and between-item factor.
+In this example, 30 subjects will respond twice (for happy and angry expressions) to 50 items; 25 items in each of 2 categories. In this example, `expression` is a within-subject and within-item factor and `category` is a within-subject and between-item factor.
+
+### Terms
 
 We use the following prefixes to designate model parameters and sampled values: 
+
 * `beta_*`: fixed effect parameters
 * `subj_*`: random effect parameters associated with subjects
 * `item_*`: random effect parameters associated with items
@@ -90,21 +97,22 @@ Other terms:
 * `*_rho`: correlations; a vector of the upper right triangle for the correlation matrix for that group's random effects
 * `n_*`: sample size
 
-Betas are on logit scale; later we use inv_logit to convert to probabilities.
-The defaults for the makebinary function below are for null effects.  
-When simulating realistic data, we will call the function using beta values computed using expected probabilities for combinations of independent variables. These overwrite the defaults specified here.
+### Data-generating function
+
+Betas are on logit scale; later we use `inv_logit()` to convert to probabilities.
+The defaults for the data-generating function `ext_bin_dgf()` are for null effects. When simulating realistic data, we will call the function using beta values computed using expected probabilities for combinations of independent variables, which will overwrite the defaults specified here.
 All SDs, representing variation in item and subject-specific effects, are set to one.
 
 ```{r simulatedata}
-ext_bin_data <- function(
-  n_subj     = 30, # number of subjects - modified to run faster
-  n_ingroup  =  25,  # number of faces in ingroup
-  n_outgroup =  25,  # number of faces in outgroup
+ext_bin_dgf <- function(
+  n_subj     =  30, # number of subjects
+  n_ingroup  =  25, # number of faces in ingroup
+  n_outgroup =  25, # number of faces in outgroup
   beta_0     =   0, # grand mean - inv_logit(0)=.5
   beta_e     =   0, # main effect of expression
   beta_c     =   0, # main effect of category
   beta_ec    =   0, # interaction between category and expression
-  item_0    =   1, # by-item random intercept sd
+  item_0     =   1, # by-item random intercept sd
   item_e     =   1, # by-item random slope for exp
   item_rho   =   0, # by-item random effect correlation
   subj_0     =   1, # by-subject random intercept sd
@@ -116,7 +124,9 @@ ext_bin_data <- function(
                     0, 0, # subj_e  *         subj_c, subj_ec
                        0) # subj_c  *                 subj_ec
 ) {
-  # simulate items;  separate item ID for each item; simulating each item's individual effect for intercept (I_0) and slope
+  # simulate items;  separate item ID for each item; 
+  # simulating each item's individual effect for intercept (I_0) 
+  #   and slope (I_e) for expression (the only within-item factor)
   items <- faux::rnorm_multi(
     n = n_ingroup + n_outgroup,
     mu = 0, 
@@ -126,9 +136,12 @@ ext_bin_data <- function(
   ) %>%
     mutate(item_id = faux::make_id(nrow(.), "I"),
            category = rep(c("ingroup", "outgroup"), 
-                           c(n_ingroup, n_outgroup)))
+                           c(n_ingroup, n_outgroup))) %>%
+    select(item_id, category, everything())
   
-   # simulate subjects: separate subject ID for each subject; simulating each subject's individual effect for intercept (I_0) and slope for each factor and the interaction.
+  # simulate subjects: separate subject ID for each subject; 
+  # simulating each subject's individual effect for intercept (I_0) 
+  #   and slope for each within-subject factor and their interaction.
   subjects <- faux::rnorm_multi(
     n = n_subj,
     mu = 0,
@@ -136,8 +149,9 @@ ext_bin_data <- function(
     r = subj_rho,
     varnames = c("S_0", "S_e", "S_c", "S_ec")
   ) %>%
-    mutate(subj_id = faux::make_id(nrow(.), "S"))
-  # simulate trials
+    mutate(subj_id = faux::make_id(nrow(.), "S")) %>%
+    select(subj_id, everything())
+  
   # simulate trials
   crossing(subjects, items,
     expression = factor(c("happy", "angry"), ordered = TRUE)
@@ -160,16 +174,20 @@ ext_bin_data <- function(
 }
 ```
 
-```{r showsimdat}
-dat_sim <- ext_bin_data()
-head(dat_sim)
+You can set the subject and item Ns to very small numbers to check that the design is what you expect. Here, we have two subjects who each see two faces, one ingroup and one outgroup, in each of two expressions, happy and angry, for a total of four trials per subject.
 
+```{r showsimdat}
+ext_bin_dgf(n_subj = 2, n_ingroup = 1, n_outgroup = 1)
 ```
-Can compare single run output with the parameters that were set.
+
+### Single run
+
+The `single_run()` function creates a simulated data set using the `ext_bin_dgf()` function, runs a GLMM analysis, and returns a tidy table of the results. If you set `filename`, it will also record the data to a file, which can be helpful if you need to run a long simulation that might crash or you might need to interrupt. 
 
 ```{r singlerun_function}
-single_run2 <- function(filename = NULL, ...) {
-  dat_sim <- ext_bin_data(...)
+single_run <- function(filename = NULL, ...) {
+  # ... represents additional arguments to be passed to ext_bin_dgf
+  dat_sim <- ext_bin_dgf(...)
   mod_sim <- glmer(Y_bin ~ 1 + X_e*X_c + 
                      (1 + X_e | item_id) + 
                      (1 + X_e*X_c | subj_id),
@@ -188,70 +206,77 @@ single_run2 <- function(filename = NULL, ...) {
 }
 ```
 
+You can compare a single run output with the parameters that were set. However, unless your Ns are very big, expect a few large deviations by chance. Run this function once with a timing function to see how long it takes. Mixed model simulations can take a long time, so knowing this lets you figure out how long your coffee break can be when you run the simulation below.
+
+```{r}
+system.time(
+  s <- single_run()
+)
+s
+```
 
 
-The following function calculates the betas (on logit scale) from mean probability correct for each combination of factors. 
-The values entered are the mean probability correct for each combination of effects.
-Default is all are 50% correct
+### Calculate betas from probabilities
 
-You will need to figure out a custom function for each design to do this, or estimate fixed effect parameters from analysis of pilot data.
+The following function calculates the betas (on logit scale) from the mean probability correct for each combination of factors. The default is all are 50% correct.
+
+This function only works for a 2x2 design like the one in this example. You will need to figure out a custom function for each design to do this, or estimate fixed effect parameters directly from analysis of pilot data.
 
 ```{r prob2param}
-prob2param <- function(A1B1 = .5,
-                       A1B2 = .5,
-                       A2B1 = .5,
-                       A2B2 = .5) {
-  ai <- logit(A1B1)
-  ao <- logit(A1B2)
-  hi <- logit(A2B1)
-  ho <- logit(A2B2)
+# set level 1 for each factor to the +0.5-coded value
+
+prob2param <- function(A1B1 = .5,   # angry outgroup
+                       A1B2 = .5,   # angry ingroup
+                       A2B1 = .5,   # happy outgroup
+                       A2B2 = .5) { # happy ingroup 
+  # convert probabilities to logit
+  a1b1 <- logit(A1B1)
+  a1b2 <- logit(A1B2)
+  a2b1 <- logit(A2B1)
+  a2b2 <- logit(A2B2)
+  
+  # calculate and return betas
   list(
-    beta_0 = mean(c(ai,ao,hi,ho)), # grand mean
-    beta_e = (ao+ai) - (ho+hi), # angry - happy
-    beta_c = (ao+ho) - (ai+hi), # outgroup - ingroup
-    beta_ec = (ao-ai) - (ho-hi) # angry o-i diff - happy o-i diff
+    beta_0 = mean(c(a1b1, a1b2, a2b1, a2b2)), # grand mean
+    beta_e = (a1b1+a1b2)/2 - (a2b1+a2b2)/2, # angry - happy
+    beta_c = (a1b1+a2b1)/2 - (a1b2+a2b2)/2, # outgroup - ingroup
+    beta_ec = (a1b1-a1b2) - (a2b1-a2b2) # angry o-i diff - happy o-i diff
   )
 }
 ```
 
-Demonstrate a single run of the function.
+
+Demonstrate a single run of the function. First we specify proportions correct for the 4 combinations. These are just made-up values to show how it works. With values set to .6, .5, .5, and .4,, we get `beta_0` and `beta_ec` of 0 (no interaction), and `beta_e` and `beta_c` of .81 (same size effect of angry/happy and ingroup/outgroup).
 
 ```{r singlerundemo}
-#first we specify proportions correct for the 4 combinations. These are just estimated values to show how it works
-
-#to check false positive rate of analysis, set all these to same value (e.g. .5)
-A1B1 = .5 #angry_ingroup
-A1B2 = .6 #angry_outgroup
-A2B1 = .4 #happy_ingroup
-A2B2 = .6 #happy_outgroup
-b = prob2param(A1B1, A1B2,A2B1,A2B2) 
-print('beta values are: ')
-b
-
-# e.g. with values set to .5,.6,.4,.5 we get beta_0 and beta_ec of zero (no interaction)
-# and beta_e and beta_c of .81 (same size effect of angry/happy and ingroup/outgroup)
-
-# We now do a single run of analysis on simulated data. This is slow - we show how long one run takes using the timer.
-ptm <- proc.time() #start clock
-sims <- single_run2(
-    beta_0 = b$beta_0,
-    beta_e = b$beta_e,
-    beta_c = b$beta_c,
-    beta_ec = b$beta_ec)
-# Stop the clock
-proc.time() - ptm
-sims
+# to check false positive rate of analysis, set all these to same value (e.g. .5)
+A1B1 <- .6 # angry_outgroup
+A1B2 <- .5 # angry_ingroup
+A2B1 <- .5 # happy_outgroup
+A2B2 <- .4 # happy_ingroup
+b <- prob2param(A1B1, A1B2, A2B1, A2B2) 
+str(b)
 ```
 
-```{r runsims}
-# We now run many simulations and save to a file on each rep
+### Simulations
 
+We can now run many simulations and save to a file on each run. It's a good idea to put the relevant parameters in the filename, or modify the code above to add the parameters as new columns. 
+
+```{r filename}
+# make a filename indicating this specific set of estimated values
+filename <- paste0("sims/binomial_ext_",A1B1,"_",A1B2,"_",A2B1,"_",A2B2,".csv")
+```
+
+This can take a very long time, so set `eval = FALSE` to skip this chunk if you've already run it and just load the data from the file. Alternatively, as below, surround the simulation code with a conditional statement to only run if the file isn't already present.
+
+If you want to add additional reps to your file, make sure you change the seed, or each time your run this script from the start, you'll just get identical numbers.
+
+```{r runsims, eval = TRUE}
 reps <- 10
-#we make a filename indicating this specific set of estimated values
-filename <- paste0("sims/binomial_",A1B1,"_",A1B2,"_",A2B1,"_",A2B2,"_rep",reps,".csv")
+# run simulations and save to a file
+
 if (!file.exists(filename)) {
-  # run simulations and save to a file
-  sims <- purrr::map_df(1:reps, ~single_run2(
+  sims <- purrr::map_df(1:reps, ~single_run(
     filename = filename,
     beta_0 = b$beta_0,
     beta_e = b$beta_e,
@@ -259,77 +284,73 @@ if (!file.exists(filename)) {
     beta_ec = b$beta_ec)
   )
 }
+```
+
+
+```{r read-sims}
 # read saved simulation data
 sims <- read_csv(filename)
 ```
 
 
-### Calculate mean estimates
+### Calculate mean estimates and power
+
+* `mean_estimate` is the mean estimate of that value in the simulations
+* `power` is the proportion of alpha values for each fixed effect that are less than your alpha (here set to .05).
+* `sim_value` is the true value of beta derived from the probabilities we specified
+
 
 ```{r meanests}
+alpha <- 0.05 # justify your alpha
+
 est <- sims %>%
-  filter(effect == "fixed") %>%
-  group_by(term) %>%
-  summarise(
-    mean_estimate = mean(estimate),
-    .groups = "drop"
-  )
-est %>% mutate(
-  parameter = c("beta_0", "beta_c", "beta_e", "beta_ec"),
-  value = c(b$beta_0, b$beta_c, b$beta_e, b$beta_ec)
-) %>%
-  mutate_if(is.numeric, round, 4)
-
-#value is the true value of beta derived from the probabilities we specified
-#estimate is the mean estimate of that value in the simulations
-```
-
-### Calculate probabilities
-
-Sum estimates for each cell and use inverse logit transform to recover probabilities.
-
-```{r}
-int <- est[[1,2]]
-cat <- est[[2,2]]
-exp <- est[[3,2]]
-cat_exp <- est[[4,2]]
-data.frame(
-  angry_outgroup = inv_logit(int + .25*cat + .25*exp + .25*cat_exp),
-  angry_ingroup  = inv_logit(int - .25*cat + .25*exp - .25*cat_exp),
-  happy_outgroup = inv_logit(int + .25*cat - .25*exp - .25*cat_exp),
-  happy_ingroup  = inv_logit(int - .25*cat - .25*exp + .25*cat_exp)
-) %>%
-  gather(key, val, 1:4) %>%
-  separate(key, c("exp", "cat")) %>%
-  spread(cat, val) %>%
-  mutate_if(is.numeric, round, 2)
-
-#Can compare with specified values of .5.,.6, .4, .5 in runsims. 
-```
-
-## Power analysis
-
-```{r power}
-
-# calculate mean power for specified alpha
-alpha <- 0.05
-sims %>% 
-  filter(effect == "fixed") %>%
+  dplyr::filter(effect == "fixed") %>%
   dplyr::group_by(term) %>%
   dplyr::summarise(
     mean_estimate = mean(estimate),
-    mean_se = mean(std.error),
     power = mean(p.value < alpha),
     .groups = "drop"
   )
 
-# Note use of dplyr:: with the tidyverse commands group_by and summarise. This avoids problems that can arise from conflicts of these names with other packages.
+# Note use of dplyr:: with some tidyverse commands to avoid problems that can arise from conflicts of these names with other packages.
 
+est %>% mutate(
+  parameter = c("beta_0", "beta_c", "beta_e", "beta_ec"),
+  sim_value = c(b$beta_0, b$beta_c, b$beta_e, b$beta_ec)
+) %>%
+  mutate_if(is.numeric, round, 4)
 
 ```
 
+### Calculate probabilities
 
+Sum estimates for each cell and use inverse logit transform to recover probabilities. Compare with the values of A1B1 ... A2B2 used to calculate the simulation parameters. 
 
+```{r}
+# get estimates of beta values
+int <- est[[1,2]]
+cat <- est[[2,2]]
+exp <- est[[3,2]]
+cat_exp <- est[[4,2]]
 
+# effect-coding of factor levels
+happy <- -0.5
+angry <- +0.5
+ig    <- -0.5
+og    <- +0.5
+
+data.frame(
+  angry_outgroup = int + og*cat + angry*exp + og*angry*cat_exp,
+  angry_ingroup  = int + ig*cat + angry*exp + ig*angry*cat_exp,
+  happy_outgroup = int + og*cat + happy*exp + og*happy*cat_exp,
+  happy_ingroup  = int + ig*cat + happy*exp + ig*happy*cat_exp
+) %>%
+  gather(key, estimate, 1:4) %>%
+  mutate(estimate = inv_logit(estimate)) %>%
+  mutate(prob = c(A1B1, A1B2, A2B1, A2B2)) %>%
+  separate(key, c("exp", "cat")) %>%
+  mutate_if(is.numeric, round, 2)
+
+```
 
 
