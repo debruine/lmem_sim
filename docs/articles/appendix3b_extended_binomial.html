@@ -91,8 +91,8 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Appendix 3b: Extended Binomial Example</h1>
-            <h3 class="subtitle">Understanding mixed effects models through data simulation</h3>
-                        <h4 class="author">Lisa M. DeBruine, Dale J. Barr &amp; Dorothy Bishop</h4>
+            <h3 class="subtitle">Simulating binomial data with crossed random factors</h3>
+                        <h4 class="author">Lisa M. DeBruine, Dorothy Bishop, Dale J. Barr</h4>
             
       
       
@@ -103,9 +103,6 @@
     
     
 <p><a href="https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix3b_extended_binomial.Rmd">Download the .Rmd for this example</a></p>
-<div id="simulating-binomial-data-with-crossed-random-factors" class="section level2">
-<h2 class="hasAnchor">
-<a href="#simulating-binomial-data-with-crossed-random-factors" class="anchor"></a>Simulating binomial data with crossed random factors</h2>
 <p>To give an overview of the simulation task, we will simulate data from a design with crossed random factors of subjects and stimuli, fit a model to the simulated data, and then try to recover the parameter values we put in from the output. In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use accuracy (correct/incorrect) as the primary dependent variable. The faces are of two types: either from the subject’s ingroup or from an outgroup. The key question is whether there is any difference in classification accuracy across the type of face.</p>
 <p>The important parts of the design are:</p>
 <ul>
@@ -132,7 +129,7 @@
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/lme4/lme4/">"lme4"</a></span><span class="op">)</span>        <span class="co"># model specification / estimation</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://afex.singmann.science/">"afex"</a></span><span class="op">)</span>        <span class="co"># deriving p-values from lmer</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://github.com/bbolker/broom.mixed">"broom.mixed"</a></span><span class="op">)</span> <span class="co"># extracting data from model fits </span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/debruine/faux">"faux"</a></span><span class="op">)</span>        <span class="co"># data simulation</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/debruine/faux">"faux"</a></span><span class="op">)</span>        <span class="co"># data simulation for multivariate normal dist</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span>   <span class="co"># data wrangling and visualisation</span>
 <span class="co"># ensure this script returns the same results on each run</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">8675309</span><span class="op">)</span>
@@ -315,7 +312,7 @@
   <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu">single_run</span><span class="op">(</span><span class="op">)</span>
 <span class="op">)</span></pre></div>
 <pre><code>##    user  system elapsed 
-##  16.236   0.096  16.369</code></pre>
+##  15.507   0.046  15.563</code></pre>
 <div class="sourceCode" id="cb9"><pre class="downlit">
 <span class="va">s</span></pre></div>
 <pre><code>## # A tibble: 17 x 7
@@ -342,7 +339,7 @@
 <div id="calculate-betas-from-probabilities" class="section level3">
 <h3 class="hasAnchor">
 <a href="#calculate-betas-from-probabilities" class="anchor"></a>Calculate betas from probabilities</h3>
-<p>The following function calculates the betas (on logit scale) from the mean probability correct for each combination of factors. The default is all are 50% correct.</p>
+<p>The following function calculates the betas (on a logit scale) from the mean probability correct for each combination of factors. The default is all are 50% correct.</p>
 <p>This function only works for a 2x2 design like the one in this example. You will need to figure out a custom function for each design to do this, or estimate fixed effect parameters directly from analysis of pilot data.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit">
 <span class="co"># set level 1 for each factor to the +0.5-coded value</span>
@@ -365,7 +362,7 @@
     beta_ec <span class="op">=</span> <span class="op">(</span><span class="va">a1b1</span><span class="op">-</span><span class="va">a1b2</span><span class="op">)</span> <span class="op">-</span> <span class="op">(</span><span class="va">a2b1</span><span class="op">-</span><span class="va">a2b2</span><span class="op">)</span> <span class="co"># angry o-i diff - happy o-i diff</span>
   <span class="op">)</span>
 <span class="op">}</span></pre></div>
-<p>Demonstrate a single run of the function. First we specify proportions correct for the 4 combinations. These are just made-up values to show how it works. With values set to .6, .5, .5, and .4,, we get <code>beta_0</code> and <code>beta_ec</code> of 0 (no interaction), and <code>beta_e</code> and <code>beta_c</code> of .81 (same size effect of angry/happy and ingroup/outgroup).</p>
+<p>Demonstrate a single run of the function. First we specify proportions correct for the 4 combinations. These are just made-up values to show how it works. With values set to .6, .5, .5, and .4,, we get <code>beta_0</code> and <code>beta_ec</code> of 0 (no interaction), and <code>beta_e</code> and <code>beta_c</code> of .405 (same size effect of angry/happy and ingroup/outgroup).</p>
 <div class="sourceCode" id="cb12"><pre class="downlit">
 <span class="co"># to check false positive rate of analysis, set all these to same value (e.g. .5)</span>
 <span class="va">A1B1</span> <span class="op">&lt;-</span> <span class="fl">.6</span> <span class="co"># angry_outgroup</span>
@@ -478,14 +475,11 @@
 ## 3 happy outgroup     0.50  0.5
 ## 4 happy  ingroup     0.40  0.4</code></pre>
 </div>
-</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
-    </nav>
-</div>
+      </div>
 
 </div>
 

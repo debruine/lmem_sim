@@ -1,7 +1,7 @@
 ---
 title: 'Appendix 3b: Extended Binomial Example'
-subtitle: "Understanding mixed effects models through data simulation"
-author: "Lisa M. DeBruine, Dale J. Barr & Dorothy Bishop"
+subtitle: "Simulating binomial data with crossed random factors"
+author: "Lisa M. DeBruine, Dorothy Bishop, Dale J. Barr"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Appendix 3b: Extended Binomial Example}
@@ -23,8 +23,6 @@ knitr::opts_chunk$set(
 
 [Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix3b_extended_binomial.Rmd)
 
-## Simulating binomial data with crossed random factors
-
 To give an overview of the simulation task, we will simulate data from a design with crossed random factors of subjects and stimuli, fit a model to the simulated data, and then try to recover the parameter values we put in from the output. In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use accuracy (correct/incorrect) as the primary dependent variable. The faces are of two types: either from the subject's ingroup or from an outgroup. The key question is whether there is any difference in classification accuracy across the type of face.
 
 The important parts of the design are:
@@ -45,7 +43,7 @@ The important parts of the design are:
 library("lme4")        # model specification / estimation
 library("afex")        # deriving p-values from lmer
 library("broom.mixed") # extracting data from model fits 
-library("faux")        # data simulation
+library("faux")        # data simulation for multivariate normal dist
 library("tidyverse")   # data wrangling and visualisation
 # ensure this script returns the same results on each run
 set.seed(8675309)
@@ -218,7 +216,7 @@ s
 
 ### Calculate betas from probabilities
 
-The following function calculates the betas (on logit scale) from the mean probability correct for each combination of factors. The default is all are 50% correct.
+The following function calculates the betas (on a logit scale) from the mean probability correct for each combination of factors. The default is all are 50% correct.
 
 This function only works for a 2x2 design like the one in this example. You will need to figure out a custom function for each design to do this, or estimate fixed effect parameters directly from analysis of pilot data.
 
@@ -246,7 +244,7 @@ prob2param <- function(A1B1 = .5,   # angry outgroup
 ```
 
 
-Demonstrate a single run of the function. First we specify proportions correct for the 4 combinations. These are just made-up values to show how it works. With values set to .6, .5, .5, and .4,, we get `beta_0` and `beta_ec` of 0 (no interaction), and `beta_e` and `beta_c` of .81 (same size effect of angry/happy and ingroup/outgroup).
+Demonstrate a single run of the function. First we specify proportions correct for the 4 combinations. These are just made-up values to show how it works. With values set to .6, .5, .5, and .4,, we get `beta_0` and `beta_ec` of 0 (no interaction), and `beta_e` and `beta_c` of .405 (same size effect of angry/happy and ingroup/outgroup).
 
 ```{r singlerundemo}
 # to check false positive rate of analysis, set all these to same value (e.g. .5)
