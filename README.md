@@ -9,8 +9,8 @@ This repository contains all materials needed to reproduce the manuscript, as we
 
 * [PsyArXiv preprint](https://psyarxiv.com/xp5cy)
 * [Example code](https://debruine.github.io/lmem_sim/articles/)
-* Shiny App [Simulating LMEM](http://shiny.psy.gla.ac.uk/lmem_sim/)
-* Shiny App [Crossed Random Effects](http://shiny.psy.gla.ac.uk/crossed/)
+* Shiny App [Simulating LMEM](https://shiny.psy.gla.ac.uk/lmem_sim/)
+* Shiny App [Crossed Random Effects](https://shiny.psy.gla.ac.uk/Dale/crossed/)
 
 ## Installation
 
