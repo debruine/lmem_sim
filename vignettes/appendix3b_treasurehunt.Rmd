@@ -1,7 +1,7 @@
 ---
 title: 'Appendix 3b modified for Treasure Hunt pre-post'
 author: "DVM Bishop"
-output: rmarkdown
+output: html_document
 ---
 
 

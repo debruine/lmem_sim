@@ -1,11 +1,15 @@
-pandoc: 2.7.3
-pkgdown: 1.5.1
+pandoc: '2.13'
+pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
-  appendix1_example_code: appendix1_example_code.html
+  appendix1a_example_code: appendix1a_example_code.html
   appendix1b_example_code: appendix1b_example_code.html
   appendix1c_sensitivity: appendix1c_sensitivity.html
   appendix2_extended_example: appendix2_extended_example.html
-  appendix3_binomial: appendix3_binomial.html
-last_built: 2020-08-17T16:50Z
+  appendix3a_binomial: appendix3a_binomial.html
+  appendix3b_extended_binomial: appendix3b_extended_binomial.html
+  appendix3b_treasurehunt: appendix3b_treasurehunt.html
+  appendix3b_treasuremain: appendix3b_treasuremain.html
+  paper: paper.html
+last_built: 2021-05-14T15:17Z
 

@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">lmem.sim</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.9001</span>
       </span>
     </div>
 
@@ -77,7 +77,14 @@
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/debruine/lmem_sim/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -87,7 +94,7 @@
 
       
 
-      </header><script src="appendix3b_extended_binomial_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><script src="appendix3b_extended_binomial_files/header-attrs-2.7/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Appendix 3b: Extended Binomial Example</h1>
@@ -95,7 +102,7 @@
                         <h4 class="author">Lisa M. DeBruine, Dorothy Bishop, Dale J. Barr</h4>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix3b_extended_binomial.Rmd"><code>vignettes/appendix3b_extended_binomial.Rmd</code></a></small>
       <div class="hidden name"><code>appendix3b_extended_binomial.Rmd</code></div>
 
     </div>
@@ -124,8 +131,8 @@
 <div id="required-software" class="section level3">
 <h3 class="hasAnchor">
 <a href="#required-software" class="anchor"></a>Required software</h3>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="co"># load required packages</span>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># load required packages</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/lme4/lme4/">"lme4"</a></span><span class="op">)</span>        <span class="co"># model specification / estimation</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://afex.singmann.science/">"afex"</a></span><span class="op">)</span>        <span class="co"># deriving p-values from lmer</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://github.com/bbolker/broom.mixed">"broom.mixed"</a></span><span class="op">)</span> <span class="co"># extracting data from model fits </span>
@@ -133,14 +140,14 @@
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span>   <span class="co"># data wrangling and visualisation</span>
 <span class="co"># ensure this script returns the same results on each run</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">8675309</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/faux/man/faux_options.html">faux_options</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></pre></div>
+<span class="fu"><a href="https://rdrr.io/pkg/faux/man/faux_options.html">faux_options</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="probability-vs-logit" class="section level3">
 <h3 class="hasAnchor">
 <a href="#probability-vs-logit" class="anchor"></a>Probability vs logit</h3>
 <p>This example presents an extended simulation for a binomial logistic mixed regression. Where response accuracy is measured in terms of probability, the regression needs to work with a link function that uses the logit, which does not have the problems of being bounded by 0 and 1. The functions below are used later to convert between probability and the logit function of probability.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="va">logit</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">x</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">}</span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">logit</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">x</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">}</span>
 
 <span class="va">inv_logit</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">}</span>
 
@@ -149,7 +156,7 @@
 <span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">mutate</span><span class="op">(</span>logit <span class="op">=</span> <span class="fu">logit</span><span class="op">(</span><span class="va">prob</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">prob</span>, <span class="va">logit</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span></pre></div>
+  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="appendix3b_extended_binomial_files/figure-html/prob-vs-logit-1.png" width="100%"></p>
 </div>
 <div id="ww2wb-design" class="section level3">
@@ -198,8 +205,8 @@
 <h3 class="hasAnchor">
 <a href="#data-generating-function" class="anchor"></a>Data-generating function</h3>
 <p>Betas are on logit scale; later we use <code>inv_logit()</code> to convert to probabilities. The defaults for the data-generating function <code>ext_bin_dgf()</code> are for null effects. When simulating realistic data, we will call the function using beta values computed using expected probabilities for combinations of independent variables, which will overwrite the defaults specified here. All SDs, representing variation in item and subject-specific effects, are set to one.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="va">ext_bin_dgf</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">ext_bin_dgf</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span>
   <span class="va">n_subj</span>     <span class="op">=</span>  <span class="fl">30</span>, <span class="co"># number of subjects</span>
   <span class="va">n_ingroup</span>  <span class="op">=</span>  <span class="fl">25</span>, <span class="co"># number of faces in ingroup</span>
   <span class="va">n_outgroup</span> <span class="op">=</span>  <span class="fl">25</span>, <span class="co"># number of faces in outgroup</span>
@@ -266,10 +273,10 @@
       Y_bin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span>, <span class="fl">1</span>, <span class="va">pr</span><span class="op">)</span> <span class="co"># sample from bernoulli distribution, ie use pr to set observed binary response to 0 or 1, so if pr = .5, then 0 and 1 equally likely</span>
     <span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">select</span><span class="op">(</span><span class="va">subj_id</span>, <span class="va">item_id</span>, <span class="va">expression</span>, <span class="va">category</span>, <span class="va">X_e</span>, <span class="va">X_c</span>, <span class="va">Y</span>, <span class="va">Y_bin</span><span class="op">)</span>
-<span class="op">}</span></pre></div>
+<span class="op">}</span></code></pre></div>
 <p>You can set the subject and item Ns to very small numbers to check that the design is what you expect. Here, we have two subjects who each see two faces, one ingroup and one outgroup, in each of two expressions, happy and angry, for a total of four trials per subject.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="fu">ext_bin_dgf</span><span class="op">(</span>n_subj <span class="op">=</span> <span class="fl">2</span>, n_ingroup <span class="op">=</span> <span class="fl">1</span>, n_outgroup <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">ext_bin_dgf</span><span class="op">(</span>n_subj <span class="op">=</span> <span class="fl">2</span>, n_ingroup <span class="op">=</span> <span class="fl">1</span>, n_outgroup <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></code></pre></div>
 <pre><code>## # A tibble: 8 x 8
 ##   subj_id item_id expression category   X_e   X_c      Y Y_bin
 ##   &lt;chr&gt;   &lt;chr&gt;   &lt;ord&gt;      &lt;chr&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;
@@ -286,8 +293,8 @@
 <h3 class="hasAnchor">
 <a href="#single-run" class="anchor"></a>Single run</h3>
 <p>The <code>single_run()</code> function creates a simulated data set using the <code>ext_bin_dgf()</code> function, runs a GLMM analysis, and returns a tidy table of the results. If you set <code>filename</code>, it will also record the data to a file, which can be helpful if you need to run a long simulation that might crash or you might need to interrupt.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit">
-<span class="va">single_run</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">filename</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">single_run</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">filename</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span>
   <span class="co"># ... represents additional arguments to be passed to ext_bin_dgf</span>
   <span class="va">dat_sim</span> <span class="op">&lt;-</span> <span class="fu">ext_bin_dgf</span><span class="op">(</span><span class="va">...</span><span class="op">)</span>
   <span class="va">mod_sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/glmer.html">glmer</a></span><span class="op">(</span><span class="va">Y_bin</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="va">X_e</span><span class="op">*</span><span class="va">X_c</span> <span class="op">+</span> 
@@ -305,16 +312,16 @@
   
   <span class="co"># return the tidy table</span>
   <span class="va">sim_results</span>
-<span class="op">}</span></pre></div>
+<span class="op">}</span></code></pre></div>
 <p>You can compare a single run output with the parameters that were set. However, unless your Ns are very big, expect a few large deviations by chance. Run this function once with a timing function to see how long it takes. Mixed model simulations can take a long time, so knowing this lets you figure out how long your coffee break can be when you run the simulation below.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span><span class="op">(</span>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span><span class="op">(</span>
   <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu">single_run</span><span class="op">(</span><span class="op">)</span>
-<span class="op">)</span></pre></div>
+<span class="op">)</span></code></pre></div>
 <pre><code>##    user  system elapsed 
-##  15.507   0.046  15.563</code></pre>
-<div class="sourceCode" id="cb9"><pre class="downlit">
-<span class="va">s</span></pre></div>
+##  14.977   0.062  15.069</code></pre>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">s</span></code></pre></div>
 <pre><code>## # A tibble: 17 x 7
 ##    effect   group   term                    estimate std.error statistic p.value
 ##    &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;                      &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
@@ -331,7 +338,7 @@
 ## 11 ran_pars subj_id cor__(Intercept).X_e:X…  0.0376     NA       NA       NA    
 ## 12 ran_pars subj_id sd__X_e                  1.05       NA       NA       NA    
 ## 13 ran_pars subj_id cor__X_e.X_c            -0.178      NA       NA       NA    
-## 14 ran_pars subj_id cor__X_e.X_e:X_c        -0.00910    NA       NA       NA    
+## 14 ran_pars subj_id cor__X_e.X_e:X_c        -0.00909    NA       NA       NA    
 ## 15 ran_pars subj_id sd__X_c                  1.05       NA       NA       NA    
 ## 16 ran_pars subj_id cor__X_c.X_e:X_c        -0.219      NA       NA       NA    
 ## 17 ran_pars subj_id sd__X_e:X_c              1.23       NA       NA       NA</code></pre>
@@ -341,8 +348,8 @@
 <a href="#calculate-betas-from-probabilities" class="anchor"></a>Calculate betas from probabilities</h3>
 <p>The following function calculates the betas (on a logit scale) from the mean probability correct for each combination of factors. The default is all are 50% correct.</p>
 <p>This function only works for a 2x2 design like the one in this example. You will need to figure out a custom function for each design to do this, or estimate fixed effect parameters directly from analysis of pilot data.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit">
-<span class="co"># set level 1 for each factor to the +0.5-coded value</span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set level 1 for each factor to the +0.5-coded value</span>
 
 <span class="va">prob2param</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">A1B1</span> <span class="op">=</span> <span class="fl">.5</span>,   <span class="co"># angry outgroup</span>
                        <span class="va">A1B2</span> <span class="op">=</span> <span class="fl">.5</span>,   <span class="co"># angry ingroup</span>
@@ -361,16 +368,16 @@
     beta_c <span class="op">=</span> <span class="op">(</span><span class="va">a1b1</span><span class="op">+</span><span class="va">a2b1</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span> <span class="op">-</span> <span class="op">(</span><span class="va">a1b2</span><span class="op">+</span><span class="va">a2b2</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span>, <span class="co"># outgroup - ingroup</span>
     beta_ec <span class="op">=</span> <span class="op">(</span><span class="va">a1b1</span><span class="op">-</span><span class="va">a1b2</span><span class="op">)</span> <span class="op">-</span> <span class="op">(</span><span class="va">a2b1</span><span class="op">-</span><span class="va">a2b2</span><span class="op">)</span> <span class="co"># angry o-i diff - happy o-i diff</span>
   <span class="op">)</span>
-<span class="op">}</span></pre></div>
+<span class="op">}</span></code></pre></div>
 <p>Demonstrate a single run of the function. First we specify proportions correct for the 4 combinations. These are just made-up values to show how it works. With values set to .6, .5, .5, and .4,, we get <code>beta_0</code> and <code>beta_ec</code> of 0 (no interaction), and <code>beta_e</code> and <code>beta_c</code> of .405 (same size effect of angry/happy and ingroup/outgroup).</p>
-<div class="sourceCode" id="cb12"><pre class="downlit">
-<span class="co"># to check false positive rate of analysis, set all these to same value (e.g. .5)</span>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># to check false positive rate of analysis, set all these to same value (e.g. .5)</span>
 <span class="va">A1B1</span> <span class="op">&lt;-</span> <span class="fl">.6</span> <span class="co"># angry_outgroup</span>
 <span class="va">A1B2</span> <span class="op">&lt;-</span> <span class="fl">.5</span> <span class="co"># angry_ingroup</span>
 <span class="va">A2B1</span> <span class="op">&lt;-</span> <span class="fl">.5</span> <span class="co"># happy_outgroup</span>
 <span class="va">A2B2</span> <span class="op">&lt;-</span> <span class="fl">.4</span> <span class="co"># happy_ingroup</span>
 <span class="va">b</span> <span class="op">&lt;-</span> <span class="fu">prob2param</span><span class="op">(</span><span class="va">A1B1</span>, <span class="va">A1B2</span>, <span class="va">A2B1</span>, <span class="va">A2B2</span><span class="op">)</span> 
-<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">b</span><span class="op">)</span></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">b</span><span class="op">)</span></code></pre></div>
 <pre><code>## List of 4
 ##  $ beta_0 : num -1.39e-17
 ##  $ beta_e : num 0.405
@@ -381,13 +388,13 @@
 <h3 class="hasAnchor">
 <a href="#simulations" class="anchor"></a>Simulations</h3>
 <p>We can now run many simulations and save to a file on each run. It’s a good idea to put the relevant parameters in the filename, or modify the code above to add the parameters as new columns.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit">
-<span class="co"># make a filename indicating this specific set of estimated values</span>
-<span class="va">filename</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"sims/binomial_ext_"</span>,<span class="va">A1B1</span>,<span class="st">"_"</span>,<span class="va">A1B2</span>,<span class="st">"_"</span>,<span class="va">A2B1</span>,<span class="st">"_"</span>,<span class="va">A2B2</span>,<span class="st">".csv"</span><span class="op">)</span></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># make a filename indicating this specific set of estimated values</span>
+<span class="va">filename</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"sims/binomial_ext_"</span>,<span class="va">A1B1</span>,<span class="st">"_"</span>,<span class="va">A1B2</span>,<span class="st">"_"</span>,<span class="va">A2B1</span>,<span class="st">"_"</span>,<span class="va">A2B2</span>,<span class="st">".csv"</span><span class="op">)</span></code></pre></div>
 <p>This can take a very long time, so set <code>eval = FALSE</code> to skip this chunk if you’ve already run it and just load the data from the file. Alternatively, as below, surround the simulation code with a conditional statement to only run if the file isn’t already present.</p>
 <p>If you want to add additional reps to your file, make sure you change the seed, or each time your run this script from the start, you’ll just get identical numbers.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit">
-<span class="va">reps</span> <span class="op">&lt;-</span> <span class="fl">10</span>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">reps</span> <span class="op">&lt;-</span> <span class="fl">10</span>
 <span class="co"># run simulations and save to a file</span>
 
 <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files.html">file.exists</a></span><span class="op">(</span><span class="va">filename</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
@@ -398,10 +405,10 @@
     beta_c <span class="op">=</span> <span class="va">b</span><span class="op">$</span><span class="va">beta_c</span>,
     beta_ec <span class="op">=</span> <span class="va">b</span><span class="op">$</span><span class="va">beta_ec</span><span class="op">)</span>
   <span class="op">)</span>
-<span class="op">}</span></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit">
-<span class="co"># read saved simulation data</span>
-<span class="va">sims</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="va">filename</span><span class="op">)</span></pre></div>
+<span class="op">}</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># read saved simulation data</span>
+<span class="va">sims</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="va">filename</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="calculate-mean-estimates-and-power" class="section level3">
 <h3 class="hasAnchor">
@@ -414,8 +421,8 @@
 <li>
 <code>sim_value</code> is the true value of beta derived from the probabilities we specified</li>
 </ul>
-<div class="sourceCode" id="cb17"><pre class="downlit">
-<span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fl">0.05</span> <span class="co"># justify your alpha</span>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fl">0.05</span> <span class="co"># justify your alpha</span>
 
 <span class="va">est</span> <span class="op">&lt;-</span> <span class="va">sims</span> <span class="op">%&gt;%</span>
   <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">effect</span> <span class="op">==</span> <span class="st">"fixed"</span><span class="op">)</span> <span class="op">%&gt;%</span>
@@ -432,7 +439,7 @@
   parameter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"beta_0"</span>, <span class="st">"beta_c"</span>, <span class="st">"beta_e"</span>, <span class="st">"beta_ec"</span><span class="op">)</span>,
   sim_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">b</span><span class="op">$</span><span class="va">beta_0</span>, <span class="va">b</span><span class="op">$</span><span class="va">beta_c</span>, <span class="va">b</span><span class="op">$</span><span class="va">beta_e</span>, <span class="va">b</span><span class="op">$</span><span class="va">beta_ec</span><span class="op">)</span>
 <span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">mutate_if</span><span class="op">(</span><span class="va">is.numeric</span>, <span class="va">round</span>, <span class="fl">4</span><span class="op">)</span></pre></div>
+  <span class="fu">mutate_if</span><span class="op">(</span><span class="va">is.numeric</span>, <span class="va">round</span>, <span class="fl">4</span><span class="op">)</span></code></pre></div>
 <pre><code>## # A tibble: 4 x 5
 ##   term        mean_estimate power parameter sim_value
 ##   &lt;chr&gt;               &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;         &lt;dbl&gt;
@@ -445,8 +452,8 @@
 <h3 class="hasAnchor">
 <a href="#calculate-probabilities" class="anchor"></a>Calculate probabilities</h3>
 <p>Sum estimates for each cell and use inverse logit transform to recover probabilities. Compare with the values of A1B1 … A2B2 used to calculate the simulation parameters.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit">
-<span class="co"># get estimates of beta values</span>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get estimates of beta values</span>
 <span class="va">int</span> <span class="op">&lt;-</span> <span class="va">est</span><span class="op">[[</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">]</span><span class="op">]</span>
 <span class="va">cat</span> <span class="op">&lt;-</span> <span class="va">est</span><span class="op">[[</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">]</span><span class="op">]</span>
 <span class="va">exp</span> <span class="op">&lt;-</span> <span class="va">est</span><span class="op">[[</span><span class="fl">3</span>,<span class="fl">2</span><span class="op">]</span><span class="op">]</span>
@@ -468,7 +475,7 @@
   <span class="fu">mutate</span><span class="op">(</span>estimate <span class="op">=</span> <span class="fu">inv_logit</span><span class="op">(</span><span class="va">estimate</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">mutate</span><span class="op">(</span>prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">A1B1</span>, <span class="va">A1B2</span>, <span class="va">A2B1</span>, <span class="va">A2B2</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">separate</span><span class="op">(</span><span class="va">key</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"exp"</span>, <span class="st">"cat"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">mutate_if</span><span class="op">(</span><span class="va">is.numeric</span>, <span class="va">round</span>, <span class="fl">2</span><span class="op">)</span></pre></div>
+  <span class="fu">mutate_if</span><span class="op">(</span><span class="va">is.numeric</span>, <span class="va">round</span>, <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <pre><code>##     exp      cat estimate prob
 ## 1 angry outgroup     0.61  0.6
 ## 2 angry  ingroup     0.53  0.5
