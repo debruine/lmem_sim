@@ -1,8 +1,8 @@
 Package: lmem.sim
 Title: Simulating for LMEM
-Version: 0.0.0.9000
-Authors@R: 
-  c(
+Version: 0.0.0.9001
+Date: 2021-05-14
+Authors@R: c(
     person(
         given = "Lisa", 
         family = "DeBruine", 
@@ -18,11 +18,8 @@ Authors@R:
         comment = c(ORCID = "0000-0002-1121-4608")
     ))
 Description: Additional resources for Understanding mixed effects models through data simulation <doi:10.31234/osf.io/xp5cy>.
-License: CC BY 4.0
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+Depends:
+    R (>= 3.2.4)
 Imports: 
     dplyr,
     tidyr,
@@ -39,8 +36,14 @@ Suggests:
     papaja,
     shiny,
     shinydashboard,
-    shinyjs
+    shinyjs,
+    MASS
 Remotes: 
-    debruine/faux,
     crsh/papaja
 VignetteBuilder: knitr
+RoxygenNote: 7.1.1
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/debruine/lmem_sim
+BugReports: https://github.com/debruine/lmem_sim/issues
+License: CC BY 4.0

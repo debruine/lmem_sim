@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">lmem.sim</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.9001</span>
       </span>
     </div>
 
@@ -39,7 +39,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -77,7 +77,14 @@
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/debruine/lmem_sim/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -87,7 +94,7 @@
 
       
 
-      </header><script src="paper_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><script src="paper_files/header-attrs-2.7/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Understanding mixed effects models through data simulation</h1>
@@ -101,7 +108,7 @@
       </address>
                   
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/debruine/lmem_sim/blob/master/vignettes/paper.Rmd"><code>vignettes/paper.Rmd</code></a></small>
       <div class="hidden name"><code>paper.Rmd</code></div>
 
     </div>
@@ -126,7 +133,6 @@
 <p>Recently, psycholinguists have adopted linear mixed-effects modeling as the standard for statistical analysis, given numerous advantages over ANOVA, including the ability to simultaneously model subject and stimulus variation, to gracefully deal with missing data or unbalanced designs, and to accommodate arbitrary types of continuous and categorical predictors or response variables <span class="citation">(Baayen, Davidson, and Bates 2008; Locker, Hoffman, and Bovaird 2007)</span>. This development has been facilitated by the <code>lme4</code> package for R <span class="citation">(Bates et al. 2015)</span>, which provides powerful functionality for model specification and estimation. With an appropriately specified model, mixed-effects models yield major improvements in power over quasi-<span class="math inline">\(F\)</span> approaches and avoid the increased false positive rate associated with separate <span class="math inline">\(F_1\)</span> and <span class="math inline">\(F_2\)</span> <span class="citation">(Barr et al. 2013)</span>.</p>
 <p>Despite mixed-effects modeling becoming the <em>de facto</em> standard for analysis in psycholinguistics, the approach has yet to take hold in other areas where stimuli are routinely sampled, even in spite of repeated calls for improved analyses in social psychology <span class="citation">(Judd, Westfall, and Kenny 2012)</span> and neuroimaging <span class="citation">(Bedny, Aguirre, and Thompson-Schill 2007; Westfall, Nichols, and Yarkoni 2016)</span>. One of the likely reasons for the limited uptake outside of psycholinguistics is because mixed-effects models expose the analyst to a level of statistical and technical complexity far beyond most researchers’ training. While some of this complexity is specific to mixed-effects modeling, some of it is simply hidden away from users of traditional techniques by GUIs and function defaults. The novice mixed modeler is suddenly confronted with the need to make decisions about how to specify categorical predictors, which random effects to include or exclude, which of the statistics in the voluminous output to attend to, and whether and how to re-configure the optimizer function when a convergence error or singularity warning appears.</p>
 <p>We are optimistic that the increasing adoption of the mixed-effects approach will improve the generalizability and thus reproducibility of studies in psychology and related fields. Models that account for subjects and stimuli (or other factors) as non-essential, exchangeable features of an experiment will better characterize the uncertainty in the resulting estimates and thus, improve the generality of inferences we draw from them <span class="citation">(Yarkoni 2019)</span>. That said, we empathize with the frustration — and sometimes, exasperation — expressed by many novices when they attempt to grapple with these models in their research. A profitable way to build understanding and confidence is through data simulation. If you can create datasets by sampling from a population where you know the ground truth about the population parameters you are interested in (e.g., means and standard deviations of each group), you can check how often and under what circumstances a statistical model will give you the correct answer. Knowing the ground truth also allows you to experiment with various modeling choices and observe their impact on a model’s performance.</p>
-
 </div>
 <div id="data-materials-and-online-resources" class="section level1">
 <h1 class="hasAnchor">
@@ -145,15 +151,15 @@
 <h2 class="hasAnchor">
 <a href="#required-software" class="anchor"></a>Required software</h2>
 <p>The simulation will be presented in the R programming language <span class="citation">(R Core Team 2018)</span>. To run the code, you will need to have some add-on packages available.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="co"># load required packages</span>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># load required packages</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/lme4/lme4/">"lme4"</a></span><span class="op">)</span>        <span class="co"># model specification / estimation</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/runehaubo/lmerTestR">"lmerTest"</a></span><span class="op">)</span>    <span class="co"># provides p-values in the output</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span>   <span class="co"># data wrangling and visualisation</span></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span>   <span class="co"># data wrangling and visualisation</span></code></pre></div>
 <p>Because the code uses random number generation, if you want to reproduce the exact results below you will need to set the random number seed at the top of your script and ensure you are using R version 3.6.0 or higher. If you change the seed or are using a lower version of R, your exact numbers will differ, but the procedure will still produce a valid simulation.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="co"># ensure this script returns the same results on each run</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">8675309</span><span class="op">)</span></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># ensure this script returns the same results on each run</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">8675309</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="establishing-the-data-generating-parameters" class="section level2">
 <h2 class="hasAnchor">
@@ -342,10 +348,10 @@ RT_{si} = \beta_0 + \beta_1 X_{i} + e_{si}.
 <p>According to the formula, response <span class="math inline">\(RT_{si}\)</span> for subject <span class="math inline">\(s\)</span> and item <span class="math inline">\(i\)</span> is defined as sum of an intercept term <span class="math inline">\(\beta_0\)</span>, which in this example is the grand mean reaction time for the population of stimuli, plus <span class="math inline">\(\beta_1\)</span>, the mean RT difference between ingroup and outgroup stimuli, plus random noise <span class="math inline">\(e_{si}\)</span>. To make <span class="math inline">\(\beta_0\)</span> equal the grand mean and <span class="math inline">\(\beta_1\)</span> equal the mean outgroup minus the mean ingroup RT, we will code the item category variable <span class="math inline">\(X_{i}\)</span> as -.5 for the ingroup category and +.5 for the outgroup category.</p>
 <p>In the model formula, we use Greek letters (<span class="math inline">\(\beta_0\)</span>, <span class="math inline">\(\beta_1\)</span>) to represent population parameters that are being directly estimated by the model. In contrast, Roman letters represent the remaining variables: observed variables whose values are determined by sampling (e.g., <span class="math inline">\(RT_{si}\)</span>, <span class="math inline">\(T_{0s}\)</span>, <span class="math inline">\(e_{si}\)</span>) or fixed by the experiment design (<span class="math inline">\(X_i\)</span>).</p>
 <p>Although this model is incomplete, we can go ahead and choose parameters for <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span>. For this example, we set a grand mean of 800 ms and a mean difference of 50 ms. You will need to use disciplinary expertise and/or pilot data to choose these parameters; by the end of this tutorial you will understand how to extract those parameters from an analysis.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="co"># set fixed effect parameters</span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set fixed effect parameters</span>
 <span class="va">beta_0</span> <span class="op">&lt;-</span> <span class="fl">800</span> <span class="co"># intercept; i.e., the grand mean</span>
-<span class="va">beta_1</span> <span class="op">&lt;-</span>  <span class="fl">50</span> <span class="co"># slope; i.e, effect of category</span></pre></div>
+<span class="va">beta_1</span> <span class="op">&lt;-</span>  <span class="fl">50</span> <span class="co"># slope; i.e, effect of category</span></code></pre></div>
 <p>The parameters <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are <em>fixed effects</em>: they characterize the population of events in which a typical subject encounters a typical stimulus. Thus, we set the mean RT for a “typical” subject encountering a “typical” stimulus to 800 ms, and assume that responses are typically 50 ms slower for outgroup than ingroup faces.</p>
 </div>
 <div id="specify-the-random-effect-parameters" class="section level3">
@@ -357,10 +363,10 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \beta_1 X_i + e_{si} .
 \end{equation}\]</span></p>
 <p>Now, whatever values of <span class="math inline">\(T_{0s}\)</span> and <span class="math inline">\(O_{0i}\)</span> we end up with in our sampled dataset will depend on the luck of the draw, i.e., on which subjects and stimuli we happened to have sampled from their respective populations. Unlike fixed effects, we assume these values will differ across different realizations of the experiment where subjects and/or stimuli are different. In practice, we often re-use the same stimuli across many studies, but we still need to treat the stimuli as sampled if we want to be able to generalise our findings to the whole population of stimuli.</p>
 <p>It is an important conceptual feature of mixed-effects models that they do not directly estimate the individual random effects (<span class="math inline">\(T_{0s}\)</span> and <span class="math inline">\(O_{0i}\)</span> values), but rather, they estimate the random effects parameters that characterize the distributions from which these effects are drawn. It is this feature that enables generalization beyond the particular subjects and stimuli in the experiment. We assume that each <span class="math inline">\(T_{0s}\)</span> comes from a normal distribution with a mean of zero and unknown standard deviation, <span class="math inline">\(\tau_0\)</span> (<code>tau_0</code> in the code). The mean of zero reflects the assumption that each random effect is a deflection from the grand mean. Similarly, for the by-item random intercepts, we assume the <span class="math inline">\(O_{0i}\)</span> values to be sampled from a normal distribution also with a mean of zero and with an unknown standard deviation, <span class="math inline">\(\omega_0\)</span> (<code>omega_0</code>). In our simulation, we will set the by-subject random intercept SD to 100, and the by-item random intercept SD to 80.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="co"># set random effect parameters</span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set random effect parameters</span>
 <span class="va">tau_0</span>   <span class="op">&lt;-</span> <span class="fl">100</span> <span class="co"># by-subject random intercept sd</span>
-<span class="va">omega_0</span> <span class="op">&lt;-</span>  <span class="fl">80</span> <span class="co"># by-item random intercept sd</span></pre></div>
+<span class="va">omega_0</span> <span class="op">&lt;-</span>  <span class="fl">80</span> <span class="co"># by-item random intercept sd</span></code></pre></div>
 <p>There is still a deficiency in our data-generating model related to <span class="math inline">\(\beta_1\)</span>, the fixed effect of category. Currently our model assumes that each and every subject is exactly 80 ms faster to categorize emotions on ingroup faces than on outgroup faces. Clearly, this assumption is totally unrealistic; some participants will be more sensitive to ingroup/outgroup differences than others. We can capture this in an analogous way to which we captured variation in the intercept, namely by including by-subject <em>random slopes</em> <span class="math inline">\(T_{1s}\)</span>.</p>
 <p><span class="math display">\[\begin{equation}
 RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
@@ -368,11 +374,11 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 <p>The random slope <span class="math inline">\(T_{1s}\)</span> is an estimate of how much faster or slower subject <span class="math inline">\(s\)</span> is in categorizing ingroup/outgroup faces than the population mean effect <span class="math inline">\(\beta_1\)</span>, which we already set to 50 ms. Given how we coded the <span class="math inline">\(X_i\)</span> variable, the mean effect for subject <span class="math inline">\(s\)</span> is given by the <span class="math inline">\(\beta_1 + T_{1s}\)</span> term. So, a participant who is 90 ms faster on average to categorize ingroup than outgroup faces would have a random slope <span class="math inline">\(T_{1s}\)</span> of 40 (<span class="math inline">\(\beta_1 + T_{1s} = 50 + 40 = 90\)</span>). As we did for the random intercepts, we assume that the <span class="math inline">\(T_{1s}\)</span> effects are drawn from a normal distribution, with a mean of zero and standard deviation of <span class="math inline">\(\tau_1\)</span> (<code>tau_1</code> in the code). For this example, we assume the standard deviation is 40 ms.</p>
 <p>But note that we are sampling <em>two</em> random effects for each subject <span class="math inline">\(s\)</span>, a random intercept <span class="math inline">\(T_{0s}\)</span> and a random slope <span class="math inline">\(T_{1s}\)</span>. It is possible for these values to be positively or negatively correlated, in which case we should not sample them independently. For instance, perhaps people who are faster than average overall (negative random intercept) also show a smaller than average effect of the ingroup/outgroup manipulation (negative random slope) due to allocating less attention to the task. We can capture this by allowing for a small positive correlation between the two factors, <code>rho</code>, which we assign to be 0.2.</p>
 <p>Finally, we need to characterize the trial-level noise in the study (<span class="math inline">\(e_{si}\)</span>) in terms of its standard deviation. Here we simply assign this parameter value <code>sigma</code> to be twice the size of the by-subject random intercept SD.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit">
-<span class="co"># set more random effect and error parameters</span>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set more random effect and error parameters</span>
 <span class="va">tau_1</span>  <span class="op">&lt;-</span>  <span class="fl">40</span> <span class="co"># by-subject random slope sd</span>
 <span class="va">rho</span>    <span class="op">&lt;-</span>  <span class="fl">.2</span> <span class="co"># correlation between intercept and slope</span>
-<span class="va">sigma</span>  <span class="op">&lt;-</span> <span class="fl">200</span> <span class="co"># residual (error) sd</span></pre></div>
+<span class="va">sigma</span>  <span class="op">&lt;-</span> <span class="fl">200</span> <span class="co"># residual (error) sd</span></code></pre></div>
 <p>To summarize, we established a reasonable statistical model underlying the data having the form:</p>
 <p><span class="math display">\[\begin{equation}
 RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
@@ -384,28 +390,28 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 <h2 class="hasAnchor">
 <a href="#simulating-the-sampling-process" class="anchor"></a>Simulating the sampling process</h2>
 <p>Let’s first define parameters related to the number of observations. In this example, we will simulate data from 100 subjects responding to 25 ingroup faces and 25 outgroup faces. There are no between-subject factors, so we can set <code>n_subj</code> to 100. We set <code>n_ingroup</code> and <code>n_outgroup</code> to the number of stimulus items in each condition.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit">
-<span class="co"># set number of subjects and items</span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set number of subjects and items</span>
 <span class="va">n_subj</span>     <span class="op">&lt;-</span> <span class="fl">100</span> <span class="co"># number of subjects</span>
 <span class="va">n_ingroup</span>  <span class="op">&lt;-</span>  <span class="fl">25</span> <span class="co"># number of ingroup stimuli</span>
-<span class="va">n_outgroup</span> <span class="op">&lt;-</span>  <span class="fl">25</span> <span class="co"># number of outgroup stimuli</span></pre></div>
+<span class="va">n_outgroup</span> <span class="op">&lt;-</span>  <span class="fl">25</span> <span class="co"># number of outgroup stimuli</span></code></pre></div>
 <div id="simulate-the-sampling-of-stimulus-items" class="section level3">
 <h3 class="hasAnchor">
 <a href="#simulate-the-sampling-of-stimulus-items" class="anchor"></a>Simulate the sampling of stimulus items</h3>
 <p>We need to create a table listing each item <span class="math inline">\(i\)</span>, which category it is in, and its random effect <span class="math inline">\(O_{0i}\)</span>.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit">
-<span class="co"># simulate a sample of items</span>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># simulate a sample of items</span>
 <span class="co"># total number of items = n_ingroup + n_outgroup</span>
 <span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
   item_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_ingroup</span> <span class="op">+</span> <span class="va">n_outgroup</span><span class="op">)</span>,
   category <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"ingroup"</span>, <span class="st">"outgroup"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">n_ingroup</span>, <span class="va">n_outgroup</span><span class="op">)</span><span class="op">)</span>,
   O_0i <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span>n <span class="op">=</span> <span class="va">n_ingroup</span> <span class="op">+</span> <span class="va">n_outgroup</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="va">omega_0</span><span class="op">)</span>
-<span class="op">)</span></pre></div>
+<span class="op">)</span></code></pre></div>
 <p>For the first variable in the dataset, <code>item_id</code>, we have used <code><a href="https://rdrr.io/r/base/seq.html">seq_len()</a></code> to assign a unique integer to each of the 50 stimulus faces; these IDs function like names. The <code>category</code> variable designates whether the face is ingroup or outgroup, with the first 25 items being ingroup and the last 25 being outgroup. Finally, we sample the values of <span class="math inline">\(O_{0i}\)</span> from a normal distribution using the <code><a href="https://rdrr.io/r/stats/Normal.html">rnorm()</a></code> function, with a mean of 0 and SD of <span class="math inline">\(\omega_0\)</span>.</p>
 <p>Let us introduce a numeric predictor to represent what category each stimulus item <span class="math inline">\(i\)</span> appears in (i.e., for the <span class="math inline">\(X_i\)</span> in our model). Since we predict that responses to ingroup faces will be faster than outgroup faces, we set ingroup to -0.5 and outgroup to +0.5. We will later multiply this <em>effect coded</em> factor by the fixed effect of category (<code>beta_1</code> = 50) to simulate data where the ingroup faces are on average -25 ms different from the grand mean, while the outgroup faces are on average 25 ms different from the grand mean. After adding this variable, the resulting table <code>items</code> should look like Table @ref(tab:items-table), although the specific values you obtain for <span class="math inline">\(O_{0i}\)</span> may differ, depending on whether you set the random seed.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit">
-<span class="co"># effect-code category</span>
-<span class="va">items</span><span class="op">$</span><span class="va">X_i</span> <span class="op">&lt;-</span> <span class="fu">recode</span><span class="op">(</span><span class="va">items</span><span class="op">$</span><span class="va">category</span>, <span class="st">"ingroup"</span> <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>, <span class="st">"outgroup"</span> <span class="op">=</span> <span class="op">+</span><span class="fl">0.5</span><span class="op">)</span></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># effect-code category</span>
+<span class="va">items</span><span class="op">$</span><span class="va">X_i</span> <span class="op">&lt;-</span> <span class="fu">recode</span><span class="op">(</span><span class="va">items</span><span class="op">$</span><span class="va">category</span>, <span class="st">"ingroup"</span> <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>, <span class="st">"outgroup"</span> <span class="op">=</span> <span class="op">+</span><span class="fl">0.5</span><span class="op">)</span></code></pre></div>
 <p>In R, most regression procedures can handle two-level factors like <code>category</code> as predictor variables. By default, the procedure will create a new numeric predictor that codes one level of the factor as zero and the other as one. Why not just use the defaults? The short explanation is that the default of 0, 1 coding is not well-suited to the kinds of factorial experimental designs often found in psychology and related fields. For the current example, using the default coding for the <span class="math inline">\(X\)</span> predictor would change the interpretation of <span class="math inline">\(\beta_0\)</span>: instead of the grand mean, it would reflect the mean for the group coded as zero. One could change the default, but we feel it is better to be explicit in the code about what values are being used. See <a href="https://talklab.psy.gla.ac.uk/tvw/catpred" class="uri">https://talklab.psy.gla.ac.uk/tvw/catpred</a> for further discussion; see also the R mixed modeling package <code>afex</code> <span class="citation">(Singmann et al. 2019)</span>, which provides better defaults for specifying categorical predictors in ANOVA-style designs.</p>
 <caption>
 (#tab:items-table)
@@ -513,8 +519,8 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 <a href="#simulate-the-sampling-of-subjects" class="anchor"></a>Simulate the sampling of subjects</h3>
 <p>Now we will simulate the sampling of individual subjects, resulting in a table listing each subject and their two correlated random effects. This will be slightly more complicated that what we just did, because we cannot simply sample the <span class="math inline">\(T_{0s}\)</span> values from a univariate distribution using <code><a href="https://rdrr.io/r/stats/Normal.html">rnorm()</a></code> independently from the <span class="math inline">\(T_{1s}\)</span> values. Instead, we must sample <span class="math inline">\(\left&lt;T_{0s}, T_{1s}\right&gt;\)</span> <em>pairs</em>—one pair for each subject—from a bivariate normal distribution. To do this, we will use the <code>mvrnorm()</code> function, a multivariate version of <code><a href="https://rdrr.io/r/stats/Normal.html">rnorm()</a></code> from the MASS package that comes pre-installed with R. We specify the three parameters describing this distribution—two variances and a correlation—by entering them into a 2x2 <em>variance-covariance</em> matrix using the <code><a href="https://rdrr.io/r/base/matrix.html">matrix()</a></code> function, and then passing this matrix to <code>mvrnorm()</code> using the <code>Sigma</code> argument. This requires converting the standard deviations into variances (by squaring them) and calculating the covariance, which is the product of the correlation and two standard deviations, i.e., <span class="math inline">\(\rho \times \tau_0 \times \tau_1\)</span>.</p>
 <p>We only need this one function from MASS, so we can call it directly using the <code>package::function()</code> syntax instead of loading the library (specifically, <code><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html">MASS::mvrnorm()</a></code> instead of <code><a href="http://www.stats.ox.ac.uk/pub/MASS4/">library(MASS)</a></code>). The resulting table <code>subjects</code> should have the structure shown in Table @ref(tab:subj-table).</p>
-<div class="sourceCode" id="cb9"><pre class="downlit">
-<span class="co"># simulate a sample of subjects</span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># simulate a sample of subjects</span>
 
 <span class="co"># calculate random intercept / random slope covariance</span>
 <span class="va">covar</span> <span class="op">&lt;-</span> <span class="va">rho</span> <span class="op">*</span> <span class="va">tau_0</span> <span class="op">*</span> <span class="va">tau_1</span>
@@ -532,7 +538,7 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 
 <span class="co"># combine with subject IDs</span>
 <span class="va">subjects</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>subj_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_subj</span><span class="op">)</span>,
-                       <span class="va">subject_rfx</span><span class="op">)</span></pre></div>
+                       <span class="va">subject_rfx</span><span class="op">)</span></code></pre></div>
 <caption>
 (#tab:subj-table)
 </caption>
@@ -619,8 +625,8 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 </tbody>
 </table>
 <p>An alternative way to sample from a bivariate distribution would be to use the function <code>rnorm_multi()</code> from the <code>faux</code> package <span class="citation">(DeBruine 2020)</span>, which generates a table of <code>n</code> simulated values from a multivariate normal distribution by specifying the means (<code>mu</code>) and standard deviations (<code>sd</code>) of each variable, plus the correlations (<code>r</code>), which can be either a single value (applied to all pairs), a correlation matrix, or a vector of the values in the upper right triangle of the correlation matrix.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit">
-<span class="co"># simulate a sample of subjects</span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># simulate a sample of subjects</span>
 
 <span class="co"># sample from a multivariate random distribution </span>
 <span class="va">subjects</span> <span class="op">&lt;-</span> <span class="fu">faux</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/faux/man/rnorm_multi.html">rnorm_multi</a></span><span class="op">(</span>
@@ -632,18 +638,18 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 <span class="op">)</span>
 
 <span class="co"># add subject IDs</span>
-<span class="va">subjects</span><span class="op">$</span><span class="va">subj_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_subj</span><span class="op">)</span></pre></div>
+<span class="va">subjects</span><span class="op">$</span><span class="va">subj_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_subj</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="simulate-trials-encounters" class="section level3">
 <h3 class="hasAnchor">
 <a href="#simulate-trials-encounters" class="anchor"></a>Simulate trials (encounters)</h3>
 <p>Since all subjects respond to all items, we can set up a table of trials by making a table with every possible combination of the rows in the subject and item tables using the tidyverse function <code>crossing()</code>. Each trial has random error associated with it, reflecting fluctuations in trial-by-trial performance due to unknown factors; we simulate this by sampling values from a normal distribution with a mean of 0 and SD of <code>sigma</code>. The resulting table should correspond to Table @ref(tab:trials-table).</p>
-<div class="sourceCode" id="cb11"><pre class="downlit">
-<span class="co"># cross subject and item IDs; add an error term</span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># cross subject and item IDs; add an error term</span>
 <span class="co"># nrow(.) is the number of rows in the table</span>
 <span class="va">trials</span> <span class="op">&lt;-</span> <span class="fu">crossing</span><span class="op">(</span><span class="va">subjects</span>, <span class="va">items</span><span class="op">)</span>  <span class="op">%&gt;%</span>
   <span class="fu">mutate</span><span class="op">(</span>e_si <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="va">sigma</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">select</span><span class="op">(</span><span class="va">subj_id</span>, <span class="va">item_id</span>, <span class="va">category</span>, <span class="va">X_i</span>, <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></pre></div>
+  <span class="fu">select</span><span class="op">(</span><span class="va">subj_id</span>, <span class="va">item_id</span>, <span class="va">category</span>, <span class="va">X_i</span>, <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <caption>
 (#tab:trials-table)
 </caption>
@@ -821,11 +827,11 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 <li>each residual error (<code>e_si</code>).</li>
 </ul>
 <p>After this we will use <code><a href="https://dplyr.tidyverse.org/reference/select.html">dplyr::select()</a></code> to keep the columns we need. Note that the resulting table (Table @ref(tab:dat-sim-table)) has the structure that we set as our goal at the start of this exercise, with the additional column <code>X_i</code>, which we will keep to use in the estimation process, described in the next section.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit">
-<span class="co"># calculate the response variable</span>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># calculate the response variable</span>
 <span class="va">dat_sim</span> <span class="op">&lt;-</span> <span class="va">trials</span> <span class="op">%&gt;%</span>
   <span class="fu">mutate</span><span class="op">(</span>RT <span class="op">=</span> <span class="va">beta_0</span> <span class="op">+</span> <span class="va">T_0s</span> <span class="op">+</span> <span class="va">O_0i</span> <span class="op">+</span> <span class="op">(</span><span class="va">beta_1</span> <span class="op">+</span> <span class="va">T_1s</span><span class="op">)</span> <span class="op">*</span> <span class="va">X_i</span> <span class="op">+</span> <span class="va">e_si</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">select</span><span class="op">(</span><span class="va">subj_id</span>, <span class="va">item_id</span>, <span class="va">category</span>, <span class="va">X_i</span>, <span class="va">RT</span><span class="op">)</span></pre></div>
+  <span class="fu">select</span><span class="op">(</span><span class="va">subj_id</span>, <span class="va">item_id</span>, <span class="va">category</span>, <span class="va">X_i</span>, <span class="va">RT</span><span class="op">)</span></code></pre></div>
 <caption>
 (#tab:dat-sim-table)
 </caption>
@@ -946,8 +952,8 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 <h3 class="hasAnchor">
 <a href="#data-simulation-function" class="anchor"></a>Data simulation function</h3>
 <p>To make it easier to try out different parameters or to generate many datasets for the purpose of power analysis, you can put all of the code above into a custom function. Set up the function to take all of the parameters we set above as arguments. We’ll set the defaults to the values we used, but you can choose your own defaults. The code below is just all of the code above, condensed a bit. It returns one dataset with the parameters you specified.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit">
-<span class="co"># set up the custom data simulation function</span>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set up the custom data simulation function</span>
 <span class="va">my_sim_data</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span>
   <span class="va">n_subj</span>     <span class="op">=</span> <span class="fl">100</span>,   <span class="co"># number of subjects</span>
   <span class="va">n_ingroup</span>  <span class="op">=</span>  <span class="fl">25</span>,   <span class="co"># number of ingroup stimuli</span>
@@ -981,7 +987,7 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
     <span class="fu">mutate</span><span class="op">(</span>e_si <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="va">sigma</span><span class="op">)</span>,
            RT <span class="op">=</span> <span class="va">beta_0</span> <span class="op">+</span> <span class="va">T_0s</span> <span class="op">+</span> <span class="va">O_0i</span> <span class="op">+</span> <span class="op">(</span><span class="va">beta_1</span> <span class="op">+</span> <span class="va">T_1s</span><span class="op">)</span> <span class="op">*</span> <span class="va">X_i</span> <span class="op">+</span> <span class="va">e_si</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">select</span><span class="op">(</span><span class="va">subj_id</span>, <span class="va">item_id</span>, <span class="va">category</span>, <span class="va">X_i</span>, <span class="va">RT</span><span class="op">)</span>
-<span class="op">}</span></pre></div>
+<span class="op">}</span></code></pre></div>
 <p>Now you can generate a dataset with the default parameters using <code>my_sim_data()</code> or, for example, a dataset with 500 subjects and no effect of category using <code>my_sim_data(n_subj = 500, beta_1 = 0)</code>.</p>
 </div>
 </div>
@@ -1013,12 +1019,12 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 <h2 class="hasAnchor">
 <a href="#interpreting-the-lmer-summary" class="anchor"></a>Interpreting the lmer summary</h2>
 <p>The other arguments to the <code>lme4</code> function are the name of the data frame where the values are found (<code>dat_sim</code>). Because we loaded in <code>lmerTest</code> after <code>lme4</code>, the <span class="math inline">\(p\)</span>-values are derived using the Satterthwaite approximation, for which the default estimation technique in <code><a href="https://rdrr.io/pkg/lme4/man/lmer.html">lmer()</a></code>—restricted likelihood estimation (<code>REML = TRUE</code>)—is the most appropriate <span class="citation">(Luke 2017)</span>. Use the <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> function to view the results.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit">
-<span class="co"># fit a linear mixed-effects model to data</span>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># fit a linear mixed-effects model to data</span>
 <span class="va">mod_sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html">lmer</a></span><span class="op">(</span><span class="va">RT</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="va">X_i</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">item_id</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">X_i</span> <span class="op">|</span> <span class="va">subj_id</span><span class="op">)</span>,
                 data <span class="op">=</span> <span class="va">dat_sim</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">mod_sim</span>, corr <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">mod_sim</span>, corr <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 <pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite's method [
 ## lmerModLmerTest]
 ## Formula: RT ~ 1 + X_i + (1 | item_id) + (1 + X_i | subj_id)
@@ -1129,12 +1135,12 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 </tr>
 </tbody>
 </table>
-<p>You can also use <code><a href="https://rdrr.io/pkg/generics/man/tidy.html">broom.mixed::tidy()</a></code> to output fixed and/or random effects in a tidy table (Table @ref(tab:broom-tidy-table)). This is especially useful when you need to combine the output from hundreds of simulations to calculate power. The column “effect” specifies whether a row is a fixed effect (“fixed”) or a random effect parameter (“ran_pars”). The column “group” specifies the group by the random factor column name (or “Residual”) for random effect parameters. The column “term” refers to the predictor term for fixed effects, and also the parameter for random effects; for example, "sd__X_i" refers to the standard deviation of the random slope for <code>X_i</code>, while "cor__(Intercept).X_i" refers to <code>rho</code>, the correlation between the random intercept and slope for <code>X_i</code>. We added the column “sim” to the standard output of <code><a href="https://rdrr.io/pkg/generics/man/tidy.html">broom.mixed::tidy()</a></code> so you can compare the simulated parameters we set above to the estimated parameters from this simulated dataset, which are in the column “estimate”. The last four columns give the standard error, <span class="math inline">\(t\)</span>-statistic, estimated degrees of freedom, and p-value for the fixed effects.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit">
-<span class="co"># get a tidy table of results</span>
-<span class="fu">broom.mixed</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/generics/man/tidy.html">tidy</a></span><span class="op">(</span><span class="va">mod_sim</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+<p>You can also use <code><a href="https://generics.r-lib.org/reference/tidy.html">broom.mixed::tidy()</a></code> to output fixed and/or random effects in a tidy table (Table @ref(tab:broom-tidy-table)). This is especially useful when you need to combine the output from hundreds of simulations to calculate power. The column “effect” specifies whether a row is a fixed effect (“fixed”) or a random effect parameter (“ran_pars”). The column “group” specifies the group by the random factor column name (or “Residual”) for random effect parameters. The column “term” refers to the predictor term for fixed effects, and also the parameter for random effects; for example, "sd__X_i" refers to the standard deviation of the random slope for <code>X_i</code>, while "cor__(Intercept).X_i" refers to <code>rho</code>, the correlation between the random intercept and slope for <code>X_i</code>. We added the column “sim” to the standard output of <code><a href="https://generics.r-lib.org/reference/tidy.html">broom.mixed::tidy()</a></code> so you can compare the simulated parameters we set above to the estimated parameters from this simulated dataset, which are in the column “estimate.” The last four columns give the standard error, <span class="math inline">\(t\)</span>-statistic, estimated degrees of freedom, and p-value for the fixed effects.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get a tidy table of results</span>
+<span class="fu">broom.mixed</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">mod_sim</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">mutate</span><span class="op">(</span>sim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">beta_0</span>, <span class="va">beta_1</span>, <span class="va">tau_0</span>, <span class="va">rho</span>, <span class="va">tau_1</span>, <span class="va">omega_0</span>, <span class="va">sigma</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">select</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fl">9</span>, <span class="fl">4</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span></pre></div>
+  <span class="fu">select</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fl">9</span>, <span class="fl">4</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span></code></pre></div>
 <caption>
 (#tab:broom-tidy-table)
 </caption>
@@ -1245,8 +1251,8 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 <a href="#calculate-power" class="anchor"></a>Calculate Power</h1>
 <p>Data simulation is a particularly flexible approach for estimating power when planning a study. The basic idea of a power simulation is to choose parameter values with which to generate a large number of datasets, fit models to each dataset, and then calculate the proportion of models that reject the null hypothesis. This proportion is an estimate of your power for those particular parameter values. To estimate this value accurately using Monte Carlo simulation, you need to generate and analyze a large number (typically, hundreds or thousands) of datasets.</p>
 <p>First we create a function <code>single_run()</code> that generates data using <code>my_sim_data()</code>, analyzes it, and returns a table with the parameter estimates. This would correspond to a single ‘run’ for our power simulation.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit">
-<span class="co"># simulate, analyze, and return a table of parameter estimates</span>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># simulate, analyze, and return a table of parameter estimates</span>
 <span class="va">single_run</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="op">{</span>
   <span class="co"># ... is a shortcut that forwards any arguments to </span>
   <span class="co"># my_sim_data(), the function created above</span>
@@ -1254,15 +1260,15 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
   <span class="va">mod_sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html">lmer</a></span><span class="op">(</span><span class="va">RT</span> <span class="op">~</span> <span class="va">X_i</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">item_id</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">X_i</span> <span class="op">|</span> <span class="va">subj_id</span><span class="op">)</span>,
                 <span class="va">dat_sim</span><span class="op">)</span>
   
-  <span class="fu">broom.mixed</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/generics/man/tidy.html">tidy</a></span><span class="op">(</span><span class="va">mod_sim</span><span class="op">)</span>
-<span class="op">}</span></pre></div>
-<div class="sourceCode" id="cb24"><pre class="downlit">
-<span class="co"># run one model with default parameters</span>
-<span class="fu">single_run</span><span class="op">(</span><span class="op">)</span></pre></div>
+  <span class="fu">broom.mixed</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">mod_sim</span><span class="op">)</span>
+<span class="op">}</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># run one model with default parameters</span>
+<span class="fu">single_run</span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p>You can also change parameters. For example, what would happen if you increase the number of items to 50 in each group and decrease the effect of category to 20 ms? Example results of a single run with these parameters are shown in Table @ref(tab:singrun-new).</p>
-<div class="sourceCode" id="cb25"><pre class="downlit">
-<span class="co"># run one model with new parameters</span>
-<span class="fu">single_run</span><span class="op">(</span>n_ingroup <span class="op">=</span> <span class="fl">50</span>, n_outgroup <span class="op">=</span> <span class="fl">50</span>, beta_1 <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></pre></div>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># run one model with new parameters</span>
+<span class="fu">single_run</span><span class="op">(</span>n_ingroup <span class="op">=</span> <span class="fl">50</span>, n_outgroup <span class="op">=</span> <span class="fl">50</span>, beta_1 <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></code></pre></div>
 <caption>
 (#tab:singrun-new)
 </caption>
@@ -1354,15 +1360,15 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 </tbody>
 </table>
 <p>You can use the <code><a href="https://purrr.tidyverse.org/reference/map.html">purrr::map_df</a></code> function to run the simulation repeatedly and save the results to a data table. This will take a while, so test it first using just a few runs (<code>n_runs</code>) to debug and check the output. Once you are satisfied it is working properly, we suggest that you use at least a thousand runs to obtain stable estimates. It will save you a lot of time if you save the full results to disk so that you don’t have to re-run it each time you execute your script; you can just comment out this code and load from the saved data for the rest of your script in the future.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit">
-<span class="co"># run simulations and save to a file</span>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># run simulations and save to a file</span>
 <span class="va">n_runs</span> <span class="op">&lt;-</span> <span class="fl">100</span> <span class="co"># use at least 1000 to get stable estimates</span>
 <span class="va">sims</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_df</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_runs</span>, <span class="op">~</span> <span class="fu">single_run</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
-<span class="fu">write_csv</span><span class="op">(</span><span class="va">sims</span>, <span class="st">"sims.csv"</span><span class="op">)</span></pre></div>
+<span class="fu">write_csv</span><span class="op">(</span><span class="va">sims</span>, <span class="st">"sims.csv"</span><span class="op">)</span></code></pre></div>
 <p>Note that some runs may throw warnings about non-convergence or messages about <code>boundary (singular) fit</code>. The message about the singular fit can usually be ignored—see <code><a href="https://rdrr.io/pkg/lme4/man/isSingular.html">?isSingular</a></code> for information about what this means. Non-convergence will be relatively rare with simulated data provided the sample is not unreasonably small relative to the number of estimated parameters; as long as there are not too many of these non-convergence warnings relative to the number of runs, you can probably ignore them because the won’t affect the overall estimates. Alternatively, you can re-write your function to trap the warning (see appendix 1C); for more information on trapping errors and warnings, see the chapter on “Exceptions and Debugging” in the Advanced R textbook <span class="citation">(Wickham 2019)</span>.</p>
 <p>Once our simulations are complete let’s read the data back in and have a look at the estimates for our fixed effects.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit">
-<span class="co"># read saved simulation data</span>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># read saved simulation data</span>
 <span class="va">sims</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="st">"sims.csv"</span>, col_types <span class="op">=</span> <span class="fu">cols</span><span class="op">(</span>
   <span class="co"># makes sure plots display in this order</span>
   group <span class="op">=</span> <span class="fu">col_factor</span><span class="op">(</span>ordered <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
@@ -1371,7 +1377,7 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 
 <span class="va">sims</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">effect</span> <span class="op">==</span> <span class="st">"fixed"</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">select</span><span class="op">(</span><span class="va">term</span>, <span class="va">estimate</span>, <span class="va">p.value</span><span class="op">)</span></pre></div>
+  <span class="fu">select</span><span class="op">(</span><span class="va">term</span>, <span class="va">estimate</span>, <span class="va">p.value</span><span class="op">)</span></code></pre></div>
 <pre><code>## # A tibble: 200 x 3
 ##    term        estimate  p.value
 ##    &lt;ord&gt;          &lt;dbl&gt;    &lt;dbl&gt;
@@ -1387,8 +1393,8 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 ## 10 X_i             1.78 9.45e- 1
 ## # … with 190 more rows</code></pre>
 <p>Each row in the table is an estimate of a fixed-effects parameter and associated <span class="math inline">\(p\)</span>-value from a single run of the Monte Carlo simulation (<code>(Intercept)</code> = <span class="math inline">\(\beta_0\)</span> and <code>X_i</code> = <span class="math inline">\(\beta_1\)</span>). We need to calculate the proportion of runs that are significant. To start, we compute <code>p.value &lt; alpha</code>, where <code>alpha</code> is your false positive rate (e.g., .05). This will yield a logical vector of <code>TRUE</code> wherever the effect was significant and <code>FALSE</code> where it was non-significant. Because <code>TRUE</code> is represented internally as a <code>1</code> and <code>FALSE</code> as a <code>0</code>, you can take the mean of this logical vector and it will yield the proportion of significant runs.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit">
-<span class="co"># calculate mean estimates and power for specified alpha</span>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># calculate mean estimates and power for specified alpha</span>
 <span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fl">0.05</span>
 
 <span class="va">sims</span> <span class="op">%&gt;%</span> 
@@ -1399,7 +1405,7 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
     mean_se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">std.error</span><span class="op">)</span>,
     power <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">p.value</span> <span class="op">&lt;</span> <span class="va">alpha</span><span class="op">)</span>,
     .groups <span class="op">=</span> <span class="st">"drop"</span>
-  <span class="op">)</span></pre></div>
+  <span class="op">)</span></code></pre></div>
 <caption>
 (#tab:calc-power-table)
 </caption>
@@ -1467,82 +1473,80 @@ RT_{si} = \beta_0 + T_{0s} + O_{0i} + \left(\beta_1 + T_{1s}\right) X_i + e_{si}
 <div id="references" class="section level1">
 <h1 class="hasAnchor">
 <a href="#references" class="anchor"></a>References</h1>
-
-<div id="refs">
-<div id="ref-R-papaja">
-<p>Aust, Frederik, and Marius Barth. 2018. <em>papaja: Create APA Manuscripts with R Markdown</em>. <a href="https://github.com/crsh/papaja">https://github.com/crsh/papaja</a>.</p>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-R-papaja" class="csl-entry">
+Aust, Frederik, and Marius Barth. 2018. <em><span class="nocase">papaja</span>: <span>Create</span> <span>APA</span> Manuscripts with <span>R Markdown</span></em>. <a href="https://github.com/crsh/papaja">https://github.com/crsh/papaja</a>.
 </div>
-<div id="ref-baayen_davidson_bates_2008">
-<p>Baayen, R. H., D. J. Davidson, and D. M. Bates. 2008. “Mixed-Effects Modeling with Crossed Random Effects for Subjects and Items.” <em>Journal of Memory and Language</em> 59: 390–412.</p>
+<div id="ref-baayen_davidson_bates_2008" class="csl-entry">
+Baayen, R. H., D. J. Davidson, and D. M. Bates. 2008. <span>“Mixed-Effects Modeling with Crossed Random Effects for Subjects and Items.”</span> <em>Journal of Memory and Language</em> 59: 390–412.
 </div>
-<div id="ref-barr_2013">
-<p>Barr, Dale J. 2013. “Random Effects Structure for Testing Interactions in Linear Mixed-Effects Models.” <em>Frontiers in Psychology</em> 4: 328.</p>
+<div id="ref-barr_2013" class="csl-entry">
+Barr, Dale J. 2013. <span>“Random Effects Structure for Testing Interactions in Linear Mixed-Effects Models.”</span> <em><span>Frontiers in Psychology</span></em> 4: 328.
 </div>
-<div id="ref-barr_2018">
-<p>———. 2018. “Generalizing over encounters: Statistical and theoretical considerations.” In <em>Oxford Handbook of Psycholinguistics</em>, edited by S.-A. Rueschemeyer and M. G. Gaskell. Oxford University Press.</p>
+<div id="ref-barr_2018" class="csl-entry">
+———. 2018. <span>“<span class="nocase">Generalizing over encounters: Statistical and theoretical considerations</span>.”</span> In <em>Oxford Handbook of Psycholinguistics</em>, edited by S.-A. Rueschemeyer and M. G. Gaskell. Oxford University Press.
 </div>
-<div id="ref-barr_et_al_2013">
-<p>Barr, Dale J, Roger Levy, Christoph Scheepers, and Harry J Tily. 2013. “Random effects structure for confirmatory hypothesis testing: Keep it maximal.” <em>Journal of Memory and Language</em> 68 (3): 255–78.</p>
+<div id="ref-barr_et_al_2013" class="csl-entry">
+Barr, Dale J, Roger Levy, Christoph Scheepers, and Harry J Tily. 2013. <span>“<span class="nocase">Random effects structure for confirmatory hypothesis testing: Keep it maximal</span>.”</span> <em><span>Journal of Memory and Language</span></em> 68 (3): 255–78.
 </div>
-<div id="ref-R-lme4">
-<p>Bates, Douglas, Martin Mächler, Ben Bolker, and Steve Walker. 2015. “Fitting Linear Mixed-Effects Models Using lme4.” <em>Journal of Statistical Software</em> 67 (1): 1–48. <a href="https://doi.org/10.18637/jss.v067.i01">https://doi.org/10.18637/jss.v067.i01</a>.</p>
+<div id="ref-R-lme4" class="csl-entry">
+Bates, Douglas, Martin Mächler, Ben Bolker, and Steve Walker. 2015. <span>“Fitting Linear Mixed-Effects Models Using <span class="nocase">lme4</span>.”</span> <em>Journal of Statistical Software</em> 67 (1): 1–48. <a href="https://doi.org/10.18637/jss.v067.i01">https://doi.org/10.18637/jss.v067.i01</a>.
 </div>
-<div id="ref-bedny_aguirre_thompson-schill_2007">
-<p>Bedny, Marina, Geoffrey K Aguirre, and Sharon L Thompson-Schill. 2007. “Item Analysis in Functional Magnetic Resonance Imaging.” <em>Neuroimage</em> 35 (3): 1093–1102.</p>
+<div id="ref-bedny_aguirre_thompson-schill_2007" class="csl-entry">
+Bedny, Marina, Geoffrey K Aguirre, and Sharon L Thompson-Schill. 2007. <span>“Item Analysis in Functional Magnetic Resonance Imaging.”</span> <em>Neuroimage</em> 35 (3): 1093–1102.
 </div>
-<div id="ref-R-broom-mixed">
-<p>Bolker, Ben, and David Robinson. 2019. <em>Broom.mixed: Tidying Methods for Mixed Models</em>. <a href="https://CRAN.R-project.org/package=broom.mixed">https://CRAN.R-project.org/package=broom.mixed</a>.</p>
+<div id="ref-R-broom-mixed" class="csl-entry">
+Bolker, Ben, and David Robinson. 2019. <em>Broom.mixed: Tidying Methods for Mixed Models</em>. <a href="https://CRAN.R-project.org/package=broom.mixed">https://CRAN.R-project.org/package=broom.mixed</a>.
 </div>
-<div id="ref-clark_1973">
-<p>Clark, Herbert H. 1973. “The language-as-fixed-effect fallacy: A critique of language statistics in psychological research.” <em>Journal of Verbal Learning and Verbal Behavior</em> 12: 335–59.</p>
+<div id="ref-clark_1973" class="csl-entry">
+Clark, Herbert H. 1973. <span>“<span class="nocase">The language-as-fixed-effect fallacy: A critique of language statistics in psychological research</span>.”</span> <em><span>Journal of Verbal Learning and Verbal Behavior</span></em> 12: 335–59.
 </div>
-<div id="ref-coleman_1964">
-<p>Coleman, Edmund B. 1964. “Generalizing to a Language Population.” <em>Psychological Reports</em> 14: 219–26.</p>
+<div id="ref-coleman_1964" class="csl-entry">
+Coleman, Edmund B. 1964. <span>“Generalizing to a Language Population.”</span> <em>Psychological Reports</em> 14: 219–26.
 </div>
-<div id="ref-R-faux">
-<p>DeBruine, Lisa. 2020. <em>Faux: Simulation for Factorial Designs</em>. Zenodo. <a href="https://doi.org/10.5281/zenodo.2669586">https://doi.org/10.5281/zenodo.2669586</a>.</p>
+<div id="ref-R-faux" class="csl-entry">
+DeBruine, Lisa. 2020. <em>Faux: Simulation for Factorial Designs</em>. Zenodo. <a href="https://doi.org/10.5281/zenodo.2669586">https://doi.org/10.5281/zenodo.2669586</a>.
 </div>
-<div id="ref-forster_dickinson_1976">
-<p>Forster, K., and R. Dickinson. 1976. “More on the Language-as-Fixed-Effect Fallacy: Monte Carlo Estimates of Error Rates for <span class="math inline">\(F_1\)</span>,<span class="math inline">\(F_2\)</span>,<span class="math inline">\(F'\)</span>, and Min <span class="math inline">\(F'\)</span>.” <em>Journal of Verbal Learning and Verbal Behavior</em> 15: 135–42.</p>
+<div id="ref-forster_dickinson_1976" class="csl-entry">
+Forster, K., and R. Dickinson. 1976. <span>“More on the Language-as-Fixed-Effect Fallacy: Monte Carlo Estimates of Error Rates for <span><span class="math inline">\(F_1\)</span>,<span class="math inline">\(F_2\)</span></span>,<span><span class="math inline">\(F'\)</span></span>, and Min <span><span class="math inline">\(F'\)</span></span>.”</span> <em><span>Journal of Verbal Learning and Verbal Behavior</span></em> 15: 135–42.
 </div>
-<div id="ref-judd_westfall_kenny_2012">
-<p>Judd, Charles M, Jacob Westfall, and David A Kenny. 2012. “Treating stimuli as a random factor in social psychology: A new and comprehensive solution to a pervasive but largely ignored problem.” <em>Journal of Personality and Social Psychology</em> 103: 54.</p>
+<div id="ref-judd_westfall_kenny_2012" class="csl-entry">
+Judd, Charles M, Jacob Westfall, and David A Kenny. 2012. <span>“<span class="nocase">Treating stimuli as a random factor in social psychology: A new and comprehensive solution to a pervasive but largely ignored problem.</span>”</span> <em><span>Journal of Personality and Social Psychology</span></em> 103: 54.
 </div>
-<div id="ref-R-lmerTest">
-<p>Kuznetsova, Alexandra, Per B. Brockhoff, and Rune H. B. Christensen. 2017. “lmerTest Package: Tests in Linear Mixed Effects Models.” <em>Journal of Statistical Software</em> 82 (13): 1–26. <a href="https://doi.org/10.18637/jss.v082.i13">https://doi.org/10.18637/jss.v082.i13</a>.</p>
+<div id="ref-R-lmerTest" class="csl-entry">
+Kuznetsova, Alexandra, Per B. Brockhoff, and Rune H. B. Christensen. 2017. <span>“<span class="nocase">lmerTest</span> Package: Tests in Linear Mixed Effects Models.”</span> <em>Journal of Statistical Software</em> 82 (13): 1–26. <a href="https://doi.org/10.18637/jss.v082.i13">https://doi.org/10.18637/jss.v082.i13</a>.
 </div>
-<div id="ref-locker_hoffman_bovaird_2007">
-<p>Locker, Lawrence, Lesa Hoffman, and James Bovaird. 2007. “On the Use of Multilevel Modeling as an Alternative to Items Analysis in Psycholinguistic Research.” <em>Behavior Research Methods</em> 39: 723–30.</p>
+<div id="ref-locker_hoffman_bovaird_2007" class="csl-entry">
+Locker, Lawrence, Lesa Hoffman, and James Bovaird. 2007. <span>“On the Use of Multilevel Modeling as an Alternative to Items Analysis in Psycholinguistic Research.”</span> <em>Behavior Research Methods</em> 39: 723–30.
 </div>
-<div id="ref-luke-2017">
-<p>Luke, Steven G. 2017. “Evaluating Significance in Linear Mixed-Effects Models in R.” <em>Behavior Research Methods</em> 49 (4): 1494–1502.</p>
+<div id="ref-luke-2017" class="csl-entry">
+Luke, Steven G. 2017. <span>“Evaluating Significance in Linear Mixed-Effects Models in r.”</span> <em><span>Behavior Research Methods</span></em> 49 (4): 1494–1502.
 </div>
-<div id="ref-matuschek_et_al_2017">
-<p>Matuschek, Hannes, Reinhold Kliegl, Shravan Vasishth, Harald Baayen, and Douglas Bates. 2017. “Balancing Type I Error and Power in Linear Mixed Models.” <em>Journal of Memory and Language</em> 94: 305–15.</p>
+<div id="ref-matuschek_et_al_2017" class="csl-entry">
+Matuschek, Hannes, Reinhold Kliegl, Shravan Vasishth, Harald Baayen, and Douglas Bates. 2017. <span>“Balancing Type <span>I</span> Error and Power in Linear Mixed Models.”</span> <em>Journal of Memory and Language</em> 94: 305–15.
 </div>
-<div id="ref-R-base">
-<p>R Core Team. 2018. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.</p>
+<div id="ref-R-base" class="csl-entry">
+R Core Team. 2018. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
 </div>
-<div id="ref-R-afex">
-<p>Singmann, Henrik, Ben Bolker, Jake Westfall, and Frederik Aust. 2019. <em>Afex: Analysis of Factorial Experiments</em>. <a href="https://CRAN.R-project.org/package=afex">https://CRAN.R-project.org/package=afex</a>.</p>
+<div id="ref-R-afex" class="csl-entry">
+Singmann, Henrik, Ben Bolker, Jake Westfall, and Frederik Aust. 2019. <em>Afex: Analysis of Factorial Experiments</em>. <a href="https://CRAN.R-project.org/package=afex">https://CRAN.R-project.org/package=afex</a>.
 </div>
-<div id="ref-westfall_2014">
-<p>Westfall, Jacob, David A. Kenny, and Charles M. Judd. 2014. “Statistical Power and Optimal Design in Experiments in Which Samples of Participants Respond to Samples of Stimuli.” <em>Journal of Experimental Psychology: General</em> 143 (5): 2020–45.</p>
+<div id="ref-westfall_2014" class="csl-entry">
+Westfall, Jacob, David A. Kenny, and Charles M. Judd. 2014. <span>“Statistical Power and Optimal Design in Experiments in Which Samples of Participants Respond to Samples of Stimuli.”</span> <em>Journal of Experimental Psychology: General</em> 143 (5): 2020–45.
 </div>
-<div id="ref-westfall_yarkoni_2016">
-<p>Westfall, Jacob, Thomas E Nichols, and Tal Yarkoni. 2016. “Fixing the stimulus-as-fixed-effect fallacy in task fMRI.” <em>Wellcome Open Research</em> 1.</p>
+<div id="ref-westfall_yarkoni_2016" class="csl-entry">
+Westfall, Jacob, Thomas E Nichols, and Tal Yarkoni. 2016. <span>“<span class="nocase">Fixing the stimulus-as-fixed-effect fallacy in task fMRI</span>.”</span> <em><span>Wellcome Open Research</span></em> 1.
 </div>
-<div id="ref-R-tidyverse">
-<p>Wickham, Hadley. 2017. <em>Tidyverse: Easily Install and Load the ’Tidyverse’</em>. <a href="https://CRAN.R-project.org/package=tidyverse">https://CRAN.R-project.org/package=tidyverse</a>.</p>
+<div id="ref-R-tidyverse" class="csl-entry">
+Wickham, Hadley. 2017. <em>Tidyverse: Easily Install and Load the ’Tidyverse’</em>. <a href="https://CRAN.R-project.org/package=tidyverse">https://CRAN.R-project.org/package=tidyverse</a>.
 </div>
-<div id="ref-wickham-advr">
-<p>———. 2019. <em>Advanced R</em>. CRC press. <a href="http://adv-r.had.co.nz/">http://adv-r.had.co.nz/</a>.</p>
+<div id="ref-wickham-advr" class="csl-entry">
+———. 2019. <em><span>Advanced R</span></em>. CRC press. <a href="http://adv-r.had.co.nz/">http://adv-r.had.co.nz/</a>.
 </div>
-<div id="ref-yarkoni-GC">
-<p>Yarkoni, Tal. 2019. “The Generalizability Crisis.” <a href="https://psyarxiv.com/jqw35">https://psyarxiv.com/jqw35</a>.</p>
+<div id="ref-yarkoni-GC" class="csl-entry">
+Yarkoni, Tal. 2019. <span>“The Generalizability Crisis.”</span> <a href="https://psyarxiv.com/jqw35">https://psyarxiv.com/jqw35</a>.
 </div>
 </div>
-
 </div>
   </div>
 

@@ -33,11 +33,12 @@ draft             : no
 documentclass     : "apa6"
 classoption       : "doc"
 output            : 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    toc_depth: 4
   rmarkdown::word_document:
     default
-  rmarkdown::html_document:
-    toc: true
-    toc_depth: 4
   papaja::apa6_pdf:
     default
 header-includes   :
@@ -45,7 +46,7 @@ header-includes   :
   - \floatplacement{figure}{H}
   - \raggedbottom
   - \usepackage{tcolorbox}
-note              : "In press at Advances in Methods and Practices in Psychological Science"
+note              : "Published at Advances in Methods and Practices in Psychological Science, https://doi.org/10.1177/2515245920965119"
 ---
 
 ```{r setup, include = FALSE}

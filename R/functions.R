@@ -26,3 +26,23 @@ paper <- function(type = c("pdf", "html", "Rmd")) {
   browseURL(f)
 }
 
+#' Open Simulating LMEM appendices
+#' 
+#' @param i Which appendix to open
+#' @param filename Where to save the appendix
+#'
+#' @export
+#'
+appendix <- function(i = c("1a", "1b", "1c", "2", "3a", "3b"), filename = NULL) {
+  i <- match.arg(i)
+  dir <- system.file("appendices/", package = "lmem.sim")
+  files <- list.files(dir, ".Rmd", full.names = TRUE)
+  n <- grepl(paste0("appendix", i), files)
+  f <- files[n][[1]]
+  
+  if (is.null(filename)) filename <- basename(f)
+  
+  file.copy(f, filename)
+  utils::browseURL(filename)
+}
+

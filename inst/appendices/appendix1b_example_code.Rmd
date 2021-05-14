@@ -1,0 +1,446 @@
+---
+title: 'Appendix 1b: Example Code (no tidyverse)'
+subtitle: "Understanding mixed effects models through data simulation"
+author: "Lisa M. DeBruine & Dale J. Barr"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 8,
+  fig.height = 5,
+  out.width = "100%"
+)
+```
+
+[Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix1b_example_code.Rmd)
+
+This script provides equivalent code to the version using pipes and functions from the tidyverse. While this code may be of interest to people who want to learn more about the computations that generate correlated data, it will be more difficult to extend to more complicated designs.
+
+## Simulate data with crossed random factors
+
+In this hypothetical study, subjects classify the emotional expressions of faces as quickly as possible, and we use their response time as the primary dependent variable. Let's imagine that the faces are of two types: either from the subject's ingroup or from an outgroup. For simplicity, we further assume that each face appears only once in the stimulus set. The key question is whether there is any difference in classification speed across the type of face.
+
+The important parts of the design are:
+
+* Random factor 1: subjects (associated variables will be prefixed by `T` or `tau`)
+* Random factor 2: faces (associated variables will be prefixed by `O` or `omega`)
+* Fixed factor 1: category (level = ingroup, outgroup)
+    * within subject: subjects see both ingroup and outgroup faces
+    * between face: each face is either ingroup or outgroup
+
+### Required software
+
+```{r, message=FALSE}
+# load required packages
+library("lme4")        # model specification / estimation
+library("afex")        # anova and deriving p-values from lmer
+
+# ensure this script returns the same results on each run
+set.seed(8675309)
+```
+
+### Establish the data-generating parameters
+
+```{r params-all}
+# set all data-generating parameters
+beta_0  <- 800 # intercept; i.e., the grand mean
+beta_1  <-  50 # slope; i.e, effect of category
+omega_0 <-  80 # by-item random intercept sd
+tau_0   <- 100 # by-subject random intercept sd
+tau_1   <-  40 # by-subject random slope sd
+rho     <-  .2 # correlation between intercept and slope
+sigma   <- 200 # residual (error) sd
+```
+
+
+### Simulate the sampling process
+
+```{r params}
+# set number of subjects and items
+n_subj     <- 100 # number of subjects
+n_ingroup  <-  25 # number of items in ingroup
+n_outgroup <-  25 # number of items in outgroup
+```
+
+#### Simulate the sampling of stimulus items
+
+```{r}
+# simulate a sample of items
+n_items <- n_ingroup + n_outgroup
+
+items <- data.frame(
+  item_id = seq_len(n_items),
+  category = rep(c("ingroup", "outgroup"), c(n_ingroup, n_outgroup)),
+  X_i = rep(c(-0.5, 0.5), c(n_ingroup, n_outgroup)),
+  O_0i = rnorm(n = n_items, mean = 0, sd = omega_0)
+)
+```
+
+
+#### Simulate the sampling of subjects
+
+```{r}
+# simulate a sample of subjects
+
+# calculate random intercept / random slope covariance
+covar <- rho * tau_0 * tau_1
+
+# put values into variance-covariance matrix
+cov_mx  <- matrix(
+  c(tau_0^2, covar,
+    covar,   tau_1^2),
+  nrow = 2, byrow = TRUE)
+
+# generate the by-subject random effects
+subject_rfx <- MASS::mvrnorm(n = n_subj,
+                             mu = c(T_0s = 0, T_1s = 0),
+                             Sigma = cov_mx)
+
+# combine with subject IDs
+subjects <- data.frame(subj_id = seq_len(n_subj),
+                       subject_rfx)
+```
+
+#### Check your values
+
+```{r}
+data.frame(
+  parameter = c("omega_0", "tau_0", "tau_1", "rho"),
+  value = c(omega_0, tau_0, tau_1, rho),
+  simulated = c(
+    sd(items$O_0i),
+    sd(subjects$T_0s),
+    sd(subjects$T_1s), 
+    cor(subjects$T_0s, subjects$T_1s)
+  )
+)
+```
+
+
+#### Simulate trials (encounters)
+
+```{r}
+# cross subject and item IDs; add an error term
+trials <- expand.grid(subj_id = subjects$subj_id,
+                      item_id = items$item_id)
+
+trials$sigma = rnorm(nrow(trials), mean = 0, sd = sigma)
+
+# join subject and item tables
+joined <- merge(trials, subjects, by = "subj_id")
+dat_sim <- merge(joined, items, by = "item_id")
+```
+
+#### Calculate the response values
+
+
+```{r}
+# calculate the response variable
+dat_sim$RT <- beta_0 + dat_sim$O_0i + dat_sim$T_0s + 
+  (beta_1 + dat_sim$T_1s) * dat_sim$X_i + dat_sim$sigma
+
+```
+
+#### Plot the data
+
+```{r}
+par(mfrow=c(2, 1))
+ingroup <- dat_sim$RT[which(dat_sim$category == "ingroup")]
+hist(ingroup)
+outgroup <- dat_sim$RT[which(dat_sim$category == "outgroup")]
+hist(outgroup)
+```
+
+### Data simulation function
+
+Once you've tested your data generating code above, put it into a function so you can run it repeatedly. We combined a few steps in calculating Sigma for the correlated values.
+
+```{r}
+# set up the custom data simulation function
+my_sim_data <- function(
+  n_subj     = 100, # number of subjects
+  n_ingroup  =  25, # number of items in ingroup
+  n_outgroup =  25, # number of items in outgroup
+  beta_0     = 800, # grand mean
+  beta_1     =  50, # effect of category
+  omega_0    =  80, # by-item random intercept sd
+  tau_0      = 100, # by-subject random intercept sd
+  tau_1      =  40, # by-subject random slope sd
+  rho        = 0.2, # correlation between intercept and slope
+  sigma      = 200  # residual (standard deviation)
+  ) {
+  
+  # simulate a sample of items
+  items <- data.frame(
+    item_id = seq_len(n_ingroup + n_outgroup),
+    category = rep(c("ingroup", "outgroup"), c(n_ingroup, n_outgroup)),
+    X_i = rep(c(-0.5, 0.5), c(n_ingroup, n_outgroup)),
+    O_0i = rnorm(n = n_ingroup + n_outgroup, mean = 0, sd = omega_0)
+  )
+  
+  # simulate subjects
+  Sigma <- matrix(c(tau_0^2, tau_0 * tau_1 * rho,
+                    tau_0 * tau_1 * rho, tau_1^2), 
+               nrow = 2, byrow = TRUE) 
+  S <- MASS::mvrnorm(n_subj, c(T_0s = 0, T_1s = 0), Sigma)
+  subjects <- data.frame(subj_id = 1:n_subj, S)
+  
+  # cross subject and item IDs; add an error term
+  trials <- expand.grid(subj_id = subjects$subj_id,
+                        item_id = items$item_id)
+  trials$sigma <- rnorm(nrow(trials), mean = 0, sd = sigma)
+  
+  # join subject and item tables
+  joined <- merge(trials, subjects, by = "subj_id")
+  dat_sim <- merge(joined, items, by = "item_id")
+  
+  # calculate the response variable
+  dat_sim$RT <- beta_0 + dat_sim$O_0i + dat_sim$T_0s + 
+    (beta_1 + dat_sim$T_1s) * dat_sim$X_i + dat_sim$sigma
+  
+  dat_sim
+}
+```
+
+
+## Analyze the simulated data
+
+```{r}
+# fit a linear mixed-effects model to data
+mod_sim <- lmer(RT ~ 1 + X_i + (1 | item_id) + (1 + X_i | subj_id),
+                data = dat_sim)
+
+summary(mod_sim, corr = FALSE)
+```
+
+
+```{r}
+# get a table of results
+sumry <- summary(mod_sim, corr = FALSE)
+ffx  <- fixef(mod_sim) # fixed effects
+irfx <- attr(sumry$varcor$item_id, "stddev") # random effects for items
+srfx <- attr(sumry$varcor$subj_id, "stddev") # random effects for subjects
+rc   <- attr(sumry$varcor$subj_id, "correlation")[1, 2] # rho estimate
+res  <- sigma(mod_sim) # residual error
+
+data.frame(
+  parameter = c("beta_0", "beta_1", "omega_0", "tau_0", "tau_1", "rho", "sigma"),
+  value = c(beta_0, beta_1, omega_0, tau_0, tau_1, rho, sigma),
+  estimate = c(ffx[["(Intercept)"]],
+               ffx[["X_i"]],
+               irfx[["(Intercept)"]],
+               srfx[["(Intercept)"]],
+               srfx[["X_i"]],
+               rc,
+               res),
+  term = c(rownames(sumry$coefficients), rep(NA, 5)),
+  std.error = c(sumry$coefficients[, 2], rep(NA, 5)),
+  statistic  = c(sumry$coefficients[, 4], rep(NA, 5)),
+  df = c(sumry$coefficients[, 3], rep(NA, 5)),
+  p.value  = c(sumry$coefficients[, 5], rep(NA, 5))
+)
+```
+
+
+## Calculate Power
+
+You can wrap up the data generating function and the analysis code in a new function (`single_run`) that returns a table of the analysis results, and optionally saves this info to a file if you set a filename.
+
+```{r}
+# set up the power function
+single_run <- function(filename = NULL, ...) {
+  # ... is a shortcut that forwards any arguments to my_sim_data()
+  dat_sim <- my_sim_data(...)
+  mod_sim <- lmer(RT ~ X_i + (1 | item_id) + (1 + X_i | subj_id),
+                dat_sim)
+  
+  # get a table of results
+  sumry <- summary(mod_sim, corr = FALSE)
+  ffx  <- fixef(mod_sim) 
+  irfx <- attr(sumry$varcor$item_id, "stddev") 
+  srfx <- attr(sumry$varcor$subj_id, "stddev") 
+  
+  sim_results <- data.frame(
+    parameter = c("beta_0", "beta_1", "omega_0", "tau_0", "tau_1", "rho", "sigma"),
+    value = c(beta_0, beta_1, omega_0, tau_0, tau_1, rho, sigma),
+    estimate = c(ffx[["(Intercept)"]],
+                 ffx[["X_i"]],
+                 irfx[["(Intercept)"]],
+                 srfx[["(Intercept)"]],
+                 srfx[["X_i"]],
+                 attr(sumry$varcor$subj_id, "correlation")[1, 2],
+                 sigma(mod_sim)),
+    term = c(rownames(sumry$coefficients), rep(NA, 5)),
+    std.error = c(sumry$coefficients[, 2], rep(NA, 5)),
+    statistic  = c(sumry$coefficients[, 4], rep(NA, 5)),
+    df = c(sumry$coefficients[, 3], rep(NA, 5)),
+    p.value  = c(sumry$coefficients[, 5], rep(NA, 5))
+  )
+  
+  # append the results to a file if filename is set
+  if (!is.null(filename)) {
+    append <- file.exists(filename) # append if the file exists
+    write.table(sim_results, filename, sep = ",",
+                row.names = FALSE,
+                append = append, 
+                col.names = !append)
+  }
+  
+  # return the tidy table
+  sim_results
+}
+```
+
+
+```{r}
+# run one model with default parameters
+single_run()
+```
+
+
+```{r}
+# run one model with new parameters
+single_run(n_ingroup = 50, n_outgroup = 45, beta_1 = 20)
+```
+
+To get an accurate estimation of power, you need to run the simulation many times. We use 100 here as an example, but your results are more accurate the more replications you run. This will depend on the specifics of your analysis, but we recommend at least 1000 replications.
+
+```{r, eval = FALSE}
+# run simulations
+reps <- 100
+sims <- replicate(reps, single_run(), simplify = FALSE)
+sims <- lapply(sims, as.data.frame)
+sims <- do.call("rbind", sims)
+```
+
+Alternatively, you can save the simulations to a file and read from that file in subsequent runs.
+
+```{r}
+filename <- "sims/sims_base.csv" # change for new analyses
+if (!file.exists(filename)) {
+  reps <- 100
+  trash <- replicate(reps, single_run(filename))
+}
+
+# read saved simulation data
+sims <- read.csv(filename)
+```
+
+
+```{r}
+# calculate mean estimates and power for specified alpha
+alpha <- 0.05
+
+fcat <- sims[sims$term == "X_i", ]
+
+power <- mean(fcat$p.value < alpha)
+mean_estimate <- mean(fcat$estimate)
+mean_se <- mean(fcat$std.error)
+```
+
+The power is `r power` with a mean estimate for the effect of category of `r mean_estimate` and a mean standard error of `r mean_se`.
+
+## Compare to ANOVA
+
+One way many researchers would normally analyse data like this is by averaging each subject's reaction times across the ingroup and outgroup stimuli and compare them using a paired-samples t-test or ANOVA (which is formally equivalent). Here, we use `afex::aov_ez` to analyse a version of our dataset that is aggregated by subject.
+
+```{r}
+# aggregate by subject and analyze with ANOVA
+dat_subj <- with(dat_sim, aggregate(RT, list(subj_id, category, X_i), mean))
+names(dat_subj) <- c("subj_id", "category", "X_i", "RT")
+
+afex::aov_ez(
+  id = "subj_id",
+  dv = "RT",
+  within = "category",
+  data = dat_subj
+)
+```
+
+Alternatively, you could aggregate by item, averaging all subjects' scores for each item.
+
+```{r, message=FALSE}
+# aggregate by item and analyze with ANOVA
+dat_item <- with(dat_sim, aggregate(RT, list(item_id, category, X_i), mean))
+names(dat_item) <- c("item_id", "category", "X_i", "RT")
+
+afex::aov_ez(
+  id = "item_id",
+  dv = "RT",
+  between = "category",
+  data = dat_item
+)
+```
+
+We can create a power analysis function that simulates data using our data-generating process from `my_sim_data()`, creates these two aggregated datasets, and analyses them with ANOVA. We'll just return the p-values for the effect of category as we can calculate power as the percentage of these simulations that reject the null hypothesis.
+
+```{r}
+# power function for ANOVA
+my_anova_power <- function(...) {
+  dat_sim <- my_sim_data(...)
+  
+  dat_subj <- with(dat_sim, aggregate(RT, list(subj_id, category, X_i), mean))
+  names(dat_subj) <- c("subj_id", "category", "X_i", "RT")
+  
+  dat_item <- with(dat_sim, aggregate(RT, list(item_id, category, X_i), mean))
+  names(dat_item) <- c("item_id", "category", "X_i", "RT")
+
+  a_subj <- afex::aov_ez(id = "subj_id",
+                         dv = "RT",
+                         within = "category",
+                         data = dat_subj)
+  suppressMessages(
+    # check contrasts message is annoying
+    a_item <- afex::aov_ez(
+      id = "item_id",
+      dv = "RT",
+      between = "category",
+      data = dat_item
+    )
+  )
+  
+  list(
+    "subj" = a_subj$anova_table$`Pr(>F)`,
+    "item" = a_item$anova_table$`Pr(>F)`
+  )
+}
+```
+
+Run this function with the default parameters to determine the power each analysis has to detect an effect of category of `r beta_1` ms.
+
+```{r}
+# run simulations and calculate power 
+reps <- 100
+anova_sims <- replicate(reps, my_anova_power(), simplify = FALSE)
+anova_sims <- lapply(anova_sims, as.data.frame)
+anova_sims <- do.call("rbind", anova_sims)
+
+alpha <- 0.05
+power_subj <- mean(anova_sims$subj < alpha)
+power_item <- mean(anova_sims$item < alpha)
+
+```
+
+The by-subjects ANOVA has power of `r power_subj`, while the by-items ANOVA has power of `r power_item`. This isn't simply a consequence of within versus between design or the number of subjects versus items, but rather a consequence of the inflated false positive rate of some aggregated analyses.
+
+Set the effect of category to 0 to calculate the false positive rate. This is the probability of concluding there is an effect when there is no actual effect in your population.
+
+```{r}
+# run simulations and calculate the false positive rate 
+reps <- 100
+anova_fp <- replicate(reps, my_anova_power(beta_1 = 0), simplify = FALSE)
+anova_fp <- lapply(anova_fp, as.data.frame)
+anova_fp <- do.call("rbind", anova_fp)
+
+false_pos_subj <- mean(anova_fp$subj < alpha)
+false_pos_item <- mean(anova_fp$item < alpha)
+
+false_pos_subj
+false_pos_item
+```
+
+Ideally, your false positive rate will be equal to alpha, which we set here at `r alpha`. The by-subject aggregated analysis has a massively inflated false positive rate of `r false_pos_subj`, while the by-item aggregated analysis has a closer-to-nominal false positive rate of `r false_pos_item`. This is not a mistake, but a consequence of averaging items and analysing a between-item factor. Indeed, this problem with false positives is one of the most compelling reasons to analyze cross-classified data using mixed effects models.

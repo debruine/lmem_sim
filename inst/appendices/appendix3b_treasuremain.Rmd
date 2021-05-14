@@ -1,0 +1,387 @@
+---
+title: 'Appendix 3b modified for Treasure Hunt 4 blocks learning'
+author: "DVM Bishop"
+output: html_document
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width  = 8,
+  fig.height = 5,
+  out.width  = "100%"
+)
+```
+
+Attempting to do this by just modifying the episode term from previous appendix3b_treasurehunt
+
+Based on original: 'Appendix 3b: Extended Binomial Example'
+[Download the .Rmd for this example](https://github.com/debruine/lmem_sim/blob/master/vignettes/appendix3b_extended_binomial.Rmd)
+
+## Simulating binomial data with crossed random factors
+
+We have two factors:  Condition (repeated or novel sentences) and Episode (now with 4 blocks)
+
+Each item is unique - i.e. new items are used for each block  
+Again we have counterbalancing, so that the sentence condition used for repeated in one set is used for novel in the other.  
+The best way to achieve this is to simulate a dataset for half the subjects using the original D&B method, and then duplicate it for 2nd half of subjects with the conditions swapped.
+
+The important parts of the design are:
+
+* Random factor 1: subjects 
+* Random factor 2: items
+* Fixed factor 1: episode (blocks B1, B2, B3 and B4)
+    * within subject: subjects tested on all 4 blocks
+    * between item: different items used in blocks
+* Fixed factor 2: condition (level = repeated, novel)
+    * within subject: subjects see both repeated and novel
+    * between item: different factors for rep and novel
+
+### Required software
+
+```{r, message=FALSE}
+# load required packages
+library("lme4")        # model specification / estimation
+library("afex")        # anova and deriving p-values from lmer
+library("broom.mixed") # extracting data from model fits 
+library("faux")        # data simulation
+library("tidyverse")   # data wrangling and visualisation
+# ensure this script returns the same results on each run
+set.seed(Sys.time()) #new random seed
+faux_options(verbose = FALSE)
+```
+
+This example presents an extended simulation for a binomial logistic mixed regression. Where response accuracy is measured in terms of probability, the regression needs to work with a link function that uses the logit, which does not have the problems of being bounded by 0 and 1. The function below is used later to convert between probability and the logit function of probability. 
+
+```{r fig.width = 8, fig.height = 3}
+logit <- function(x) { log(x / (1 - x)) }
+inv_logit <- function(x) { 1 / (1 + exp(-x)) }
+data.frame(
+  prob = seq(0,1,.01)
+) %>%
+  mutate(logit = logit(prob)) %>%
+  ggplot(aes(prob, logit)) +
+  geom_point()
+```
+
+
+## 2wb*2wb design
+
+In this example, 24 subjects will respond four times (B1 and B2) to 96 distinct items; 24 items at each block. Half the items are condition R (repeated) and half are condition N (novel).  
+We will simulate parameters for half the subjects and then swap the coding for R and N.
+
+
+We use the following prefixes to designate model parameters and sampled values: 
+* `beta_*`: fixed effect parameters
+* `subj_*`: random effect parameters associated with subjects
+* `item_*`: random effect parameters associated with items
+* `X_*`: effect-coded predictor
+* `S_*`: sampled values for subject random effects
+* `I_*`: sampled values for item random effects
+
+In previous tutorials, we used numbers to designate fixed effects, but here we will use letter abbreviations to make things clearer:
+
+* `*_0`: intercept
+* `*_e`: episode
+* `*_c`: condition
+* `*_ec`: episode * condition
+
+Other terms:
+
+* `*_rho`: correlations; a vector of the upper right triangle for the correlation matrix for random effects
+* `n_*`: sample size (must be divisible by 2)
+
+Betas are on logit scale; later we use inv_logit to convert to probabilities.
+The defaults for the makebinary function below are for null effects.  
+When simulating realistic data, we will call the function using beta values computed using expected probabilities for combinations of independent variables. These overwrite the defaults specified here.
+All SDs, representing variation in item and subject-specific effects, were set to one.  
+However, that leads to unfeasibly large variation, both by items and subjects. I have reset these to values that seem more realistic
+
+```{r simulatedata}
+ext_bin_data <- function(
+  n_subj     = 48, # number of subjects
+  n_condR  = 12,  # number of items in condR per episode
+  n_condN =  12,  # number of items in condN per episode
+  beta_0     =   0, # grand mean - inv_logit(0)=.5
+  beta_e     =   0, # main effect of episode
+  beta_c     =   0, # main effect of condition
+  beta_ec    =   0, # interaction between condition and episode
+  item_0    =   .02, # by-item random intercept sd
+  item_e     =   .01, # by-item random slope for exp
+  item_rho   =   0, # by-item random effect correlation
+  subj_0     =   .1, # by-subject random intercept sd
+  subj_e     =   .1, # by-subject random slope sd for exp
+  subj_c     =   .1, # by-subject random slope sd for condition
+  subj_ec    =   .01, # by-subject random slope sd for condition*exp
+  # by-subject random effect correlations
+  subj_rho   = c(0, 0, 0, # subj_0  * subj_e, subj_c, subj_ec
+                    0, 0, # subj_e  *         subj_c, subj_ec
+                       0) # subj_c  *                 subj_ec
+) {
+  # simulate items;  separate item ID for each item; simulating each item's individual effect for intercept (I_0) and slope
+  items <- faux::rnorm_multi(
+    n = 4*(n_condR + n_condN),
+    mu = 0, 
+    sd = c(item_0, item_e),
+    r = item_rho,
+    varnames = c("I_0", "I_e")
+  ) 
+  items$item_id <- 1:nrow(items)
+  items$category<-c(rep('R',n_condR),rep('N',n_condN))
+  items$episode<-c(rep(1,(n_condR+n_condN)),rep(2,(n_condR+n_condN)),rep(3,(n_condR+n_condN)),rep(4,(n_condR+n_condN)))
+  
+   # simulate subjects: separate subject ID for each subject; simulating each subject's individual effect for intercept (I_0) and slope for each factor and the interaction.
+  subjects <- faux::rnorm_multi(
+    n = n_subj/2,
+    mu = 0,
+    sd = c(subj_0, subj_e, subj_c, subj_ec), 
+    r = subj_rho,
+    varnames = c("S_0", "S_e", "S_c", "S_ec")
+  ) 
+  subjects$subj_id<-1:nrow(subjects) #we use a number so we can easily change this when duplicating for counterbalancing
+
+  # simulate trials for first counterbalanced condition
+  mydat <- crossing(subjects, items)
+  mydat2<-mydat #duplicate for counterbalanced block
+  mydat2$subj_id<-mydat2$subj_id+(n_subj/2) #give new subject code
+  w<-which(mydat2$category=="N")
+  mydat2$category <- 'N' 
+  mydat2$category[w] <- 'R'  #we have swappped N and R codes
+  
+  mydat<-rbind(mydat,mydat2) #combine first 12 and last 12 subjects for counterbalanced file
+                                  
+  mydat$subj_id<-as.factor(mydat$subj_id)
+  mydat$item_id <- as.factor(mydat$item_id)
+  mydat$X_e <- (((mydat$episode-1)/3)-.5)*-1 #convert to 4 equally spaced values from -.5 to .5
+
+  mydat$X_c <- recode(mydat$category, "R" = -0.5, "N" = +0.5)
+      # add together fixed and random effects for each effect
+  mydat$B_0 <- beta_0  + mydat$S_0 + mydat$I_0
+  mydat$B_e  = beta_e  + mydat$S_e + mydat$I_e
+  mydat$B_c  = beta_c  + mydat$S_c
+  mydat$B_ec = beta_ec + mydat$S_ec
+      # calculate gaussian effect
+ mydat$Y = mydat$B_0 + (mydat$B_e*mydat$X_e) + (mydat$B_c*mydat$X_c) + (mydat$B_ec*mydat$X_e*mydat$X_c)
+ mydat$pr = inv_logit(mydat$Y) # transform to probability of getting 1
+ mydat$Y_bin = rbinom(nrow(mydat), 1, mydat$pr) # sample from bernoulli distribution, ie use pr to set observed binary response to 0 or 1, so if pr = .5, then 0 and 1 equally likely
+
+  mydat %>%  select(subj_id, item_id, episode, category, X_e, X_c, Y, Y_bin)
+
+}
+```
+
+```{r showsimdat}
+dat_sim <- ext_bin_data()
+head(dat_sim)
+#next 2 lines to check counterbalancing OK
+#table(dat_sim$category,dat_sim$item_id)
+#table(dat_sim$item_id,dat_sim$subj_id)
+```
+Can compare single run output with the parameters that were set.
+
+```{r singlerun_function}
+single_run2 <- function(filename = NULL, returndat = 1,...) {
+  dat_sim <- ext_bin_data(...)
+  #original model with item_id: does not converge
+#  mod_sim <- glmer(Y_bin ~ 1 + X_e*X_c + 
+#                     (1 + X_e | item_id) + 
+#                     (1 + X_e*X_c | subj_id),
+#                data = dat_sim, family = "binomial")
+  
+  mod_sim <- glmer(Y_bin ~ 1 + X_e*X_c + 
+                     (1 + X_e*X_c | subj_id),
+               data = dat_sim, family = "binomial")
+  
+  sim_results <- broom.mixed::tidy(mod_sim)
+  
+  #compare with simple linear model on individual means.
+  mymeans <- aggregate(dat_sim$Y_bin,by=list(dat_sim$subj_id,dat_sim$episode,dat_sim$X_c),FUN=mean)
+ colnames(mymeans)<-c('Subj','Episode','Category','pCorr1')
+ w<-which(mymeans$Episode==1)
+ mymeans2<-mymeans[w,]
+ w<-which(mymeans$Episode==2)
+ mymeans2$pCorr2 <- mymeans$pCorr1[w]
+
+
+  # append the results to a file if filename is set
+  if (!is.null(filename)) {
+    append <- file.exists(filename) # append if the file exists
+    write_csv(sim_results, filename, append = append)
+  }
+  
+  # return the tidy table
+  if(returndat==0){
+  return(sim_results)}
+  if(returndat==1){
+  return(list(dat_sim,sim_results))}
+}
+```
+
+
+
+The following function calculates the betas (on logit scale) from mean probability correct for each combination of factors. 
+The values entered are the mean probability correct for each combination of effects.
+Default is all are 50% correct
+
+You will need to figure out a custom function for each design to do this, or estimate fixed effect parameters from analysis of pilot data.
+
+```{r prob2param}
+prob2param <- function(A1B1 = .5,
+                       A1B2 = .5,
+                       A2B1 = .5,
+                       A2B2 = .5) {
+  ai <- logit(A1B1)
+  ao <- logit(A1B2)
+  hi <- logit(A2B1)
+  ho <- logit(A2B2)
+  list(
+    beta_0 = mean(c(ai,ao,hi,ho)), # grand mean
+    beta_e = (ao+ai)/2 - (ho+hi)/2, # T1 - T2
+    beta_c = (ao+ho)/2 - (ai+hi)/2, # condN - condR
+    beta_ec = (ao-ai) - (ho-hi) # T1 o-i diff - T2 o-i diff
+  )
+}
+```
+
+Demonstrate a single run of the function.
+
+```{r singlerundemo}
+#first we specify proportions correct for the 4 combinations. These are just estimated values to show how it works
+
+#to check false positive rate of analysis, set all these to same value (e.g. .5)
+#I think we need just the two extremes, B1 and B4 here, since difference between them =1
+A1B1 = .55 #B1_condR
+A1B2 = .55 #B1_condN
+A2B1 = .82 #B4_condR
+A2B2 = .7 #B4_condN
+b = prob2param(A1B1, A1B2,A2B1,A2B2) 
+print('beta values are: ')
+b
+
+# e.g. with values set to .5,.6,.4,.5 we get beta_0 and beta_ec of zero (no interaction)
+# and beta_e and beta_c of .81 (same size effect of T1/T2 and condR/condN)
+
+# We now do a single run of analysis on simulated data. This is slow - we show how long one run takes using the timer.
+ptm <- proc.time() #start clock
+simall <- single_run2(
+  returndat = 1,
+    beta_0 = b$beta_0,
+    beta_e = b$beta_e,
+    beta_c = b$beta_c,
+    beta_ec = b$beta_ec)
+# Stop the clock
+duration<-proc.time() - ptm
+duration
+dat_sim <- simall[[1]] #simulated data frame
+myag <- aggregate(dat_sim$Y_bin, by=list(dat_sim$subj_id,dat_sim$episode,dat_sim$category),FUN=mean)
+colnames(myag)<-c('Sub','Episode','Category','Pcorr')
+myag$code2<-paste0(myag$Category,myag$Episode)
+
+ggplot(myag) +
+ aes(x = code2, y = Pcorr) +
+ geom_boxplot(fill = "#0c4c8a") +
+ theme_minimal()
+
+sims <- simall[[2]]
+sims
+```
+
+```{r runsims}
+# We now run many simulations and save to a file on each rep
+
+reps <- 100
+alln <- c(24,36,48)
+for (i in 1:length(alln)){
+n_subj <-alln[i]
+#we make a filename indicating this specific set of estimated values
+filename <- paste0("sims/binomial_4block_noitem_lm_subec01",A1B1,"_",A1B2,"_",A2B1,"_",A2B2,"_N",n_subj,"_rep",reps,".csv")
+if (!file.exists(filename)) {
+  # run simulations and save to a file
+  sims <- purrr::map_df(1:reps, ~single_run2(
+    filename = filename,
+    returndat = 0,
+    n_subj = n_subj,
+    beta_0 = b$beta_0,
+    beta_e = b$beta_e,
+    beta_c = b$beta_c,
+    beta_ec = b$beta_ec)
+  )
+}
+# read saved simulation data
+}
+sims <- read_csv(filename)
+```
+
+
+### Calculate mean estimates
+
+```{r meanests}
+est <- sims %>%
+  filter(effect == "fixed") %>%
+  group_by(term) %>%
+  summarise(
+    mean_estimate = mean(estimate),
+    .groups = "drop"
+  )
+est %>% mutate(
+  parameter = c("beta_0", "beta_c", "beta_e", "beta_ec"),
+  value = c(b$beta_0, b$beta_c, b$beta_e, b$beta_ec)
+) %>%
+  mutate_if(is.numeric, round, 2)
+
+#value is the true value of beta derived from the probabilities we specified
+#estimate is the mean estimate of that value in the simulations
+```
+
+### Calculate probabilities
+
+Sum estimates for each cell and use inverse logit transform to recover probabilities.
+
+```{r}
+int <- est[[1,2]]
+cat <- est[[2,2]]
+exp <- est[[3,2]]
+cat_exp <- est[[4,2]]
+data.frame(
+  T1_condN = inv_logit(int + .5*cat + .5*exp + .5*.5*cat_exp),
+  T1_condR  = inv_logit(int - .5*cat + .5*exp - .5*.5*cat_exp),
+  T2_condN = inv_logit(int + .5*cat - .5*exp - .5*.5*cat_exp),
+  T2_condR  = inv_logit(int - .5*cat - .5*exp + .5*.5*cat_exp)
+) %>%
+  gather(key, val, 1:4) %>%
+  separate(key, c("exp", "cat")) %>%
+  spread(cat, val) %>%
+  mutate_if(is.numeric, round, 2)
+
+#Can compare with specified values of .5.,.6, .4, .5 in runsims. 
+```
+
+## Power analysis
+
+```{r power}
+
+# calculate mean power for specified alpha
+alpha <- 0.05
+sims %>% 
+  filter(effect == "fixed") %>%
+  dplyr::group_by(term) %>%
+  dplyr::summarise(
+    mean_estimate = mean(estimate),
+    mean_se = mean(std.error),
+    power = mean(p.value < alpha),
+    .groups = "drop"
+  )
+
+# Note use of dplyr:: with the tidyverse commands group_by and summarise. This avoids problems that can arise from conflicts of these names with other packages.
+
+
+```
+
+
+
+
+
+
